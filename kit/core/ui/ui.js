@@ -203,13 +203,16 @@
   function exportPagePNG(btn) {
     var old = btn.textContent;
     var wasHidden = document.body.classList.contains('ctl-header-hidden');
+    var sx = global.scrollX, sy = global.scrollY;
     if (wasHidden) document.body.classList.remove('ctl-header-hidden');   // 收起状态的顶栏不该进图
+    global.scrollTo(0, 0);   // 回到顶部：sticky 元素才会落在自然位置，下面的几何换算才成立
     btn.disabled = true;
     btn.textContent = '导出中…';
     function done() {
       btn.disabled = false;
       btn.textContent = old;
       if (wasHidden) document.body.classList.add('ctl-header-hidden');
+      global.scrollTo(sx, sy);
     }
     function fail(msg) {
       done();
@@ -240,9 +243,34 @@
               dstC[i].parentNode.replaceChild(img, dstC[i]);
             } catch (e) { /* 单张失败不阻断整页 */ }
           }
-          // sticky 会让侧栏/顶栏在长图里错位，按文档流还原
-          var fixed = cloned.querySelectorAll('.ctl-header, .ctl-rail');
-          for (var k = 0; k < fixed.length; k++) fixed[k].style.position = 'static';
+          // 顶栏不吸顶，否则会压在正文上
+          var hd = cloned.querySelector('.ctl-header');
+          if (hd) hd.style.position = 'static';
+
+          // html2canvas 1.4.1 不支持 CSS Grid。三栏骨架若是原样交给它，会被当成块级元素
+          // 上下堆叠。这里按活动文档实测出的几何，把每个栅格子项钉成绝对定位。
+          var live = document.querySelector('.ctl-layout');
+          var clone = cloned.querySelector('.ctl-layout');
+          if (live && clone) {
+            var box = live.getBoundingClientRect();
+            clone.style.display = 'block';
+            clone.style.position = 'relative';
+            clone.style.maxWidth = 'none';
+            clone.style.padding = '0';
+            var lk = live.children, ck = clone.children, bottom = 0;
+            for (var i = 0; i < lk.length; i++) {
+              var r = lk[i].getBoundingClientRect(), c = ck[i];
+              if (!c) continue;
+              var top = r.top - box.top;   // 视口相对量相减，与滚动位置无关
+              c.style.position = 'absolute';
+              c.style.left = (r.left - box.left) + 'px';
+              c.style.top = top + 'px';
+              c.style.width = r.width + 'px';
+              c.style.margin = '0';
+              if (top + r.height > bottom) bottom = top + r.height;
+            }
+            clone.style.height = bottom + 'px';
+          }
         }
       }).then(function (canvas) {
         var a = document.createElement('a');
