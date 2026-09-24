@@ -56,8 +56,13 @@
     var print = el('button', 'ctl-btn', '打印');
     print.type = 'button';
     print.addEventListener('click', function () { global.print(); });
+    var png = el('button', 'ctl-btn', '导出 PNG');
+    png.type = 'button';
+    png.title = '把整个页面导出为一张 PNG（交互图按当前参数快照嵌入）';
+    png.addEventListener('click', function () { exportPagePNG(png); });
     bar.appendChild(input);
     bar.appendChild(print);
+    bar.appendChild(png);
 
     var box = el('div', 'ctl-results');
     box.id = 'ctl-results';
@@ -177,6 +182,80 @@
     }, { passive: true });
   }
 
+  /* ---------------- 整页 PNG 导出 ----------------
+     html2canvas 在活文档里用 fillText 绘制，因此能直接使用已加载的 KaTeX 字体
+     （foreignObject 那套在 SVG 隔离环境里拿不到 web 字体，公式会退化）。
+     本地化引入，点击时才加载，不联网。 */
+  function loadHtml2Canvas(cb) {
+    if (global.html2canvas) return cb(null);
+    var s = document.createElement('script');
+    s.src = Ctl.kitCore + 'html2canvas.min.js';
+    s.onload = function () { cb(global.html2canvas ? null : new Error('html2canvas 未暴露全局变量')); };
+    s.onerror = function () { cb(new Error('加载 kit/core/html2canvas.min.js 失败')); };
+    document.body.appendChild(s);
+  }
+
+  function pageFileName() {
+    var t = ((global.BOOK && global.BOOK.short) ? global.BOOK.short + '-' : '') + (document.title || 'page');
+    return t.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, '_').slice(0, 80) + '.png';
+  }
+
+  function exportPagePNG(btn) {
+    var old = btn.textContent;
+    var wasHidden = document.body.classList.contains('ctl-header-hidden');
+    if (wasHidden) document.body.classList.remove('ctl-header-hidden');   // 收起状态的顶栏不该进图
+    btn.disabled = true;
+    btn.textContent = '导出中…';
+    function done() {
+      btn.disabled = false;
+      btn.textContent = old;
+      if (wasHidden) document.body.classList.add('ctl-header-hidden');
+    }
+    function fail(msg) {
+      done();
+      global.alert('PNG 导出失败：' + msg + '\n可改用「打印 → 另存为 PDF」。');
+    }
+    loadHtml2Canvas(function (err) {
+      if (err) return fail(err.message);
+      var docEl = document.documentElement, body = document.body;
+      var w = Math.max(docEl.scrollWidth, body.scrollWidth);
+      var h = Math.max(docEl.scrollHeight, body.scrollHeight);
+      var scale = 2;
+      if (h * scale > 30000) scale = Math.max(1, 30000 / h);   // 浏览器画布尺寸上限保护
+      global.html2canvas(body, {
+        backgroundColor: global.getComputedStyle(body).backgroundColor || '#ffffff',
+        width: w, height: h, windowWidth: w, windowHeight: h,
+        scrollX: 0, scrollY: 0, scale: scale, logging: false,
+        onclone: function (cloned) {
+          // canvas 不会自己进图，换成当前内容的位图
+          var srcC = document.querySelectorAll('canvas');
+          var dstC = cloned.querySelectorAll('canvas');
+          for (var i = 0; i < srcC.length && i < dstC.length; i++) {
+            try {
+              var cs = global.getComputedStyle(srcC[i]);
+              var img = cloned.createElement('img');
+              img.src = srcC[i].toDataURL('image/png');
+              img.setAttribute('style', 'display:block;width:' + cs.width + ';height:' + cs.height +
+                ';border-radius:' + cs.borderRadius);
+              dstC[i].parentNode.replaceChild(img, dstC[i]);
+            } catch (e) { /* 单张失败不阻断整页 */ }
+          }
+          // sticky 会让侧栏/顶栏在长图里错位，按文档流还原
+          var fixed = cloned.querySelectorAll('.ctl-header, .ctl-rail');
+          for (var k = 0; k < fixed.length; k++) fixed[k].style.position = 'static';
+        }
+      }).then(function (canvas) {
+        var a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = pageFileName();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        done();
+      }).catch(function (e) { fail(e && e.message ? e.message : String(e)); });
+    });
+  }
+
   function mountPrimitives() {
     var nodes = document.querySelectorAll('[data-primitive]');
     if (!nodes.length) return;
@@ -214,6 +293,7 @@
   Ctl.mount = function (opts) {
     var bookRoot = opts.bookRoot;
     var body = document.body;
+    Ctl.kitCore = opts.kitCore;   // 懒加载本地库（html2canvas）时要用
 
     // 主题：先应用，避免暗色用户看到亮色
     var saved = null;

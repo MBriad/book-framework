@@ -6,7 +6,7 @@
 
 | 路径 | 职责 |
 |---|---|
-| `kit/core/` | 通用能力：页头、面包屑、全站搜索、暗色切换、打印、自测样式、公式渲染（KaTeX）、Canvas 底座 |
+| `kit/core/` | 通用能力：页头、面包屑、全站搜索、暗色切换、打印、整页 PNG 导出、自测样式、公式渲染（KaTeX）、Canvas 底座 |
 | `kit/packs/<学科>/` | 学科组件。当前只有 `control`：`step-2nd` `bode-cursor` `polezero-drag` `step-presets` `root-locus` |
 | `kit/tools/` | 可选的命令行工具（不跑也能看页面） |
 | `books/<slug>/` | 一本书：配置 + 每节一个 HTML + 搜索索引 |
@@ -56,6 +56,23 @@
 | 缺口（未覆盖） | `<div class="ctl-gap">缺口：未覆盖 §x.y</div>` |
 | 折叠推导 / 代码 | `<details class="ctl-fold"><summary>标题</summary>…</details>` |
 | 自测 | `<div class="ctl-test"><h4>自测（补）</h4><ol><li>题<details><summary>答案</summary>…</details></li></ol></div>` |
+
+## 导出（打印 / PNG）
+
+顶栏两个按钮，均由 `kit/core/ui/ui.js` 注入：
+
+- **打印** → 走 `print.css`；交互图在 `beforeprint` 里按**当前参数** 3 倍重绘，图下带数值表。可另存为 PDF。
+- **导出 PNG** → 把**整个页面**（含顶栏与左右侧栏）导成一张长图，交互图按当前参数快照嵌入。由本地化的
+  `kit/core/html2canvas.min.js` 驱动，**点击时才加载**，不联网。
+
+为什么用 html2canvas 而不是 `foreignObject`（dom-to-image 那套）：后者把 DOM 塞进 SVG 隔离环境后
+**拿不到文档已加载的 KaTeX 字体**，公式会退化成系统字体；html2canvas 在活文档里用 `fillText` 绘制，
+可以直接用上这些字体。这是本框架选它的唯一理由。
+
+两个已知边界：
+
+- 整页长图受浏览器画布尺寸限制。代码里在 `h * scale > 30000` 时自动降倍率；超长章节仍可能需降到 1 倍，或改用 PDF。
+- PNG 导出只接受 `toDataURL()` 成功的 canvas；单张交互图失败会被跳过，不会让整页失败。
 
 ## 交互组件
 
