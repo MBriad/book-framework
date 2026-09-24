@@ -4,7 +4,18 @@
 
 ## 打开
 
-双击 `books/franklin/index.html`。**不需要服务器，不需要构建。**
+**在线**（平板用这个）：<https://mbriad.github.io/book-framework/>
+→ 进入书目后点 <https://mbriad.github.io/book-framework/books/franklin/index.html>
+
+**本地**：双击 `books/franklin/index.html`。**不需要服务器，不需要构建。**
+
+**局域网**（不想联网时）：
+
+```
+python -m http.server 8000
+```
+
+平板浏览器打开 `http://<电脑局域网IP>:8000/books/franklin/index.html`（首次需在 Windows 防火墙授权弹窗里放行）。
 
 ## 目录
 
