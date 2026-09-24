@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>复习站 · 书目</title>
+<link rel="stylesheet" href="kit/core/site.css">
+</head>
+<body>
+<main class="ctl-main" style="max-width:720px;padding-top:56px">
+  <h1>复习站</h1>
+  <p class="ctl-note">一个「书 → 交互式 HTML」的可复用框架，以及用它做的书。全部是静态文件，双击即可离线打开。</p>
+
+  <h2>书目</h2>
+  <ul class="ctl-progress">
+    <li>
+      <span class="ctl-ch">Ch1–10</span>
+      <span class="ctl-nm"><a href="books/franklin/index.html">Feedback Control of Dynamic Systems</a><br>
+        <span class="ctl-note">Franklin 自控原理 · 骨架已铺，内容待填</span></span>
+      <span class="ctl-badge" data-status="partial">进行中</span>
+    </li>
+  </ul>
+
+  <h2>新增一本书</h2>
+  <p class="ctl-note">复制 <code>books/_template/</code> 为 <code>books/&lt;slug&gt;/</code>，改 <code>book.config.js</code>，再跑
+  <code>node kit/tools/make-index.js books/&lt;slug&gt;</code>（可选）。完整说明见 <code>kit/README.md</code>。</p>
+</main>
+</body>
+</html>
