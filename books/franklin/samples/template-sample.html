@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>技术样板页 · 二阶系统时域指标</title>
+</head>
+<body data-title="技术样板页">
+<main class="ctl-main">
+
+<div class="ctl-demo-banner">
+<strong>技术样板页。</strong>本页内容全部是<b>演示用的示例文本</b>，不代表任何结论，也不是你的总结。
+它存在的唯一目的是让你验收视觉规范与交互能力。验收清单见 <code>kit/README.md</code>。
+</div>
+
+<h1>二阶系统的单位阶跃响应</h1>
+<p class="ctl-note">示例对应 Franklin §3.4。三层内容在本页都有出现：<b>你的总结</b>（普通正文）、
+<span class="ctl-supp" style="display:inline;padding:.1em .6em;margin:0;border-radius:4px"><span class="ctl-tag" data-src="补自 Franklin §3.4">补</span></span> 我的补充（蓝条）、
+<span style="border:1px dashed var(--ctl-gap);color:var(--ctl-gap);border-radius:6px;padding:0 .5em">缺口</span> 未覆盖（虚框）、
+<span style="border-left:3px solid var(--ctl-accent2);padding:0 .5em">已修正</span> 纠错（橙条）。</p>
+
+<h2>3.4.1 标准二阶系统</h2>
+
+<p>标准二阶系统的传递函数写成</p>
+<p>$$G(s)=\frac{\omega_n^{2}}{s^{2}+2\zeta\omega_n s+\omega_n^{2}}$$</p>
+<p>其中 $\zeta$ 是阻尼比，$\omega_n$ 是无阻尼自然频率。闭环极点为一对共轭复数：</p>
+<p>$$s_{1,2}=-\zeta\omega_n\pm j\omega_n\sqrt{1-\zeta^{2}}$$</p>
+
+<div class="ctl-supp"><span class="ctl-tag" data-src="补自 Franklin §3.4（二阶系统时域指标）">补</span>
+为什么形状只由这两个数决定：把分母配方成 $(s+\zeta\omega_n)^{2}+\omega_n^{2}(1-\zeta^{2})$，极点的实部 $-\zeta\omega_n$ 决定衰减速度（包络 $e^{-\zeta\omega_n t}$），虚部 $\omega_d=\omega_n\sqrt{1-\zeta^{2}}$ 决定振荡频率。所以 $\zeta$ 和 $\omega_n$ 两个数就把响应的形状与时间尺度全部锁死了。</div>
+
+<div class="ctl-fix"><strong>已修正：</strong><span class="ctl-old">原写为「阻尼比越大，超调越大」</span> → 改为「阻尼比越大，超调越小」。当 $\zeta\ge 1$ 时无超调。</div>
+
+<h2>3.4.2 时域指标</h2>
+
+<p>超调量 $M_p$ 与调节时间（2% 误差带）$t_s$ 的常用近似为</p>
+<p>$$M_p=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}},\qquad t_s\approx\frac{4}{\zeta\omega_n}$$</p>
+
+<div data-primitive="step-2nd" data-title="交互 ① 参数滑块：拖 ζ 与 ωn，曲线实时重绘；读数里给出仿真值与理论值对照"></div>
+
+<div data-primitive="step-presets" data-title="交互 ④ 情形切换：四种阻尼的对比（当前曲线高亮，其余为浅色）"></div>
+
+<h2>3.4.3 增加一个零点会怎样</h2>
+
+<div class="ctl-supp"><span class="ctl-tag" data-src="补自 Franklin §3.4 / §5.3 零点的影响">补</span>
+零点不改变极点的位置，但会改变各模态在响应中的权重：左半平面的零点越靠近虚轴，超调越大、初始响应越"冲"。</div>
+
+<div data-primitive="polezero-drag" data-title="交互 ③ 零极点拖拽：在 s 平面拖动极点（上方那对，含共轭镜像）与零点，右侧阶跃响应实时重算"></div>
+
+<div class="ctl-gap">缺口：你这段总结未覆盖 §3.5 的稳态误差，按约定留白，等你补上后我再填。</div>
+
+<h2>3.4.4 频率视角</h2>
+
+<p>同一个系统在频域看，穿越频率 $\omega_c$ 与相位裕度刻画了闭环的稳定储备：</p>
+
+<div data-primitive="bode-cursor" data-title="交互 ② 游标联动：拖动频率游标（或直接拖曲线），幅频/相频同步读数，并自动标出 ωc 与相位裕度"></div>
+
+<h2>3.4.5 根轨迹</h2>
+
+<p>以 $G(s)=\dfrac{K}{s(s+1)(s+2)}$ 为例，闭环特征方程为 $s^{3}+3s^{2}+2s+K=0$：</p>
+
+<div data-primitive="root-locus" data-title="交互 ⑤ 根轨迹：拖 K，看三个闭环极点沿轨迹移动；K=6 时穿过虚轴"></div>
+
+<details class="ctl-fold">
+<summary>对应 MATLAB 代码（拖动滑块的数值都可用这几行复算）</summary>
+<pre><code>zeta = 0.2; wn = 2;
+G = tf(wn^2, [1, 2*zeta*wn, wn^2]);
+stepinfo(G)                 % 超调量与调节时间
+
+s = tf('s');
+L = 30 / (s*(s+1)*(s+10));  % Bode 示例
+margin(L)                   % 相位裕度 / 增益裕度
+
+rlocus(s/(s+1)/(s+2))       % 根轨迹示例</code></pre>
+</details>
+
+<div class="ctl-test">
+<h4>自测（补）</h4>
+<ol>
+  <li>$\zeta=0.5$、$\omega_n=4$ rad/s 时，理论超调量是多少？
+    <details><summary>答案</summary>
+      <p>$M_p=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}=e^{-\pi/\!\sqrt{3}}\approx 16.3\%$。</p></details></li>
+  <li>$\zeta$ 不变、$\omega_n$ 加倍，超调量与调节时间各怎么变？
+    <details><summary>答案</summary>
+      <p>超调量只由 $\zeta$ 决定，不变；$t_s\approx 4/(\zeta\omega_n)$，减半。</p></details></li>
+  <li>为什么 $\zeta=1$ 时不出现超调，而 $\zeta=0.999$ 时超调也几乎为零？
+    <details><summary>答案</summary>
+      <p>临界阻尼时两个极点重根，响应是 $(1+\omega_n t)e^{-\omega_n t}$ 形状，单调上升；$\zeta$ 略小于 1 时虚部极小，振荡周期远大于衰减时间常数，峰值来不及形成就已被衰减。</p></details></li>
+</ol>
+</div>
+
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+
+/* kit/core/print.css — 打印/导出 PDF。交互图印「当前参数」快照（由 canvas.js 在 beforeprint 高清重绘）。 */
+@media print{
+  @page{margin:14mm}
+  .ctl-header,.ctl-searchbar,.ctl-results,.ctl-toolbar,.ctl-noprint,footer.ctl-footer{display:none!important}
+  .ctl-rail,.ctl-only-narrow{display:none!important}
+  .ctl-header{transform:none!important}
+  .ctl-layout{display:block;max-width:none;padding:0}
+  h2,h3{scroll-margin-top:0}
+  body{background:#fff;color:#000;font-size:11pt;line-height:1.6}
+  .ctl-main{max-width:none;padding:0}
+  h1{font-size:18pt} h2{font-size:14pt;margin-top:1.1em} h3{font-size:12pt}
+  a{color:#000;text-decoration:none}
+  pre,code,table{background:#fff}
+  pre{border:1px solid #bbb;white-space:pre-wrap;word-break:break-word}
+  .ctl-widget,.ctl-supp,.ctl-gap,.ctl-fix,.ctl-test,details.ctl-fold{break-inside:avoid;page-break-inside:avoid}
+  .ctl-widget{border-color:#999}
+  .ctl-supp{background:#f2f6fc;border-left-color:#1f6feb}
+  .ctl-gap{border-color:#b45309;color:#8a4008}
+  .ctl-fix{background:#fdf3e7;border-left-color:#b45309}
+  .ctl-controls,.ctl-seg,.ctl-toolbar{display:none!important}
+  .ctl-readout{display:flex!important;border-top:1px solid #bbb}
+  .ctl-demo-banner{background:#fdf3e7;border-color:#b45309}
+  canvas.ctl-canvas{border:1px solid #ccc}
+  .ctl-progress li{break-inside:avoid}
+}

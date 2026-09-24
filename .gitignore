@@ -1,0 +1,16 @@
+# 临时与生成物
+tmp/
+viz/
+
+# 会话 / 工具配置（不属于这个框架）
+.dsh/
+
+# 依赖：本框架刻意零依赖，若临时装包不要入库
+node_modules/
+
+# 操作系统与编辑器垃圾
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~

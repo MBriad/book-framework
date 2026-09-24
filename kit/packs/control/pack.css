@@ -1,0 +1,6 @@
+/* kit/packs/control/pack.css — 控制学科组件的少量补充（通用版式在 kit/core/site.css）。 */
+canvas.ctl-drag{cursor:crosshair}
+.ctl-widget .ctl-ctl>span:first-child{min-width:2.4em}
+.ctl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ctl-muted);margin-top:6px}
+.ctl-legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:4px}
+.ctl-readout span{white-space:nowrap}
