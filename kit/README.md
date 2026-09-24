@@ -6,7 +6,7 @@
 
 | 路径 | 职责 |
 |---|---|
-| `kit/core/` | 通用能力：页头、面包屑、全站搜索、暗色切换、打印、整页 PNG 导出、自测样式、公式渲染（KaTeX）、Canvas 底座 |
+| `kit/core/` | 通用能力：页头、面包屑、全站搜索、暗色切换、打印、自测样式、公式渲染（KaTeX）、Canvas 底座 |
 | `kit/packs/<学科>/` | 学科组件。当前只有 `control`：`step-2nd` `bode-cursor` `polezero-drag` `step-presets` `root-locus` |
 | `kit/tools/` | 可选的命令行工具（不跑也能看页面） |
 | `books/<slug>/` | 一本书：配置 + 每节一个 HTML + 搜索索引 |
@@ -57,30 +57,17 @@
 | 折叠推导 / 代码 | `<details class="ctl-fold"><summary>标题</summary>…</details>` |
 | 自测 | `<div class="ctl-test"><h4>自测（补）</h4><ol><li>题<details><summary>答案</summary>…</details></li></ol></div>` |
 
-## 导出（打印 / PNG）
+## 导出（打印 / PDF）
 
-顶栏两个按钮，均由 `kit/core/ui/ui.js` 注入：
+顶栏一个按钮，由 `kit/core/ui/ui.js` 注入：
 
-- **打印** → 走 `print.css`；交互图在 `beforeprint` 里按**当前参数** 3 倍重绘，图下带数值表。可另存为 PDF。
-- **导出 PNG** → 把**整个页面**（含顶栏与左右侧栏）导成一张长图，交互图按当前参数快照嵌入。由本地化的
-  `kit/core/html2canvas.min.js` 驱动，**点击时才加载**，不联网。
+- **打印 / PDF** → 走 `print.css`：隐藏顶栏、左右侧栏与所有交互控件；交互图在 `beforeprint` 里按**当前参数**
+  3 倍重绘，图下保留数值表。在打印对话框里选「另存为 PDF」即可存档。
 
-为什么用 html2canvas 而不是 `foreignObject`（dom-to-image 那套）：后者把 DOM 塞进 SVG 隔离环境后
-**拿不到文档已加载的 KaTeX 字体**，公式会退化成系统字体；html2canvas 在活文档里用 `fillText` 绘制，
-可以直接用上这些字体。这是本框架选它的唯一理由。
+逐图 PNG 由各交互组件自带的「导出 PNG」按钮提供（原生 `canvas.toDataURL()`，3 倍分辨率，与打印走同一套渲染路径）。
 
-本框架为它补了两处适配（都在 `exportPagePNG` 里）：
-
-- **html2canvas 1.4.1 不支持 CSS Grid**。三栏骨架原样交给它会被当成块级元素上下堆叠，
-  所以 `onclone` 里按活动文档实测的几何，把每个栅格子项钉成绝对定位；导出前先 `scrollTo(0,0)`，
-  否则 sticky 元素的 `getBoundingClientRect` 反映的是吸顶位置，换算会错。
-- **`<canvas>` 不会自己进图**，`onclone` 里逐个换成 `toDataURL()` 的位图。
-
-三个已知边界：
-
-- 整页长图受浏览器画布尺寸限制。代码里在 `h * scale > 30000` 时自动降倍率；超长章节仍可能需降到 1 倍，或改用 PDF。
-- PNG 导出只接受 `toDataURL()` 成功的 canvas；单张交互图失败会被跳过，不会让整页失败。
-
+> 曾经试过用 html2canvas 做「整页 PNG 导出」，已移除：它**不支持 CSS Grid**，且对 `<details>`、列表与
+> sticky 的渲染会压叠错位，产出不可用。同样的目的由打印/PDF 达成，且 PDF 是矢量文字、可选中可搜索。
 ## 交互组件
 
 放一个空容器，组件自己填充：

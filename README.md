@@ -38,6 +38,5 @@ python -m http.server 8000
 
 ## 第三方库
 
-`kit/core/katex/`（KaTeX 0.16.22，MIT）、`kit/core/d3.min.js`（d3 7.9.0，ISC）、
-`kit/core/html2canvas.min.js`（html2canvas 1.4.1，MIT，整页 PNG 导出用）均为本地化副本，
-保证断网可用；许可文件随包放在 `kit/core/` 内。
+`kit/core/katex/`（KaTeX 0.16.22，MIT）与 `kit/core/d3.min.js`（d3 7.9.0，ISC）为本地化副本，
+保证断网可用；许可文件随包放在 `kit/core/` 内。。
