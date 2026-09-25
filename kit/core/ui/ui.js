@@ -276,7 +276,9 @@
       var name = node.getAttribute('data-primitive');
       var factory = Ctl.Pack.get(name);
       if (!factory) {
-        node.innerHTML = '<p class="ctl-note">未知组件：' + esc(name) + '</p>';
+        node.innerHTML = '<p class="ctl-note">组件 <b>' + esc(name) + '</b> 没有加载。' +
+          '最常见的原因是<b>浏览器缓存了旧版脚本</b>——硬刷新一次（或等 10 分钟）就会好；' +
+          '硬刷新后仍然如此，才是真的缺组件。</p>';
         continue;
       }
       try { factory(node); } catch (e) {

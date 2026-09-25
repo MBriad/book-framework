@@ -858,47 +858,49 @@
       xlim: [0, 6], ylim: [0, 1.6], xlabel: 't (s)', ylabel: 'y(t)',
       draw: function (P) {
         var C = P.C;
-        // 终值线 + ±1% 带
+        // 终值线
         P.line([[P.xinv(P.L), 1], [P.xinv(P.R), 1]], C.muted, 1, [5, 4]);
-        if (isFinite(info.ts) && info.ts <= tmax) {
-          P.line([[info.ts, 0.99], [info.ts, 1.01]], C.accent2, 1.2);
-          P.line([[0, 0.99], [tmax, 0.99]], C.accent2, 1, [3, 3]);
-          P.line([[0, 1.01], [tmax, 1.01]], C.accent2, 1, [3, 3]);
-          P.text('t\u209B', P.x(info.ts), P.y(0.955), C.accent2, 'center', 'middle');
-          P.line([[info.ts, 0.98], [info.ts, 1.02]], C.accent2, 1);
-        }
-        // 上升时间（10%→90%）的尺寸线
-        if (isFinite(info.tr)) {
-          P.line([[info.t10, 0.1], [info.t10, info.ymax * 0.82]], C.line, 1, [2, 3]);
-          P.line([[info.t90, 0.9], [info.t90, info.ymax * 0.82]], C.line, 1, [2, 3]);
-          P.line([[info.t10, info.ymax * 0.82], [info.t90, info.ymax * 0.82]], C.accent, 1.2);
-          P.dot(info.t10, info.ymax * 0.82, C.accent, 2.5);
-          P.dot(info.t90, info.ymax * 0.82, C.accent, 2.5);
-          P.text('t\u1D63 (10%→90%)', P.x((info.t10 + info.t90) / 2), P.y(info.ymax * 0.82) - 10, C.accent, 'center', 'middle');
-        }
+
         if (st.mode === 'first') {
-          // 初始斜率切线：t=0 处的切线正好在 t=τ 处到达终值
-          P.line([[0, 0], [st.tau, 1]], C.accent2, 1.2, [4, 3]);
-          P.dot(st.tau, info.tauY, C.accent2, 3.5);
-          P.line([[st.tau, 0], [st.tau, info.tauY]], C.accent2, 1, [2, 3]);
-          P.text('τ：63.2%', P.x(st.tau) + 34, P.y(info.tauY) + 4, C.accent2, 'center', 'middle');
+          // t=0 的切线正好在 t=τ 处碰到终值——这是 τ 的几何本质
+          P.line([[0, 0], [st.tau, 1]], C.accent2, 1.8, [6, 3]);
+          P.line([[st.tau, 0], [st.tau, 1]], C.accent2, 1, [2, 3]);
+          P.dot(st.tau, info.tauY, C.accent2, 4);
+          P.text('τ = ' + st.tau.toFixed(2) + '　到 63.2%', P.x(st.tau) + 10, P.y(info.tauY), C.accent2, 'left', 'middle');
         } else {
-          // 峰值：Mp 与 tp
           var m = info.m;
+          var kk = 1 / Math.sqrt(Math.max(1e-6, 1 - st.zeta * st.zeta));
+          var env = [];
+          for (var e = 0; e <= 180; e++) { var te = tmax * e / 180; env.push([te, 1 + Math.exp(-info.sigma * te) * kk]); }
+          P.line(env, C.accent, 1.3, [5, 4]);
           if (m.peak > 1.001) {
-            P.line([[m.tp, 1], [m.tp, m.peak]], C.accent2, 1.4);
-            P.dot(m.tp, m.peak, C.accent2, 3.5);
-            P.text('M\u209A', P.x(m.tp) + 16, P.y((1 + m.peak) / 2), C.accent2, 'center', 'middle');
-            P.line([[m.tp, 0], [m.tp, m.peak]], C.accent2, 1, [2, 3]);
-            P.text('t\u209A', P.x(m.tp), P.y(info.ymax * 0.06), C.accent2, 'center', 'middle');
+            P.line([[m.tp, 1], [m.tp, m.peak]], C.accent2, 2);
+            P.dot(m.tp, m.peak, C.accent2, 4);
+            P.text('Mp = ' + m.overshoot.toFixed(1) + '%', P.x(m.tp) + 8, P.y((1 + m.peak) / 2), C.accent2, 'left', 'middle');
+            P.line([[m.tp, 0], [m.tp, m.peak]], C.c3, 1.2, [3, 3]);
+            P.text('tp', P.x(m.tp), P.y(info.ymax * 0.05), C.c3, 'center', 'middle');
           }
-          // 衰减包络 1 + e^{-σt}/√(1-ζ²)
-          var env = [], sig = info.sigma, k = 1 / Math.sqrt(Math.max(1e-6, 1 - st.zeta * st.zeta));
-          for (var i = 0; i <= 200; i++) { var t = tmax * i / 200; env.push([t, 1 + Math.exp(-sig * t) * k]); }
-          P.line(env, C.accent, 1.2, [5, 4]);
-          P.text('包络 1+e^{-σt}/√(1-ζ²)', P.x(tmax * 0.36), P.y(Math.min(info.ymax - 0.12, 1 + 1.2 * k * 0.45)), C.accent, 'center', 'middle');
         }
-        P.line(pts, C.ink, 1.8);
+
+        P.line(pts, C.ink, 2);
+
+        // 上升时间：10%→90% 的尺寸线
+        if (isFinite(info.tr)) {
+          var yb = info.ymax * 0.92;
+          P.line([[info.t10, 0.1], [info.t10, yb]], C.accent, 1, [2, 3]);
+          P.line([[info.t90, 0.9], [info.t90, yb]], C.accent, 1, [2, 3]);
+          P.line([[info.t10, yb], [info.t90, yb]], C.accent, 1.4);
+          P.text('tr = ' + info.tr.toFixed(2) + ' s（10%→90%）', P.x((info.t10 + info.t90) / 2), P.y(yb) - 11, C.accent, 'center', 'middle');
+        }
+
+        // 调节时间：只打一个刻度。±1% 带在这个纵轴范围里只有约 3 像素，
+        // 画出来会糊成一条压在终值线上——那是噪声，不是信息。
+        if (isFinite(info.ts) && info.ts <= tmax) {
+          P.line([[info.ts, 0], [info.ts, info.ymax * 0.07]], C.c3, 2.5);
+          P.dot(info.ts, 0, C.c3, 3.5);
+          var right = info.ts > tmax * 0.6;
+          P.text('ts = ' + info.ts.toFixed(2) + ' s（±1%）', P.x(info.ts) + (right ? -8 : 8), P.y(info.ymax * 0.11), C.c3, right ? 'right' : 'left', 'middle');
+        }
       }
     });
     function seg() { return segmented(ctl, [{ label: '一阶' }, { label: '二阶' }], function (it, k) { st.mode = k === 0 ? 'first' : 'second'; syncCtl(); build(); }); }
