@@ -1306,7 +1306,7 @@
      用户问的「零点对 steady value 的影响」在这里一眼可见。 */
   Ctl.Pack.register('zero-pole-family', function (el) {
     el.classList.add('ctl-widget');
-    var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-lg');
+    var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-lg'), fz = figBox(wrap, 'ctl-h-lg');
     var note = figNote(el);
     var ctl = controls(el), ro = readout(el);
 
@@ -1349,6 +1349,48 @@
         P.text('终值恒为 1', P.x(TMAX * 0.72), P.y(1.05), C.muted, 'center', 'middle');
       }
     });
+    /* 右图：同一个 α 在 s 平面上的样子。左图那条高亮曲线就是这个位置的零/极点
+       生出来的——两张图必须能对上，否则 α 只是一个没来由的旋钮。
+       纵向两根横条的长度之比**正好就是 α**；灰虚线是 Franklin 的 4× 判据。 */
+    var figZ = Fig.create(fz.canvas, {
+      xlim: [-3, 0.9], ylim: [-1.4, 1.4], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C, z = st.zeta, i;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        // 每像素多少数据单位 —— 面板是等比的，所以用它画的圆/叉不会被 α 拉伸变形
+        var ux = (P.xinv(P.R) - P.xinv(P.L)) / Math.max(1, P.R - P.L);
+        var s = 5 * ux;
+        var re = -z, im = Math.sqrt(Math.max(0, 1 - z * z));
+        // 4× 判据线：零/极点离虚轴的距离超过复极点实部的 4 倍，影响就基本看不出来
+        P.line([[-4 * z, P.yinv(P.T)], [-4 * z, P.yinv(P.B)]], C.muted, 1.2, [4, 4]);
+        P.text('4×', P.x(-4 * z), P.y(P.yinv(P.T)) + 10, C.muted, 'center', 'middle');
+        // 复极点对（×）
+        for (i = 0; i < 2; i++) {
+          var py = i === 0 ? im : -im;
+          P.line([[re - s, py - s], [re + s, py + s]], C.ink, 1.6);
+          P.line([[re - s, py + s], [re + s, py - s]], C.ink, 1.6);
+          P.dot(re, py, C.ink, 2.5);
+        }
+        // 零 / 附加极点（○）；RHP 零点翻到虚轴右边
+        var zr = (st.mode === 'rhp' ? 1 : -1) * st.alpha * z;
+        var yb = P.yinv(P.B), y1 = yb * 0.50, y2 = yb * 0.84;
+        var ring = [];
+        for (i = 0; i <= 18; i++) {
+          var th = i / 18 * Math.PI * 2;
+          ring.push([zr + s * 1.15 * Math.cos(th), s * 1.15 * Math.sin(th)]);
+        }
+        P.line(ring, C.accent, 1.8);
+        P.dot(zr, 0, C.accent, 2);
+        // 两根量长度的横条：ζ（深）与 αζ（蓝），比值 = α
+        P.line([[0, y1], [re, y1]], C.ink, 1.6);
+        P.line([[re, y1 - s * 0.8], [re, y1 + s * 0.8]], C.ink, 1.4);
+        P.text('ζ = ' + z.toFixed(2), P.x(re / 2), P.y(y1) + 9, C.ink, 'center', 'middle');
+        P.line([[0, y2], [zr, y2]], C.accent, 1.8);
+        P.line([[zr, y2 - s * 0.8], [zr, y2 + s * 0.8]], C.accent, 1.4);
+        P.text('αζ = ' + Math.abs(zr).toFixed(2), P.x(zr / 2), P.y(y2) + 9, C.accent, 'center', 'middle');
+      }
+    });
     var slZ = slider(ctl, 'ζ', 0.15, 1, 0.05, st.zeta, function (v) { return v.toFixed(2); },
       function (v) { st.zeta = v; refresh(); });
     /* α 是**离散**的：族里就只有 FAM[mode] 这几个值。滑块能停在 7.2 这种
@@ -1379,16 +1421,23 @@
       var name = st.mode === 'lhp' ? 'LHP 零点 α' : (st.mode === 'rhp' ? 'RHP 零点 α' : '附加极点 α');
       setReadout(ro, [
         [name, String(st.alpha)],
+        ['离复极点实部', Math.abs(st.alpha).toFixed(1) + ' 倍' +
+          (Math.abs(st.alpha) <= 4 ? '（4× 以内 → 影响明显）' : '（超出 4× → 基本看不出来）')],
         ['ζ', st.zeta.toFixed(2)],
         ['Mp', m.overshoot.toFixed(1) + '%'],
         ['tr（10→90%）', (t90 - t10).toFixed(2)],
         ['终值', cur[cur.length - 1][1].toFixed(3) + '（归一化，与 α 无关）']
       ]);
       note(st.mode === 'lhp'
-        ? '看终值线：<b>所有曲线最后都汇到 1</b>——直流增益已归一化，所以 LHP 零点<b>只改瞬态</b>。α 越小（零点越靠近虚轴）→ $M_p$ 越大、$t_r$ 越短；α > 3 基本看不出差别（紫色虚线是<b>无零点</b>的基准）。'
+        ? '左图看终值线：<b>所有曲线最后都汇到 1</b>——LHP 零点<b>只改瞬态</b>（紫虚线是<b>无零点</b>基准）。右图是同一个 α 的 s 平面：<b>蓝圈就是零点</b>，它到虚轴的距离是复极点实部的 α 倍；蓝圈越过灰虚线（4×）后，左图那条高亮线就贴着基准了。'
         : st.mode === 'rhp'
-        ? '看开头：曲线<b>先往下冲出坑，再回升到 1</b>——这就是右半平面零点（非最小相位）。α 越接近 $-1$（零点越靠虚轴）坑越深；α 越负（零点越往右半平面深处）反冲越弱。'
-        : '看上升段：附加极点主要<b>拖长上升时间</b>，不像零点那样加超调。α 越小（附加极点越靠虚轴）越慢；α > 3 基本可以忽略（紫色虚线是<b>无附加极点</b>的基准）。');
+        ? '左图看开头：曲线<b>先往下冲出坑，再回升到 1</b>——这就是右半平面零点（非最小相位）。右图里<b>蓝圈翻到了虚轴右侧</b>：离虚轴越近（α 越小）坑越深，越往右远处去反冲越弱。'
+        : '左图看上升段：附加极点主要<b>拖长上升时间</b>，不像零点那样加超调。右图里蓝圈与复极点<b>同侧</b>：α 越大它越靠左、左图上升越慢；越过 4× 灰线后与基准（紫虚线）重合。');
+      // s 平面范围跟着零/极点走，否则 α=10 时蓝圈跑到画外
+      var za = st.alpha * st.zeta;
+      figZ.spec.xlim = st.mode === 'rhp'
+        ? [-1.7, Math.max(0.9, za * 1.3)]
+        : [Math.min(-1.7, -za * 1.3), 0.9];
       Fig.renderAll();
     }
     toolbar(el, fig, 'zero-pole-family');
