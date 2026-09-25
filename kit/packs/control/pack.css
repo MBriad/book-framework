@@ -13,7 +13,7 @@ canvas.ctl-drag{cursor:crosshair}
 .ctl-mason .nd{fill:var(--ctl-panel);stroke:var(--ctl-ink);stroke-width:1.5;transition:stroke 160ms}
 .ctl-mason .nd.is-hot{stroke:var(--ctl-accent);stroke-width:3}
 .ctl-mason .nl,.ctl-mason .gl{fill:var(--ctl-ink);font-size:13px;text-anchor:middle;font-family:inherit}
-.ctl-mason-note{margin-top:8px;font-size:14px;line-height:1.65;padding:8px 10px;
+.ctl-mason-note,.ctl-fig-note{margin-top:8px;font-size:14px;line-height:1.65;padding:8px 10px;
   background:var(--ctl-supp);border-left:3px solid var(--ctl-accent);border-radius:0 6px 6px 0}
 
 /* ---- 积分器链（几何原语） ---- */

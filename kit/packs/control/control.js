@@ -162,6 +162,22 @@
     return { box: box, canvas: c };
   }
   function controls(el) { var d = mk('div', 'ctl-controls'); el.appendChild(d); return d; }
+
+  /* 图下的「读图提示」。**必须由组件自己输出**——只有它知道当前是哪个模式/哪一步。
+     写死在页面里的提示，一切换模式就对不上了（用户明确指出过这一点）。
+     返回一个 setter，调用时顺带跑一次 KaTeX。 */
+  function figNote(el) {
+    var d = mk('div', 'ctl-fig-note');
+    el.appendChild(d);
+    return function (html) {
+      d.innerHTML = html;
+      if (global.renderMathInElement) {
+        try {
+          global.renderMathInElement(d, { delimiters: [{ left: '$', right: '$', display: false }], throwOnError: false });
+        } catch (e) { /* 失败不阻断 */ }
+      }
+    };
+  }
   function readout(el) { var d = mk('div', 'ctl-readout'); el.appendChild(d); return d; }
   function setReadout(node, pairs) {
     node.innerHTML = pairs.map(function (p) { return '<span>' + p[0] + ' <b>' + p[1] + '</b></span>'; }).join('');
@@ -476,6 +492,7 @@
   Ctl.Pack.register('root-locus', function (el) {
     var wrap = scaffold(el);   // scaffold 内部已加标题
     var fz = figBox(wrap, 'ctl-h-md'), fs = figBox(wrap, 'ctl-h-md');
+    var note = figNote(el);
     var ctl = controls(el), ro = readout(el);
 
     var KMAX = 20, SAMPLES = 400;
@@ -551,6 +568,11 @@
         ['Mp', info.m.overshoot.toFixed(1) + '%'],
         ['ts ±1%', info.m.ts.toFixed(2) + ' s']
       ]);
+      note(stable
+        ? '看左边：<b>K 只让极点沿这条固定轨迹滑动</b>。当前三个极点全在左半平面 → 右边是衰减振荡。$K$ 越大，极点越往右跑，$M_p$ 越大、振荡拖得越久。'
+        : margin
+        ? '极点正好落在虚轴上 → <b>等幅振荡</b>，$t_s$ 失去意义（永远不进入 $\pm1\%$ 带）。摸到临界 $K$ 了。'
+        : '已有极点越过虚轴进入<b>右半平面</b> → 发散，右边曲线往上冲。这就是"动参数前先判稳"的原因。');
       Fig.renderAll();
     }
     slider(ctl, 'K', 0.05, KMAX, 0.05, cur, function (v) { return v.toFixed(2); }, function (v) { cur = v; update(); });
@@ -667,6 +689,7 @@
     var st = { n: 3 };
     var box = mk('div', 'ctl-ichain');
     el.appendChild(box);
+    var note = figNote(el);
     var ctl = controls(el);
     var ro = readout(el);
 
@@ -713,6 +736,7 @@
         ['特征多项式', terms.join(' + ')],
         ['结论', '这四个数是同一个东西']
       ]);
+      note('链上现在有 <b>' + n + '</b> 级 <code>1/s</code>：方块数 = 状态变量数 = 分母最高次 = ' + n + '。拖 n，看这三个数一起变——这就是「同一个东西」。');
     }
     slider(ctl, '阶数 n', 1, 5, 1, st.n, function (v) { return String(v); }, function (v) { st.n = v; refresh(); });
     refresh();
@@ -802,6 +826,7 @@
       '<div class="cpane" data-form="ctrl">' + CTRL.split('__ID__').join(uid) + '</div>' +
       '<div class="cpane" data-form="obs" hidden>' + OBS.split('__ID__').join(uid) + '</div>';
     el.appendChild(box);
+    var note = figNote(el);
     var ctl = controls(el);
     var ro = readout(el);
 
@@ -827,6 +852,9 @@
       if (global.renderMathInElement) {
         try { global.renderMathInElement(ro, { delimiters: [{ left: '$', right: '$', display: false }], throwOnError: false }); } catch (e) {}
       }
+      note(which === 'ctrl'
+        ? '看两类抽头：$a_i$ 从各状态<b>回到输入端求和点</b>（所以矩阵第一行），$b_i$ 从各状态<b>汇到输出求和点</b>（所以在 $C$ 里）。'
+        : '看三处换位：$b_i$ 变成<b>输入灌进各状态</b>（所以在 $B$ 里）；$a_i$ 不回输入端，而是<b>作用在状态之间</b>（所以矩阵第一列）；$y$ 直接取 $x_1$。');
     }
     segmented(ctl, [{ label: '控制标准型' }, { label: '观测标准型' }], function (it, k) {
       which = k === 0 ? 'ctrl' : 'obs'; render();
@@ -843,6 +871,7 @@
   Ctl.Pack.register('step-metrics', function (el) {
     el.classList.add('ctl-widget');
     var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-md');
+    var note = figNote(el);
     var ctl = controls(el), ro = readout(el);
 
     var st = { mode: 'first', tau: 1, zeta: 0.3, wn: 2 };
@@ -976,6 +1005,9 @@
           ['ts ±1%', isFinite(info.ts) ? info.ts.toFixed(2) + ' s' : '—']
         ]);
       }
+      note(st.mode === 'first'
+        ? '看<b>红色那条</b>：它是 $t=0$ 处的切线，一路斜上去，正好在 $t=\tau$ 处碰到终值——这一条同时给出 $\tau$（横坐标）和初始斜率 $1/\tau$（斜率）。'
+        : '看<b>橙色</b>：竖线是 $M_p$、虚线是衰减包络。拖 $\zeta$ 只改 $M_p$，拖 $\omega_n$ 只改时间轴——<b>峰值高度不动</b>，因为 $M_p$ 只由 $\zeta$ 决定。');
       Fig.renderAll();
     }
     seg();
@@ -991,6 +1023,7 @@
     var fz = figBox(wrap, 'ctl-h-md', true), fs = figBox(wrap, 'ctl-h-md');
     var lg = mk('div', 'ctl-legend');
     el.appendChild(lg);
+    var note = figNote(el);
     var ctl = controls(el), ro = readout(el);
 
     var st = { mode: 'first', tau: 1, zeta: 0.3, wn: 2 };
@@ -1129,6 +1162,7 @@
           ['σ（蓝）', info.sigma.toFixed(2) + ' = 1/τ'],
           ['结论', '离虚轴越远 → 衰减越快、ts 越短']
         ]);
+        note('看图上那段<b>水平距离</b>：极点到虚轴的 σ（蓝）就是 1/τ。σ 越大，右图曲线越快贴上 1，ts 越短。');
       } else {
         lg.innerHTML =
           '<span><i style="background:var(--ctl-accent)"></i>蓝 σ 水平距离 → ts</span>' +
@@ -1143,6 +1177,7 @@
           ['θ（橙，从 jω 轴）', (Math.asin(Math.min(1, st.zeta)) * 180 / Math.PI).toFixed(1) + '° = arcsin ζ → 管 Mp'],
           ['（从负实轴量）', (info.beta * 180 / Math.PI).toFixed(1) + '° = arccos ζ，与 θ 互余']
         ]);
+        note('四个几何量各管一条指标：<b>到虚轴的水平距离</b> σ（蓝）→ ts；<b>到实轴的垂直距离</b> ωd（青）→ tp；<b>到原点的距离</b> ωn（紫）→ tr；<b>与 jω 轴的夹角</b> θ（橙）→ Mp。左图动一下，右图对应指标立刻跟着动。');
       }
       Fig.renderAll();
     }
@@ -1240,6 +1275,7 @@
   Ctl.Pack.register('zero-pole-family', function (el) {
     el.classList.add('ctl-widget');
     var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-lg');
+    var note = figNote(el);
     var ctl = controls(el), ro = readout(el);
 
     var st = { mode: 'lhp', zeta: 0.5, alpha: 1 };
@@ -1322,6 +1358,11 @@
         ['tr（10→90%）', (t90 - t10).toFixed(2)],
         ['终值', cur[cur.length - 1][1].toFixed(3) + '（归一化，与 α 无关）']
       ]);
+      note(st.mode === 'lhp'
+        ? '看终值线：<b>所有曲线最后都汇到 1</b>——直流增益已归一化，所以 LHP 零点<b>只改瞬态</b>。α 越小（零点越靠近虚轴）→ $M_p$ 越大、$t_r$ 越短；α > 3 基本看不出差别（紫色虚线是<b>无零点</b>的基准）。'
+        : st.mode === 'rhp'
+        ? '看开头：曲线<b>先往下冲出坑，再回升到 1</b>——这就是右半平面零点（非最小相位）。α 越接近 $-1$（零点越靠虚轴）坑越深；α 越负（零点越往右半平面深处）反冲越弱。'
+        : '看上升段：附加极点主要<b>拖长上升时间</b>，不像零点那样加超调。α 越小（附加极点越靠虚轴）越慢；α > 3 基本可以忽略（紫色虚线是<b>无附加极点</b>的基准）。');
       Fig.renderAll();
     }
     toolbar(el, fig, 'zero-pole-family');
