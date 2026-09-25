@@ -69,12 +69,30 @@
       <tr><td>峰值时间 $t_{p}$</td><td>$\dfrac{\pi}{\omega_{d}}$</td><td>第一次到达峰值</td></tr>
       <tr><td>超调量 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}\times100\%$</td><td><b>只由 $\zeta$ 决定</b>，与 $\omega_{n}$ 无关</td></tr>
       <tr><td>上升时间 $t_{r}$（$0\to100\%$）</td><td>$\dfrac{\pi-\beta}{\omega_{d}}$</td><td>$\beta=\arccos\zeta$</td></tr>
+      <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td colspan="2"><b>没有闭式解</b>，需数值求解 $y(t)=0.1$ 与 $y(t)=0.9$ 的首次穿越；数值见下表</td></tr>
       <tr><td>调节时间 $t_{s}$</td><td>$\dfrac{4}{\zeta\omega_{n}}$（2% 带）；$\dfrac{3}{\zeta\omega_{n}}$（5% 带）</td><td>包络线近似，考试通用</td></tr>
       <tr><td>延迟时间 $t_{d}$</td><td>$\dfrac{1+0.7\zeta}{\omega_{n}}$</td><td>到稳态值 50% 所需时间</td></tr>
       <tr><td>稳态值</td><td>$y(\infty)=G(0)=1$</td><td>标准形式已归一</td></tr>
     </tbody>
   </table>
   <p class="ctl-note">调节时间更精确的写法（按包络解出）是 $t_{s}=\dfrac{-\ln\left(0.02\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$。题目若问"精确值"用它，否则用 $4/\zeta\omega_{n}$。</p>
+
+  <p><b>上升时间的两个定义对照</b>（表中是 $t_{r}\cdot\omega_{n}$，用时除以 $\omega_{n}$ 即可）：</p>
+  <table>
+    <thead><tr><th>$\zeta$</th><th>$0\to100\%$（闭式 $\dfrac{\pi-\arccos\zeta}{\sqrt{1-\zeta^{2}}}$）</th><th>$10\%\to90\%$（数值解）</th></tr></thead>
+    <tbody>
+      <tr><td>$0.1$</td><td>$1.68$</td><td>$1.10$</td></tr>
+      <tr><td>$0.2$</td><td>$1.81$</td><td>$1.20$</td></tr>
+      <tr><td>$0.3$</td><td>$1.97$</td><td>$1.32$</td></tr>
+      <tr><td>$0.4$</td><td>$2.16$</td><td>$1.46$</td></tr>
+      <tr style="background:var(--ctl-supp)"><td>$0.5$</td><td>$2.42$</td><td>$1.64$</td></tr>
+      <tr><td>$0.6$</td><td>$2.77$</td><td>$1.85$</td></tr>
+      <tr><td>$0.7$</td><td>$3.29$</td><td>$2.13$</td></tr>
+      <tr><td>$0.8$</td><td>$4.16$</td><td>$2.47$</td></tr>
+      <tr><td>$0.9$</td><td>$6.17$</td><td>$2.88$</td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note">三件事值得记：① <b>$10\%\to90\%$ 没有闭式解</b>，教材给的闭式只属于 $0\to100\%$ 那个定义；② 工程上常用拟合 $t_{r}\omega_{n}\approx2.16\zeta+0.60$，在 $0.4\le\zeta\le0.7$ 内与数值解差 0.03 以内，$\zeta$ 再小或再大就偏了；③ <b>两者的比值不是常数</b>——$\zeta\le0.6$ 时约为 $0.66\sim0.68$，到 $\zeta=0.9$ 已降到 $0.47$，<b>所以不能拿一个乘个系数当另一个用</b>。一阶系统的 $10\%\to90\%$ 上升时间是 $2.20\tau$（见"一阶系统"那条），可作量级参照。</p>
 
   <h3>超调量对照表（$\zeta\leftrightarrow M_{p}$）</h3>
   <table>
