@@ -1094,14 +1094,15 @@
         lg.innerHTML =
           '<span><i style="background:var(--ctl-accent)"></i>蓝 σ 水平距离 → ts</span>' +
           '<span><i style="background:var(--ctl-c3)"></i>青 ωd 垂直距离 → tp</span>' +
-          '<span><i style="background:var(--ctl-accent2)"></i>橙 β 夹角 → Mp</span>' +
+          '<span><i style="background:var(--ctl-accent2)"></i>橙 θ 与 jω 轴夹角 → Mp</span>' +
           '<span><i style="background:var(--ctl-c4)"></i>紫 ωn 到原点 → tr</span>';
         setReadout(ro, [
           ['极点', info.re.toFixed(2) + ' ± j' + info.im.toFixed(2)],
           ['σ（蓝，水平）', info.sigma.toFixed(3) + ' → 管 ts'],
           ['ωd（青，垂直）', info.wd.toFixed(3) + ' → 管 tp'],
           ['ωn（紫，到原点）', info.wn.toFixed(3) + ' → 管 tr'],
-          ['β（橙，夹角）', (info.beta * 180 / Math.PI).toFixed(1) + '° → 管 Mp']
+          ['θ（橙，从 jω 轴）', (Math.asin(Math.min(1, st.zeta)) * 180 / Math.PI).toFixed(1) + '° = arcsin ζ → 管 Mp'],
+          ['（从负实轴量）', (info.beta * 180 / Math.PI).toFixed(1) + '° = arccos ζ，与 θ 互余']
         ]);
       }
       Fig.renderAll();

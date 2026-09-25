@@ -62,7 +62,8 @@
       <tr><td>$\sigma=\zeta\omega_{n}$</td><td>到<b>虚轴</b>的水平距离</td><td>衰减快慢 → $t_{s}$</td></tr>
       <tr><td>$\omega_{d}$</td><td>到<b>实轴</b>的垂直距离</td><td>振荡快慢 → $t_{p}$</td></tr>
       <tr><td>$\omega_{n}$</td><td>到<b>原点</b>的距离</td><td>整体时间尺度</td></tr>
-      <tr><td>$\beta=\arccos\zeta$</td><td>与<b>负实轴</b>的夹角</td><td>阻尼 → $M_{p}$</td></tr>
+      <tr><td>$\theta=\arcsin\zeta$</td><td>与 <b>$j\omega$ 轴</b>的夹角</td><td>阻尼 → $M_{p}$</td></tr>
+      <tr><td>$\arccos\zeta$</td><td>与<b>负实轴</b>的夹角</td><td>与 $\theta$ <b>互余</b>（$\theta+\arccos\zeta=90^{\circ}$）</td></tr>
     </tbody>
   </table>
   <p><b>三条最实用的读图法则</b>：</p>
@@ -73,12 +74,13 @@
   </ul></div>
 
   <div data-primitive="splane-geometry" data-title="几何图 ②：s 平面上的 σ / ωd / ωn / β，右侧阶跃响应联动（按钮切一阶/二阶）"></div>
-  <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了；同时 $\beta$ 变小、$\sigma$ 变大、$M_p$ 变小。三条刻度线分别是到虚轴、到实轴、到原点的距离。</p>
+  <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了；同时橙色的 $\theta$ 变大、蓝色的 $\sigma$ 变大、$M_p$ 变小。三条刻度线分别是到虚轴、到实轴、到原点的距离。</p>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
   <p>极点 $s_{1,2}=-\zeta\omega_{n}\pm j\omega_{n}\sqrt{1-\zeta^{2}}$，于是</p>
-  <p>$$\sigma=\zeta\omega_{n},\qquad \omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}},\qquad \zeta=\cos\beta,\qquad \sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$$</p>
+  <p>$$\sigma=\zeta\omega_{n},\qquad \omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}},\qquad \sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$$</p>
+  <p>角度（Franklin Fig 3.18）：$$\theta=\arcsin\zeta\ \text{（从 }j\omega\text{ 轴量）},\qquad \arccos\zeta\ \text{（从负实轴量）},\qquad \theta+\arccos\zeta=90^{\circ}$$</p>
   </details>
 
   <div class="ctl-test">
