@@ -8,24 +8,20 @@
 <body data-ch="t1">
 <main class="ctl-main">
 
-  <h1>T1 · 滑动测试 · 起始页</h1>
-  <p class="ctl-note">这是一本独立的测试小书，不占用 Franklin 那本的导航。测完可以删掉整个 <code>books/swipe-test/</code>。</p>
+  <h1>T1 · 翻章按钮测试 · 起始页</h1>
+  <p class="ctl-note">这是临时测试书，不占用 Franklin 的导航。测完可删 <code>books/swipe-test/</code>。</p>
 
   <div class="ctl-supp"><span class="ctl-tag" data-src="测试说明">测</span>
-  <strong>向左划 = 下一节</strong>，向右划 = 上一节。在本页正文的<b>空白处</b>横向划动手指试试。</div>
+  滚到本页<b>最下方</b>，页尾有一条翻章栏：左侧「← 上一节」，右侧「下一节 →」并带强调色。点右侧的「下一节 →」应该到 T2。</div>
 
-  <h2>基本滑动</h2>
+  <h2>测点</h2>
   <ol>
-    <li>本页空白处<b>向左划</b> → 应该翻到 T2</li>
-    <li>到 T2 后<b>向右划</b> → 应该回到本页</li>
-    <li>连续向左划，能 T1 → T2 → T3 → T4 一路走完</li>
-    <li>垂直上下滚动页面 → <b>不应该</b>翻页</li>
+    <li>页尾翻章栏出现，并且<b>不遮挡</b>正文</li>
+    <li>点「下一节 →」→ 到 T2</li>
+    <li>到 T2 后点「← 上一节」→ 回到本页</li>
+    <li>本页是第一页，左侧位置<b>空着</b>（不显示上一节）</li>
+    <li>T4 是最后一页，右侧位置<b>空着</b>（不显示下一节）</li>
   </ol>
-
-  <h2>边缘滑动</h2>
-  <p>把手指放在<b>屏幕最左侧 30 像素以内</b>再向右划 → <b>不应该</b>翻页（这是留给 iPadOS 返回手势的，划了可能直接退出页面）。</p>
-
-  <p class="ctl-note">下一站的 T2 / T3 专测「不该翻的时候别翻」——那是这次改动最容易出问题的地方。</p>
 
 </main>
 <script src="../../../kit/core/boot.js" data-book="../"></script>

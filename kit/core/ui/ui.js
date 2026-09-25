@@ -212,40 +212,25 @@
     return (t.prev || t.next) ? t : null;
   }
 
-  /* 左右滑动翻页。四重护栏缺一不可：
-     ① 只认单指；
-     ② 起点在交互控件内不触发（canvas 拖拽、range 滑杆、代码块、抽屉）；
-     ③ 起点距左右边缘 30px 内不触发（避开 iPadOS 的边缘返回手势）；
-     ④ 位移 > 60px 且水平位移 > 垂直位移 2 倍（斜着划不算）。 */
-  function wireSwipeNav(targets) {
-    var MIN = 60, EDGE = 30, RATIO = 2;
-    var x0 = 0, y0 = 0, tracking = false;
-    var BLOCK = 'canvas, pre, input, textarea, select, button, .ctl-rail, .ctl-rail-backdrop, [data-primitive], .ctl-seg';
-    function eligible(target) {
-      if (!target || !target.closest) return false;
-      if (target.closest(BLOCK)) return false;
-      if (document.body.classList.contains('ctl-rail-open')) return false;
-      return true;
+  /* 页尾翻章：样式参考 d2l.ai 的底部翻页——箭头在外、章名在内，下一节用强调色 */
+  function buildChapterNav(bookRoot) {
+    var ctx = navContext();
+    if (!ctx) return null;
+    var t = navTargets(bookRoot);
+    if (!t) return null;
+    function side(p, href, cls, dir, arrow) {
+      if (!p) return '<span class="ctl-chnav-link is-off"></span>';
+      return '<a class="ctl-chnav-link' + cls + '" href="' + esc(href) + '">' +
+        '<span class="ctl-chnav-arrow" aria-hidden="true">' + arrow + '</span>' +
+        '<span class="ctl-chnav-text"><span class="ctl-chnav-dir">' + dir + '</span>' +
+        '<span class="ctl-chnav-name">' + esc((p.num ? p.num + ' · ' : '') + p.title) + '</span></span></a>';
     }
-    document.addEventListener('touchstart', function (e) {
-      tracking = false;
-      if (e.touches.length !== 1) return;
-      var t = e.touches[0];
-      if (t.clientX < EDGE || t.clientX > global.innerWidth - EDGE) return;
-      if (!eligible(e.target)) return;
-      x0 = t.clientX; y0 = t.clientY; tracking = true;
-    }, { passive: true });
-    document.addEventListener('touchcancel', function () { tracking = false; }, { passive: true });
-    document.addEventListener('touchend', function (e) {
-      if (!tracking) return;
-      tracking = false;
-      var t = e.changedTouches && e.changedTouches[0];
-      if (!t) return;
-      var dx = t.clientX - x0, dy = t.clientY - y0;
-      if (Math.abs(dx) < MIN || Math.abs(dx) < Math.abs(dy) * RATIO) return;
-      var go = dx < 0 ? targets.next : targets.prev;   // 向左划 = 下一节
-      if (go) global.location.href = go;
-    }, { passive: true });
+    var prev = ctx.idx > 0 ? ctx.list[ctx.idx - 1] : null;
+    var next = ctx.idx < ctx.list.length - 1 ? ctx.list[ctx.idx + 1] : null;
+    var nav = el('nav', 'ctl-chnav ctl-noprint');
+    nav.setAttribute('aria-label', '章节导航');
+    nav.innerHTML = side(prev, t.prev, '', '上一节', '←') + side(next, t.next, ' is-next', '下一节', '→');
+    return nav;
   }
 
   function mountPrimitives() {
@@ -348,11 +333,8 @@
       body.insertBefore(header, body.firstChild);
       body.insertBefore(s.box, header.nextSibling);
     }
-    var targets = navTargets(bookRoot);
-    if (targets && main) {
-      main.appendChild(el('p', 'ctl-swipe-hint ctl-noprint', '← 左右滑动可翻页'));
-      wireSwipeNav(targets);
-    }
+    var chnav = buildChapterNav(bookRoot);
+    if (chnav && main) main.appendChild(chnav);
 
     if (!body.querySelector('footer.ctl-footer')) {
       var f = el('footer', 'ctl-footer ctl-noprint');
