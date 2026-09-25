@@ -1579,6 +1579,113 @@
     refresh();
   });
 
+  /* ---------------- ⑮ 指标 → s 平面的允许域（Franklin 式 3.74–3.76 / Fig 3.25 / 例 3.27） ---
+     三条时域指标各对应一条边界，取交集就是主导极点该待的地方：
+       t_r ≤  →  ωn ≥ 1.8/t_r   → 以原点为圆心的圆**外**（紫）
+       M_p ≤  →  ζ ≥ ζ(M_p)     → 两条射线**之内**，角**从 jω 轴量** arcsin ζ（橙）
+       t_s ≤  →  σ ≥ 4.6/t_s    → 竖线**左侧**（蓝）
+     左半平面里这三条都等价于「x ≤ 某个数」，所以每一行允许域恰好是一个左开区间——
+     逐行填色就是精确的交集，不用拼多边形。 */
+  Ctl.Pack.register('spec-region', function (el) {
+    el.classList.add('ctl-widget', 'ctl-region');
+    var wrap = scaffold(el);
+    var f = figBox(wrap, 'ctl-h-xl');
+    var lg = mk('div', 'ctl-legend');
+    el.appendChild(lg);
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+
+    var st = { tr: 0.6, Mp: 10, ts: 3 };
+
+    // 由超调上限反解 ζ：Mp = exp(-πζ/√(1-ζ²))  ⇒  ζ = |ln Mp| / √(π² + ln²Mp)
+    function zetaOf(pct) {
+      var m = Math.max(0.005, Math.min(0.995, pct / 100));
+      var L = Math.log(m);
+      return Math.abs(L) / Math.sqrt(Math.PI * Math.PI + L * L);
+    }
+    function spec() { return { wn: 1.8 / st.tr, zeta: zetaOf(st.Mp), sigma: 4.6 / st.ts }; }
+
+    var fig = Fig.create(f.canvas, {
+      xlim: [-7, 1], ylim: [-4, 4], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C, s = spec(), k;
+        var r = s.wn, th = Math.asin(Math.min(1, s.zeta)), tn = Math.tan(th), sg = s.sigma;
+        var xlo = P.xinv(P.L), xhi = P.xinv(P.R), ylo = P.yinv(P.B), yhi = P.yinv(P.T);
+        // 该行允许域的左边界 |x|：三条约束取最紧的那个
+        function boundAt(y) {
+          var a = Math.abs(y) * tn;                                        // 楔形
+          if (Math.abs(y) < r) a = Math.max(a, Math.sqrt(r * r - y * y));  // 圆外
+          return Math.max(a, sg);                                          // 竖线左侧
+        }
+        var g = P.ctx;
+        g.save();
+        g.beginPath(); g.rect(P.L, P.T, P.R - P.L, P.B - P.T); g.clip();
+        g.fillStyle = C.accent; g.globalAlpha = 0.16;
+        for (var py = P.T; py <= P.B; py += 1) {
+          var xa = P.x(-boundAt(P.yinv(py)));
+          if (xa > P.L) g.fillRect(P.L, py, xa - P.L, 1.2);
+        }
+        g.globalAlpha = 1;
+        g.restore();
+
+        P.line([[0, ylo], [0, yhi]], C.line, 1.2);
+        P.line([[xlo, 0], [xhi, 0]], C.line, 1);
+
+        // 紫：圆外（上升时间）
+        var arc = [];
+        for (k = -60; k <= 60; k++) {
+          var yy = r * Math.cos(th) * (k / 60);
+          arc.push([-Math.sqrt(Math.max(0, r * r - yy * yy)), yy]);
+        }
+        P.line(arc, C.c4, 2.4);
+        // 橙：两条射线之内（超调）—— 从原点出发，角从 jω 轴量
+        var far = Math.hypot(xhi - xlo, yhi - ylo) * 2;
+        P.line([[0, 0], [-far * Math.sin(th), far * Math.cos(th)]], C.accent2, 2.4);
+        P.line([[0, 0], [-far * Math.sin(th), -far * Math.cos(th)]], C.accent2, 2.4);
+        // 蓝：竖线左侧（调节时间）
+        P.line([[-sg, ylo], [-sg, yhi]], C.accent, 2.4);
+        // 深色：复合边界
+        var bnd = [];
+        for (k = 0; k <= 240; k++) {
+          var y2 = ylo + (yhi - ylo) * k / 240;
+          bnd.push([-boundAt(y2), y2]);
+        }
+        P.line(bnd, C.ink, 1.8);
+
+        P.text('ωn = ' + r.toFixed(2), P.x(-r), P.y(0) + 14, C.c4, 'center', 'middle');
+        P.text('ζ = ' + s.zeta.toFixed(3), P.x(-yhi * 0.82 * tn) + 8, P.y(yhi * 0.82), C.accent2, 'left', 'middle');
+        P.text('σ = ' + sg.toFixed(2), P.x(-sg) + 8, P.y(yhi * 0.36), C.accent, 'left', 'middle');
+        P.text('允许域', P.x(xlo) + 8, P.y(yhi * 0.55), C.accent, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      var s = spec();
+      var redundant = s.sigma < s.zeta * s.wn;   // 竖线永不生效 ⟺ σ ≤ ζωn（射线与圆的交点）
+      lg.innerHTML =
+        '<span><i style="background:var(--ctl-c4)"></i>紫 圆外：ωn ≥ 1.8/tr（上升时间）</span>' +
+        '<span><i style="background:var(--ctl-accent2)"></i>橙 两射线之内：ζ ≥ ζ(Mp)（超调；角从 jω 轴量 arcsin ζ）</span>' +
+        '<span><i style="background:var(--ctl-accent)"></i>蓝 竖线左侧：σ ≥ 4.6/ts（调节时间）</span>' +
+        '<span><i style="background:var(--ctl-ink)"></i>深粗线＝复合边界；阴影＝三者交集＝允许域</span>';
+      setReadout(ro, [
+        ['tr ≤ ' + st.tr.toFixed(2) + ' s', '→ ωn ≥ 1.8/tr = ' + s.wn.toFixed(2)],
+        ['Mp ≤ ' + st.Mp.toFixed(1) + ' %', '→ ζ ≥ ' + s.zeta.toFixed(3) + '（原书取 0.6）'],
+        ['ts ≤ ' + st.ts.toFixed(1) + ' s', '→ σ ≥ 4.6/ts = ' + s.sigma.toFixed(2)],
+        ['射线 ∩ 圆弧的 σ', 'ζ·ωn = ' + (s.zeta * s.wn).toFixed(2)],
+        ['蓝线起作用吗', redundant ? '不起作用（楔形+圆弧已经更靠左，自动满足）' : '起作用——它才是左边界']
+      ]);
+      note('阴影是三者<b>交集</b>：圆外（紫，管上升时间）∩ 两射线之内（橙，管超调，角从 <b>jω 轴</b>量）∩ 竖线左侧（蓝，管调节时间）。'
+        + '<b>哪条约束线落进阴影内部，就说明它自动满足、什么也没切掉</b>——把 $t_s$ 上限拖小，看蓝线什么时候才真的变成左边界。'
+        + ' 还有两句免责：这三条式子是<b>定性导引</b>、不是精确设计公式；而且只对<b>二阶无零点</b>才是准的。');
+      Fig.renderAll();
+    }
+    slider(ctl, 'tr ≤ (s)', 0.3, 2, 0.05, st.tr, function (v) { return v.toFixed(2); }, function (v) { st.tr = v; refresh(); });
+    slider(ctl, 'Mp ≤ (%)', 2, 40, 0.5, st.Mp, function (v) { return v.toFixed(1); }, function (v) { st.Mp = v; refresh(); });
+    slider(ctl, 'ts ≤ (s)', 1, 8, 0.1, st.ts, function (v) { return v.toFixed(1); }, function (v) { st.ts = v; refresh(); });
+    toolbar(el, fig, 'spec-region');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

@@ -107,6 +107,43 @@
   <p>角度（Franklin Fig 3.18）：$$\theta=\arcsin\zeta\ \text{（从 }j\omega\text{ 轴量）},\qquad \arccos\zeta\ \text{（从负实轴量）},\qquad \theta+\arccos\zeta=90^{\circ}$$</p>
   </details>
 
+  <!-- ===== ③′ ===== -->
+  <h2>③′ 把三条指标叠起来＝允许域（极点该待的地方）</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>因为指标确定后，不是 s 域会出现个交集吗，然后我们调整系数或者反馈结构什么的，也就是调整系统极点到交集内</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>对，而且这个交集能精确画出来。</b>上一节把三条指标各自翻译成了一句话，那三句话在 s 平面上各是一条<b>边界</b>（Franklin 式 3.74–3.76、图 3.25、例 3.27）：</p>
+  <table>
+    <thead><tr><th>指标</th><th>翻译</th><th>s 平面上是</th></tr></thead>
+    <tbody>
+      <tr><td>$t_r le$ 给定</td><td>$omega_n ge 1.8/t_r$</td><td>以原点为圆心的圆<b>外</b>——极点离原点越远，响应越快</td></tr>
+      <tr><td>$M_p le$ 给定</td><td>$zeta ge zeta(M_p)$</td><td>过原点两条射线<b>之内</b>——<b>角从 $jomega$ 轴量，$	heta=arcsinzeta$</b></td></tr>
+      <tr><td>$t_s le$ 给定</td><td>$sigma ge 4.6/t_s$</td><td>竖线 $sigma=-4.6/t_s$ 的<b>左侧</b></td></tr>
+    </tbody>
+  </table>
+  <p>三者<b>取交集</b>（圆外 ∩ 射线内 ∩ 竖线左）＝一个沿负实轴伸出去的楔形阴影区。这就是"极点该待的地方"的完整答案。</p>
+
+  <p><b>⚠ 一处口径要纠正</b>：你笔记里图 3.25(b) 与图 3.26 的图解写成"与<b>负实轴</b>夹角 $	heta=arcsinzeta$"——量错轴了。$arcsinzeta$ 是<b>从 $jomega$ 轴</b>量（与 Fig 3.18 一致）；从负实轴量的是 $arccoszeta$。拿原图核过：$zeta=0.6$ 的两条射线与半径 3 的圆交于 $(-1.8,pm 2.4)$，而 $arctan(1.8/2.4)=36.87^circ$——**正是从 $jomega$ 轴量的 37°**（从负实轴量则是 $53.13^circ$）。写反会把楔形画窄一大截。</p>
+
+  <p><b>例 3.27（原书）</b>：$t_rle0.6$、$M_ple10%$、$t_sle3$ ⇒ $omega_nge3.0$、$zetage0.591$、$sigmage1.533$。原书把 $zeta$ 取整成了 $0.6$（$M_p=10%$ 精确对应 $0.5911$，对应 $M_p=9.48%$ 才正好是 $0.6$）。<b>注意 $sigma$ 那条竖线是多余的</b>：射线与圆弧的交点在 $sigma=zetaomega_n=0.5911	imes3=1.773$，比 $1.533$ 更靠左，所以竖线<b>整条落在允许域内部</b>，什么也没切掉。原书原话：<i>any pole meeting the ζ and ωn restrictions will automatically meet the σ restriction.</i></p>
+
+  <p class="ctl-note"><b>两条免责，抄结论时别漏</b>：① 式 3.74–3.76 是<b>定性导引</b>，不是精确设计公式；设计完必须仿真复核。② 这个区域只对<b>二阶无零点</b>系统才准——有零点或高阶时它只是一阶近似。</p>
+  </div>
+
+  <div data-primitive="spec-region" data-title="图 ③′ 拖三条指标的上限：三条边界实时移动，阴影＝允许域。哪条约束线落进阴影里，就说明它自动满足、没切掉任何东西"></div>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>要求 $M_ple10%$，极点在 s 平面上必须落在哪里？角从哪条轴量、多少度？
+      <details><summary>答案</summary><p>落在过原点的两条射线<b>之内</b>。角从 <b>$jomega$ 轴</b>量，$	heta=arcsinzeta=36.9^circ$；从负实轴量则是 $53.1^circ$。</p></details></li>
+    <li>为什么例 3.27 里 $t_sle3$ 那条竖线是多余的？把 $t_s$ 上限改成多少它才开始起作用？
+      <details><summary>答案</summary><p>因为允许域最左的边界由"射线与圆弧的交点"给出，那点的 $sigma=zetaomega_n=0.5911	imes3=1.773$，比 $4.6/3=1.533$ 更靠左，所以竖线整条在允许域内部。<br>它开始起作用要等 $4.6/t_s>1.773$，即 $t_s<2.59$ s。</p></details></li>
+    <li>把 $t_r$ 上限从 $0.6$ 改成 $0.3$，允许域怎么变？
+      <details><summary>答案</summary><p>$omega_nge1.8/0.3=6.0$，圆的半径翻倍，允许域<b>整体向左收缩</b>（负实轴上的最左点从 $-3$ 变到 $-6$），射线与圆弧的交点也从 $sigma=-1.77$ 挪到 $-3.55$。结论：<b>要求响应更快 ⇒ 极点必须离虚轴更远。</b></p></details></li>
+  </ol>
+  </div>
+
   <!-- ===== ④ ===== -->
   <h2>④ 怎么达到这些指标——通过什么</h2>
   <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>最后就是怎么满足这些指标，通过什么</div>
@@ -131,7 +168,7 @@
     <li><b>Ch6 频域设计法</b>：用校正装置<b>改轨迹形状</b>——把轨迹主动"掰"到你要的地方</li>
     <li><b>Ch7 状态空间设计</b>：直接给定极点位置反求反馈增益（<b>极点配置</b>）</li>
   </ul>
-  <p class="ctl-note">一句话收束：<b>指标 → 要求极点在哪 → 用什么手段把极点挪过去</b>。这一章教你前两步，后三章教你第三步。</p></div>
+  <p class="ctl-note">一句话收束：<b>指标 → 允许域（极点该待的地方）→ 用什么手段把极点搬进去</b>。这一章做到前两步——<b>允许域已经画在图 ③′ 里了</b>。第三步这一章做不了，原因很具体：$K$ 只有<b>一维</b>自由度，极点只能沿一条固定的根轨迹滑，能不能落进那个交集得看运气（下面的图 ④ 就是看这个的）。<b>要真正把极点"搬进"交集，必须改结构</b>——那是后面三章的事。</p></div>
 
   <div data-primitive="root-locus" data-title="图 ④ 拖 K：极点在根轨迹上滑动，右侧实时给出闭环阶跃响应与 Mp / ts"></div>
 

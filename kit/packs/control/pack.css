@@ -31,3 +31,7 @@ canvas.ctl-drag{cursor:crosshair}
    默认的 flex:1 1 300px 会让三块图折成 2+1，这里放宽到 210px 才排得下一行。 */
 .ctl-mirror .ctl-canvas-wrap>[data-fig]{flex:1 1 210px;min-width:190px}
 .ctl-mirror .ctl-canvas-wrap>[data-fig]>.ctl-canvas{height:210px}
+
+/* ---- 指标 → 允许域：等比的 s 平面，方形一点角度才不走形 ---- */
+.ctl-region .ctl-canvas-wrap{justify-content:center}
+.ctl-region .ctl-canvas-wrap>[data-fig]{flex:0 1 54%;min-width:280px}
