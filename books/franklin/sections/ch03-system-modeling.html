@@ -8,20 +8,24 @@
 <body data-ch="ch03-system-modeling">
 <main class="ctl-main">
   <h1>System Modeling Diagrams</h1>
-  <p class="ctl-note">本节按你的笔记整理。你的总结按<b>分号</b>切成 sum，每个 sum 固定三段：<b>① 原话照贴 → ② 纠正 → ③ 几何/直观图</b>；符号形式降级到图下面。</p>
+  <p class="ctl-note">本节按你的笔记整理：你的总结按<b>分号</b>切成 sum，每个 sum 三段——<b>原话（中性引用）→ 纠正（橙）→ 几何/直观图</b>；我超出你原话的补充用<b>蓝色「补」块</b>；符号形式降级到图下面。</p>
 
   <!-- ============ SUM 1 ============ -->
   <h2>SUM 1　求解传递函数 · 状态变量 · 阶数</h2>
-  <div class="ctl-quote"><span class="ctl-qlabel">原话</span>第三章的系统有练习求解传递函数的，state variable，而且发现特征方程的最高次对应系统积分1/s的个数</div>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>第三章的系统有练习求解传递函数的，state variable，而且发现特征方程的最高次对应系统积分1/s的个数</div>
 
-  <p><span class="ctl-fixlabel">纠正</span>这句话里有三件事，拆开说；<b>第三件你说对了</b>，只是可以更精确。</p>
-  <ol>
-    <li><b>求解传递函数</b>有两条路，结果必须一致：<b>时域路</b>（列微分方程 → <b>零初始条件</b>下取拉氏 → 整理成 $G(s)=Y/U$）与<b>图形路</b>（框图化简 / Mason 公式）。"零初始条件"不是可省的一步。</li>
-    <li><b>状态变量</b>是能完全刻画系统储能的<b>最少</b>一组变量，通常取电容电压、电感电流。标准形式 $\dot{\mathbf{x}}=A\mathbf{x}+Bu,\; y=C\mathbf{x}+Du$。</li>
-    <li><b>你的发现</b>——特征方程最高次 = 积分器个数。精确说法是四个数<b>同一个东西</b>：
-      $$n=\deg D(s)=\dim\mathbf{x}=\text{积分器 }1/s\text{ 的个数}=\deg\det(sI-A)$$
-      <b>为什么</b>：控制标准型里一个状态变量恰好对应一个积分器；而 $\det(sI-A)$ 就是传递函数的分母。<b>用途</b>：看到 $\dfrac{1}{s^{3}+3s^{2}+2s}$ 立刻知道要 3 个状态变量、3 个积分器。注意分子次数<b>不影响</b>阶数。</li>
-  </ol>
+  <div class="ctl-fix"><strong>纠正：</strong>这句话里是三件事，拆开说；<b>第三件你说对了</b>，只是可以更精确。
+  <ol style="margin:.5em 0 0">
+    <li><b>求解传递函数</b>两条路，结果必须一致：<b>时域路</b>（列微分方程 → <b>零初始条件</b>下取拉氏 → 整理成 $G(s)=Y/U$）与<b>图形路</b>（框图化简 / Mason）。"零初始条件"不是可省的一步。</li>
+    <li><b>状态变量</b>是能完全刻画储能的<b>最少</b>一组变量，通常取电容电压、电感电流。标准形式 $\dot{\mathbf{x}}=A\mathbf{x}+Bu,\;y=C\mathbf{x}+Du$。</li>
+    <li><b>你的发现</b>——特征方程最高次 = 积分器个数。精确说法是这四个数<b>同一个东西</b>：
+      $$n=\deg D(s)=\dim\mathbf{x}=\text{积分器 }1/s\text{ 的个数}=\deg\det(sI-A)$$</li>
+  </ol></div>
+
+  <div class="ctl-supp"><span class="ctl-tag" data-src="补：你原话里没写的「为什么」和「怎么用」">补</span>
+  <b>为什么成立</b>：控制标准型里一个状态变量恰好对应一个积分器；而 $\det(sI-A)$ 就是传递函数的分母。<br>
+  <b>用途</b>：看到 $\dfrac{1}{s^{3}+3s^{2}+2s}$ 立刻知道要 3 个状态变量、3 个积分器、特征方程是三次，不用去数图。<br>
+  <b>边界</b>：分子次数<b>不影响</b>阶数；分子分母同次（$D\neq0$）会多一个直通项，但积分器个数仍是 $n$。</div>
 
   <div data-primitive="integrator-chain" data-title="几何图 ①：拖 n，看积分器链变长——阶数就是这条链上 1/s 的个数"></div>
 
@@ -33,14 +37,14 @@
 
   <!-- ============ SUM 2 ============ -->
   <h2>SUM 2　control canonical form</h2>
-  <div class="ctl-quote"><span class="ctl-qlabel">原话</span>control caonical from</div>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>control caonical from</div>
 
-  <p><span class="ctl-fixlabel">纠正</span>（顺带：canonical <b>form</b>）控制标准型的几何样子是——<b>一条积分器链，加上两类抽头</b>：</p>
-  <ul>
-    <li><b>反馈抽头</b>：每个状态的输出各经一级增益 $a_i$ 送回<b>最前面那个求和点</b>（求和点上取负号）。它们就是矩阵里那一行 $-a_1,-a_2,\dots,-a_n$。</li>
+  <div class="ctl-fix"><strong>纠正：</strong>拼写是 canonical <b>form</b>。它的几何样子是——<b>一条积分器链，加上两类抽头</b>：
+  <ul style="margin:.5em 0 0">
+    <li><b>反馈抽头</b>：每个状态的输出各经一级增益 $a_i$ 送回<b>最前面那个求和点</b>（求和点上取负号）。它们就是矩阵第一行 $-a_1,-a_2,\dots,-a_n$。</li>
     <li><b>输出抽头</b>：每个状态的输出各经 $b_i$ 汇到输出求和点。它们就是矩阵 $C$ 那一行。</li>
-    <li>这就是为什么控制标准型的 $a_i$ <b>全在第一行</b>、$b_i$ <b>全在 $C$ 里</b>——不是约定，是这张图<b>画出来就长这样</b>。</li>
-  </ul>
+    <li>所以控制标准型的 $a_i$ <b>全在第一行</b>、$b_i$ <b>全在 $C$ 里</b>——不是人为约定，是这张图<b>画出来就长这样</b>。</li>
+  </ul></div>
 
   <svg viewBox="0 0 620 280" role="img" aria-label="控制标准型框图">
     <defs><marker id="cc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -71,26 +75,18 @@
       <rect x="300" y="68" width="76" height="44" rx="6"/>
     </g>
     <g style="fill:var(--ctl-ink);font-size:13px;font-family:inherit;text-anchor:middle">
-      <text x="150" y="95">1/s</text>
-      <text x="338" y="95">1/s</text>
-      <text x="244" y="96">x₁</text>
-      <text x="432" y="96">x₂</text>
-      <text x="66" y="78">+</text>
-      <text x="66" y="118">−</text>
-      <text x="508" y="78">+</text>
-      <text x="508" y="118">+</text>
-      <text x="20" y="78">u</text>
-      <text x="578" y="84">y</text>
-      <text x="256" y="186">a₁</text>
-      <text x="444" y="186">a₀</text>
-      <text x="256" y="58">b₁</text>
-      <text x="444" y="58">b₀</text>
+      <text x="150" y="95">1/s</text><text x="338" y="95">1/s</text>
+      <text x="244" y="96">x₁</text><text x="432" y="96">x₂</text>
+      <text x="66" y="78">+</text><text x="66" y="118">−</text>
+      <text x="508" y="78">+</text><text x="508" y="118">+</text>
+      <text x="20" y="78">u</text><text x="578" y="84">y</text>
+      <text x="256" y="186">a₁</text><text x="444" y="186">a₀</text>
+      <text x="256" y="58">b₁</text><text x="444" y="58">b₀</text>
     </g>
   </svg>
+  <p class="ctl-note">二阶情形（$G=\dfrac{b_1s+b_0}{s^{2}+a_1s+a_0}$）：$x_1$、$x_2$ 各有一个 $1/s$；$a_1,a_0$ 回到同一个求和点；$b_1,b_0$ 汇到输出求和点。</p>
 
-  <p class="ctl-note">上图是二阶（$G=\dfrac{b_1s+b_0}{s^{2}+a_1s+a_0}$）：$x_1$ 与 $x_2$ 各有一个 $1/s$，反馈 $a_1,a_0$ 回到同一个求和点，输出抽头 $b_1,b_0$ 汇到输出求和点。</p>
-
-  <div class="ctl-gap">这张图是<b>静态</b>的，用来让你先确认几何没错。确认之后我把它做成可切换的交互（切到观测标准型时箭头整体反向）。</div>
+  <div class="ctl-gap">这张图是<b>静态</b>的，先让你确认几何。确认后我把它做成可切换的交互（切到观测标准型时箭头整体反向）。</div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
@@ -99,22 +95,24 @@
 
   <!-- ============ SUM 3 ============ -->
   <h2>SUM 3　observe form</h2>
-  <div class="ctl-quote"><span class="ctl-qlabel">原话</span>还有一个observe form</div>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>还有一个observe form</div>
 
-  <p><span class="ctl-fixlabel">纠正</span>（完整名：<b>observable canonical form</b>，观测标准型）它与控制标准型是<b>转置对偶</b>：</p>
-  <p>$$A_{o}=A_{c}^{\mathsf T},\qquad B_{o}=C_{c}^{\mathsf T},\qquad C_{o}=B_{c}^{\mathsf T}$$</p>
-  <p><b>几何上怎么说</b>：把上面那张图的<b>每条箭头反向</b>，并把输入输出的角色对调，就得到观测标准型。于是结构也跟着换位——</p>
-  <table>
+  <div class="ctl-fix"><strong>纠正：</strong>完整名是 <b>observable canonical form</b>（观测标准型）。它和控制标准型是<b>转置对偶</b>：
+  $$A_{o}=A_{c}^{\mathsf T},\qquad B_{o}=C_{c}^{\mathsf T},\qquad C_{o}=B_{c}^{\mathsf T}$$
+  <b>几何上</b>：把 SUM 2 那张图的<b>每条箭头反向</b>，并把输入输出的角色对调，就得到它。</div>
+
+  <div class="ctl-supp"><span class="ctl-tag" data-src="补：两种标准型的结构对照">补</span>
+  <table style="margin:.2em 0">
     <thead><tr><th></th><th>控制标准型</th><th>观测标准型</th></tr></thead>
     <tbody>
-      <tr><td>$a_i$ 在哪</td><td>状态的输出 → 送回输入端的求和点</td><td>状态的输出 → 影响别的状态</td></tr>
+      <tr><td>$a_i$ 在哪</td><td>状态的输出 → 送回<b>输入端</b>的求和点</td><td>状态的输出 → 影响<b>别的状态</b></td></tr>
       <tr><td>$b_i$ 在哪</td><td>状态的输出 → 汇到输出求和点</td><td><b>输入</b> → 灌进各个状态</td></tr>
       <tr><td>$y$ 取自</td><td>各状态加权之和</td><td>直接就是 $x_1$</td></tr>
       <tr><td>矩阵表现</td><td>$a_i$ 在第一<b>行</b>，$b_i$ 在 $C$</td><td>$a_i$ 在第一<b>列</b>，$b_i$ 在 $B$</td></tr>
     </tbody>
-  </table>
+  </table></div>
 
-  <div class="ctl-gap">这条的几何交互图<b>待建</b>：我打算基于 SUM 2 那张图做「箭头整体反向」的切换，一眼看出对偶。但我试的两版布局在观测型上都会撞线，而<b>我在这里看不到渲染结果</b>——所以先等你确认 SUM 2 的几何没问题，我再基于它做，不另起一张。</div>
+  <div class="ctl-gap">这条的几何交互图<b>待建</b>：基于 SUM 2 那张图做「箭头整体反向」的切换，一眼看出对偶。我试的两版观测型布局都会撞线，而<b>我在这里看不到渲染结果</b>——所以先等你确认 SUM 2 的几何，再基于它做，不另起一张。</div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
@@ -123,17 +121,17 @@
 
   <!-- ============ SUM 4 ============ -->
   <h2>SUM 4　Mason gain rule</h2>
-  <div class="ctl-quote"><span class="ctl-qlabel">原话</span>然后就是Mason gain,Rule 求解(几个前向通道，几个回路，哪些回路互不影响)</div>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>然后就是Mason gain,Rule 求解(几个前向通道，几个回路，哪些回路互不影响)</div>
 
-  <p><span class="ctl-fixlabel">纠正</span>你括号里那三个问题正好就是公式的骨架：</p>
-  <p>$$G=\dfrac{1}{\Delta}\sum_{k}P_{k}\Delta_{k},\qquad \Delta=1-\sum_{i}L_{i}+\sum_{\text{互不接触}}L_{i}L_{j}-\sum L_{i}L_{j}L_{k}+\cdots$$</p>
-  <ul>
-    <li>$P_k$：第 $k$ 条<b>前向通道</b>增益（从源点到汇点、每个节点只过一次）——回答你说的"几个前向通道"</li>
+  <div class="ctl-fix"><strong>纠正：</strong>你括号里那三个问题正好就是公式的骨架。
+  $$G=\dfrac{1}{\Delta}\sum_{k}P_{k}\Delta_{k},\qquad \Delta=1-\sum_{i}L_{i}+\sum_{\text{互不接触}}L_{i}L_{j}-\sum L_{i}L_{j}L_{k}+\cdots$$
+  <ul style="margin:.4em 0 0">
+    <li>$P_k$：第 $k$ 条<b>前向通道</b>增益（从源点到汇点、每节点只过一次）——回答"几个前向通道"</li>
     <li>$L_i$：第 $i$ 个<b>回路</b>增益——回答"几个回路"</li>
-    <li><b>互不接触</b> = 两个回路<b>没有公共节点</b>——回答"哪些回路互不影响"。只有互不接触的回路才能相乘成 $L_iL_j$ 项</li>
-    <li>$\Delta_{k}$：把<b>与第 $k$ 条前向通道接触的回路全删掉</b>后重新算的 $\Delta$</li>
+    <li><b>互不接触</b> = 两回路<b>没有公共节点</b>——回答"哪些互不影响"。只有互不接触才能乘成 $L_iL_j$ 项</li>
+    <li>$\Delta_{k}$：把<b>与第 $k$ 条前向通道接触的回路全删掉</b>后重算的 $\Delta$</li>
   </ul>
-  <p class="ctl-note"><b>顺序</b>：数前向通道 → 数回路 → 找互不接触组合（两两、三三…）→ 拼 $\Delta$ → 对每条通道算 $\Delta_k$ → 代入。<b>最容易漏的是第三步。</b></p>
+  <b>顺序</b>：数前向通道 → 数回路 → 找互不接触组合（两两、三三…）→ 拼 $\Delta$ → 对每条通道算 $\Delta_k$ → 代入。<b>最容易漏第三步。</b></div>
 
   <div data-primitive="mason-flow" data-title="几何图 ④：在流图上依次高亮前向通道 → 回路 → 互不接触回路对，右侧同步累加"></div>
 
@@ -148,11 +146,11 @@
   <h4>自测（补）</h4>
   <ol>
     <li>分母是 $s^{4}+\cdots$，系统有几个状态变量、几个积分器？
-      <details><summary>答案</summary><p>4 个状态变量、4 个积分器；$\det(sI-A)$ 是四次多项式。</p></details></li>
+      <details><summary>答案</summary><p>4 个；$\det(sI-A)$ 是四次多项式。</p></details></li>
     <li>控制标准型里 $a_i$ 为什么全在第一行？
-      <details><summary>答案</summary><p>因为框图上它们是<b>从各状态回到最前面那个求和点</b>的反馈抽头，写进 $A$ 就落在第一行。</p></details></li>
-    <li>观测标准型与控制标准型的关系？用一句几何话说明。
-      <details><summary>答案</summary><p>互为转置：$A_o=A_c^{\mathsf T}$、$B_o=C_c^{\mathsf T}$、$C_o=B_c^{\mathsf T}$。几何上等于把流图<b>所有箭头反向</b>并对调输入输出。</p></details></li>
+      <details><summary>答案</summary><p>因为它们是<b>从各状态回到最前面那个求和点</b>的反馈抽头，写进 $A$ 就落在第一行。</p></details></li>
+    <li>观测标准型与控制标准型的关系，用一句几何话说明。
+      <details><summary>答案</summary><p>互为转置（$A_o=A_c^{\mathsf T}$ 等）；几何上等于把流图<b>所有箭头反向</b>并对调输入输出。</p></details></li>
   </ol>
   </div>
 </main>

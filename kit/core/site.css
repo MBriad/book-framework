@@ -208,9 +208,8 @@ body.ctl-rail-open .ctl-rail-backdrop{opacity:1;pointer-events:auto}
 .ctl-nav-sub{list-style:none;margin:1px 0 3px 12px;padding:0 0 0 6px;border-left:1px solid var(--ctl-line)}
 .ctl-nav-sub .ctl-nav-link{padding:3px 6px;font-size:12.5px}
 /* ---- sum 三段式：原话 / 纠正 标签 ---- */
-.ctl-quote{margin:.7em 0 1.1em;padding:.7em .95em;border-left:3px solid var(--ctl-accent2);
-  background:var(--ctl-supp);border-radius:0 8px 8px 0;font-size:14px;color:var(--ctl-muted);line-height:1.7}
-.ctl-qlabel,.ctl-fixlabel{display:inline-block;font-size:11px;letter-spacing:.06em;color:#fff;
-  border-radius:4px;padding:0 6px;margin-right:8px;vertical-align:1px}
-.ctl-qlabel{background:var(--ctl-accent2)}
-.ctl-fixlabel{background:var(--ctl-accent)}
+/* 你的原话：中性引用，不抢蓝/橙的语义 */
+.ctl-quote{margin:.7em 0 1em;padding:.2em 0 .2em 14px;border-left:3px solid var(--ctl-line);
+  color:var(--ctl-muted);font-size:14.5px;line-height:1.75}
+.ctl-quote .ctl-qlabel{display:inline-block;font-size:11px;letter-spacing:.06em;color:var(--ctl-muted);
+  border:1px solid var(--ctl-line);border-radius:4px;padding:0 6px;margin-right:8px;vertical-align:1px}

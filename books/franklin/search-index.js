@@ -27,7 +27,7 @@ window.SEARCH_INDEX = [
     "t": "System Modeling Diagrams",
     "p": "sections/ch03-system-modeling.html",
     "k": "",
-    "s": "System Modeling Diagrams 本节按你的笔记整理。你的总结按 分号 切成 sum，每个 sum 固定三段： ① 原话照贴 → ② 纠正 → ③ 几何/直观图 ；"
+    "s": "System Modeling Diagrams 本节按你的笔记整理：你的总结按 分号 切成 sum，每个 sum 三段—— 原话（中性引用）→ 纠正（橙）→ 几何/直观图 ；我超"
   },
   {
     "t": "Ch3 · Dynamic Response",
