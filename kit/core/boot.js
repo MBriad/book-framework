@@ -20,7 +20,6 @@
   var JS = [
     kitCore + 'katex/katex.min.js',
     kitCore + 'katex/contrib/auto-render.min.js',
-    kitCore + 'd3.min.js',
     kitCore + 'lib/canvas.js',
     kitCore + 'ui/ui.js',
     kitRoot + 'packs/control/control.js',
