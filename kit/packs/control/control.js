@@ -1458,6 +1458,126 @@
     refresh();
   });
 
+  /* ---------------- ⑭ 非最小相位：零点照了 jω 轴这面镜子 ----------------
+     Franklin §6.1.1 与 Fig 6.12。正文那对式子：
+       G1 = (10s+1)/(s+10)  零点 -0.1 ；G2 = (10s-1)/(s+10)  零点 +0.1
+     两个零点关于 jω 轴互为镜像 → 虚轴上**任何**一点到它们等距 → 幅值恒等；
+     但两条向量的夹角被镜像改了 → 相位天差地别。
+     三块面板：左＝几何（为什么），中＝幅频（只有一条），右＝相频（差一大截）。 */
+  Ctl.Pack.register('nonmin-phase', function (el) {
+    el.classList.add('ctl-widget', 'ctl-mirror');
+    var wrap = scaffold(el);
+    var fz = figBox(wrap, 'ctl-h-md'), fm = figBox(wrap, 'ctl-h-md'), fp = figBox(wrap, 'ctl-h-md');
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+
+    var ZA = -0.1, ZB = 0.1;                  // 两个零点；极点 -10 两系统共用，不参与对比
+    var WMIN = 0.01, WMAX = 1000, w = 1;
+    var PROBES = [[0.1, 'c3'], [0.3, 'c4']];  // ω=0.1 夹角最大，ω=0.3 已经明显收窄
+
+    function mag(w2) { return Math.sqrt(100 * w2 * w2 + 1) / Math.sqrt(w2 * w2 + 100); }
+    function phP(w2) { return Math.atan2(w2, 10); }
+    function ph1(w2) { return (Math.atan2(10 * w2, 1) - phP(w2)) * 180 / Math.PI; }
+    function ph2(w2) { return (Math.atan2(10 * w2, -1) - phP(w2)) * 180 / Math.PI; }
+    function logw(k, n) {
+      return Math.pow(10, Math.log10(WMIN) + (Math.log10(WMAX) - Math.log10(WMIN)) * k / n);
+    }
+
+    var figZ = Fig.create(fz.canvas, {
+      xlim: [-0.36, 0.36], ylim: [-0.14, 0.46], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C, i, k;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1.4);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        var ux = (P.xinv(P.R) - P.xinv(P.L)) / Math.max(1, P.R - P.L), r0 = 5 * ux;
+        function ring(x, y, col) {
+          var q = [];
+          for (var t = 0; t <= 22; t++) {
+            var a = t / 22 * Math.PI * 2;
+            q.push([x + r0 * Math.cos(a), y + r0 * Math.sin(a)]);
+          }
+          P.line(q, col, 1.8);
+        }
+        P.line([[ZA, 0], [ZB, 0]], C.muted, 1, [3, 3]);
+        ring(ZA, 0, C.ink); ring(ZB, 0, C.accent2);
+        P.text('LHP 零点', P.x(ZA) - 8, P.y(0) + 15, C.ink, 'right', 'middle');
+        P.text('RHP 零点', P.x(ZB) + 8, P.y(0) + 15, C.accent2, 'left', 'middle');
+        P.text('jω 轴 = 镜面', P.x(0) + 7, P.y(P.yinv(P.T)) + 10, C.muted, 'left', 'middle');
+        P.text('两条半径永远等长', P.x(0) + 7, P.y(P.yinv(P.T)) + 24, C.muted, 'left', 'middle');
+        for (i = 0; i < PROBES.length; i++) {
+          var pw = PROBES[i][0], col = C[PROBES[i][1]];
+          var r = Math.sqrt(pw * pw + ZA * ZA), arc = [];
+          for (k = 0; k <= 96; k++) {
+            var th = Math.PI * k / 96;
+            arc.push([r * Math.cos(th), pw - r * Math.sin(th)]);
+          }
+          P.line(arc, col, 1.3, [4, 3]);
+          P.line([[0, pw], [ZA, 0]], col, 1.7);
+          P.line([[0, pw], [ZB, 0]], col, 1.7);
+          P.dot(0, pw, col, 4);
+          P.text('ω = ' + pw, P.x(0) + 7, P.y(pw) - 10, col, 'left', 'middle');
+        }
+      }
+    });
+    var figM = Fig.create(fm.canvas, {
+      xlim: [WMIN, WMAX], xlog: true, ylim: [0.1, 10], ylog: true,
+      xlabel: 'ω (rad/s)', ylabel: '|G|',
+      draw: function (P) {
+        var C = P.C, q = [];
+        for (var k = 0; k <= 300; k++) { var x = logw(k, 300); q.push([x, mag(x)]); }
+        P.line(q, C.accent, 2.2);
+        P.line([[w, P.yinv(P.T)], [w, P.yinv(P.B)]], C.muted, 1.2, [3, 3]);
+        P.dot(w, mag(w), C.ink, 3.5);
+        P.text('|G₁| = |G₂|：只有这一条', P.x(0.013), P.y(6.5), C.muted, 'left', 'middle');
+      }
+    });
+    var figP = Fig.create(fp.canvas, {
+      xlim: [WMIN, WMAX], xlog: true, ylim: [0, 180],
+      xlabel: 'ω (rad/s)', ylabel: '∠G (°)',
+      draw: function (P) {
+        var C = P.C, q1 = [], q2 = [];
+        for (var k = 0; k <= 300; k++) {
+          var x = logw(k, 300);
+          q1.push([x, ph1(x)]); q2.push([x, ph2(x)]);
+        }
+        P.line(q2, C.accent2, 2, [6, 4]);
+        P.line(q1, C.accent, 2.2);
+        P.line([[w, P.yinv(P.T)], [w, P.yinv(P.B)]], C.muted, 1.2, [3, 3]);
+        P.dot(w, ph1(w), C.accent, 3.5);
+        P.dot(w, ph2(w), C.accent2, 3.5);
+        P.text('G₁ 最小相位', P.x(0.013), P.y(150), C.accent, 'left', 'middle');
+        P.text('G₂ 非最小相位', P.x(0.013), P.y(72), C.accent2, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      setReadout(ro, [
+        ['ω', w.toPrecision(3)],
+        ['|G₁(jω)|', mag(w).toFixed(4)],
+        ['|G₂(jω)|', mag(w).toFixed(4) + '（与 |G₁| 逐位相同）'],
+        ['∠G₁', ph1(w).toFixed(1) + '°'],
+        ['∠G₂', ph2(w).toFixed(1) + '°'],
+        ['∠G₂ − ∠G₁', (ph2(w) - ph1(w)).toFixed(1) + '°']
+      ]);
+      note('左图就是全部几何：探针在 jω 轴上，两个零点关于 jω 轴镜像，所以以探针为圆心、过一个零点的圆<b>必然也过另一个</b>——两条半径永远等长，这就是 $|G_1(j\\omega)|=|G_2(j\\omega)|$。但两条半径的<b>夹角</b>不同：RHP 零点把相位一路拖到 $180^\\circ$ 再还回来，所以中图只有<b>一条</b>曲线、右图的相位却有两条。极点 $-10$ 在画外，两系统共用它，不影响对比。');
+      Fig.renderAll();
+    }
+    var sl = slider(ctl, 'ω（对数）', -2, 3, 0.001, 0,
+      function (v) { return Math.pow(10, v).toPrecision(3); },
+      function (v) { w = Math.pow(10, v); refresh(); });
+    function drag(e) {
+      var P = figM.P;
+      if (!P) return;
+      w = Math.min(WMAX, Math.max(WMIN, dataX(P, e.offsetX)));
+      sl.set(Math.log10(w));
+      refresh();
+    }
+    attachPointer(fm.canvas, drag, drag);
+    attachPointer(fp.canvas, drag, drag);
+    toolbar(el, figM, 'nonmin-phase');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

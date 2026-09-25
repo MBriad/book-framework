@@ -26,3 +26,8 @@ canvas.ctl-drag{cursor:crosshair}
 /* ---- 两种标准型框图对照 ---- */
 .ctl-cpair svg{display:block;width:100%;max-width:620px;margin:0 auto}
 .ctl-cpair .cpane[hidden]{display:none}
+
+/* ---- 非最小相位：三联图（s 平面 + 幅频 + 相频）----
+   默认的 flex:1 1 300px 会让三块图折成 2+1，这里放宽到 210px 才排得下一行。 */
+.ctl-mirror .ctl-canvas-wrap>[data-fig]{flex:1 1 210px;min-width:190px}
+.ctl-mirror .ctl-canvas-wrap>[data-fig]>.ctl-canvas{height:210px}

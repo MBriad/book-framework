@@ -137,6 +137,58 @@
       <p>传递函数里有<b>右半平面零点</b> $(s-6)$ → 非最小相位 → 初始响应朝反方向。物理上：舵面上偏先产生向下力，机身转起来之后升力才建立。</p></details></li>
   </ol>
   </div>
+
+  <h2>补：为什么叫"非最小相位"——零点照了 jω 轴这面镜子</h2>
+  <p class="ctl-note">这一块的内容在 Franklin <b>§6.1.1（Ch6 频率响应）</b>，但你自己的笔记把它写在那；放在这里是因为它正好收尾上面那条 RHP 零点的线：<b>同一个"右半平面零点"，在时域叫"初始反冲"，在频域就叫"非最小相位"。</b></p>
+
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>幅值完全相同的两个传递函数，相位为什么会天差地别？"最小相位"这个名字的最小化对象是什么？<br>
+  ——A system with a zero in the RHP undergoes a net change in phase …, which, for an associated magnitude plot, is greater than if all poles and zeros were in the LHP. Such a system is called nonminimum phase. … Consider the transfer functions
+  $$G_{1}(s)=\frac{10s+1}{s+10},\qquad G_{2}(s)=\frac{10s-1}{s+10}.$$
+  Both transfer functions have the same magnitude for all frequencies … But the phases of the two transfer functions are drastically different.</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>答案是一面镜子。</b>两个零点关于 $j\omega$ 轴<b>互为镜像</b>——一个在 $-0.1$，一个在 $+0.1$（极点 $-10$ 是共用的，两边一样，不影响对比）。</p>
+
+  <p>在虚轴上取<b>任意</b>一点 $j\omega$，它到两个零点的<b>距离永远相等</b>（都是 $\sqrt{\omega^{2}+0.01}$）：</p>
+  <p>$$|G_{1}(j\omega)|=|G_{2}(j\omega)|=\frac{\sqrt{100\omega^{2}+1}}{\sqrt{\omega^{2}+100}}$$</p>
+  <p><b>幅值只认距离。</b>镜像不改距离，所以两个系统的幅频曲线只能是<b>同一条</b>——单看幅值，你永远分不出哪个是非最小相位。</p>
+
+  <p><b>但相位认角度</b>，而角度被镜像改了。两条向量（探针 → 两个零点）的<b>夹角</b>就是相位差：</p>
+  <table>
+    <thead><tr><th></th><th>零点位置</th><th>相位走势</th><th>净变化</th></tr></thead>
+    <tbody>
+      <tr><td>$G_{1}$（最小相位）</td><td>$-0.1$（左半平面）</td><td>$0^{\circ}\to\mathbf{78.6^{\circ}}\to0^{\circ}$，峰在 $\omega=\sqrt{0.1\times10}=1$</td><td><b>0</b></td></tr>
+      <tr><td>$G_{2}$（非最小相位）</td><td>$+0.1$（右半平面）</td><td>$\mathbf{180^{\circ}}\to0^{\circ}$，一路单调下降</td><td><b>$-180^{\circ}$</b></td></tr>
+    </tbody>
+  </table>
+  <p><b>注意方向</b>：$\angle G_{2}$ 是<b>从 180° 往下掉到 0°</b>，不是从 0° 爬到 180°。正文写得很清楚：<i>the phase decreases at the zero break point</i>——左半平面零点让相位<b>升</b>，右半平面零点让相位<b>降</b>。同样 78.6° 也不是随手取的：零点 $-0.1$、极点 $-10$，超前比 $\alpha=p/z=100$，最大超前 $\arcsin\frac{99}{101}=78.6^{\circ}$。$\omega=1$ 处两者之差 $\angle G_2-\angle G_1=180^{\circ}-2\arctan(10\omega)$ 正好是 $11.4^{\circ}$。</p>
+
+  <p><b>"最小相位"最小化的到底是什么</b>：给定<b>同一条幅频曲线</b>，所有能产生它的系统里，相位<b>净变化最小</b>的那个。右半平面零点不改幅值，只<b>白送你一份相位滞后</b>——这就是"非最小"的全部含义。</p>
+
+  <p class="ctl-note"><b>⚠ 与图 6.12 的出入（值得记一笔）</b>：原书图 6.12 画的是幅值 $1\to10$（比值 <b>10</b>）、$\angle G_{1}$ 峰值约 <b>55°</b>；而正文那两个式子的比值是 <b>100</b>（幅值 $0.1\to10$，峰值 <b>78.6°</b>）。55° 恰好是比值 10 的超前网络的最大相位（$\arcsin\frac{9}{11}=54.9^{\circ}$）。也就是说<b>图 6.12 并不是按正文那两个式子画的</b>。下面这张图按<b>正文的式子</b>画。</p>
+  </div>
+
+  <div data-primitive="nonmin-phase" data-title="图：左＝两个零点关于 jω 轴镜像，探针到它们的距离永远相等（圆同时过两个零点）；中＝幅频只有一条曲线；右＝两条相位曲线差一大截"></div>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>镜像零点的幅值恒等：$|j\omega-z|=|j\omega+z|=\sqrt{\omega^{2}+z^{2}}$，所以 $|G_{1}(j\omega)|=|G_{2}(j\omega)|$。</p>
+  <p>相位差：$\angle G_{2}-\angle G_{1}=180^{\circ}-2\arctan(10\omega)$，从 $168.6^{\circ}$（$\omega=0.01$）一路收到 $1.1^{\circ}$（$\omega=100$）。</p>
+  <p>超前网络最大相位：$\alpha=p/z$ 时 $\varphi_{\max}=\arcsin\dfrac{\alpha-1}{\alpha+1}$，出现在 $\omega=\sqrt{zp}$。</p>
+  </details>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>两个系统 $\dfrac{s+1}{s+10}$ 与 $\dfrac{s-1}{s+10}$，谁的幅频曲线高？
+      <details><summary>答案</summary><p><b>一样高，逐频点相同。</b>因为两个零点 $\pm1$ 关于 $j\omega$ 轴镜像，虚轴上任何一点到它们等距。幅值只看距离。</p></details></li>
+    <li>如果把这个右半平面零点换成<b>两个</b>右半平面零点（比如 $\dfrac{(s-1)(s-2)}{(s+10)}$），相位净变化变成多少？
+      <details><summary>答案</summary><p><b>$-360^{\circ}$</b>。每个右半平面零点贡献 $-180^{\circ}$ 净相位变化，幅值仍与把零点镜像到左半平面后的系统完全相同。正文也说：<i>the discrepancy would be greater if two or more zeros were in the RHP</i>。</p></details></li>
+    <li>为什么说"看幅频曲线分不出最小相位与非最小相位"？
+      <details><summary>答案</summary><p>因为同一个幅频曲线对应无穷多个系统，它们只差<b>零点在左半平面还是右半平面</b>（镜像）。而镜像保持所有距离不变。要区分，必须看<b>相位</b>。</p></details></li>
+  </ol>
+  </div>
+
 </main>
 <script src="../../../kit/core/boot.js" data-book="../"></script>
 </body>
