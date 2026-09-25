@@ -185,6 +185,35 @@
     }, { passive: true });
   }
 
+  /* 页尾翻章：序列 = 前置页 + 各章，与左栏同源，所以每本书自动获得 */
+  function pageHref(bookRoot, p, b) {
+    var f = b.front || [], isFront = false;
+    for (var i = 0; i < f.length; i++) if (f[i].id === p.id) isFront = true;
+    return bookRoot + (isFront ? p.id + '.html' : 'sections/' + p.id + '.html');
+  }
+
+  function buildChapterNav(bookRoot) {
+    var cur = document.body.getAttribute('data-ch');
+    if (!cur) return null;
+    var b = global.BOOK || {};
+    var list = (b.front || []).concat(b.chapters || []);
+    var idx = -1, i;
+    for (i = 0; i < list.length; i++) if (list[i].id === cur) idx = i;
+    if (idx < 0) return null;
+    function label(p) { return (p.num ? p.num + ' · ' : '') + p.title; }
+    function link(p, cls, dir) {
+      return '<a class="ctl-chnav-link' + cls + '" href="' + esc(pageHref(bookRoot, p, b)) + '">' +
+        '<span class="ctl-chnav-dir">' + dir + '</span>' +
+        '<span class="ctl-chnav-name">' + esc(label(p)) + '</span></a>';
+    }
+    var nav = el('nav', 'ctl-chnav ctl-noprint');
+    nav.setAttribute('aria-label', '章节导航');
+    nav.innerHTML =
+      (idx > 0 ? link(list[idx - 1], '', '← 上一节') : '<span class="ctl-chnav-link is-off"></span>') +
+      (idx < list.length - 1 ? link(list[idx + 1], ' is-next', '下一节 →') : '<span class="ctl-chnav-link is-off"></span>');
+    return nav;
+  }
+
   function mountPrimitives() {
     var nodes = document.querySelectorAll('[data-primitive]');
     if (!nodes.length) return;
@@ -267,6 +296,17 @@
         left.addEventListener('click', function (ev) {
           if (ev.target && ev.target.closest && ev.target.closest('a')) body.classList.remove('ctl-rail-open');
         });
+        // 竖屏平板上最常用：点屏幕任意处收起目录。
+        // 用一层遮罩而不是「点外面就关」，否则会顺带点到下面的链接。
+        var backdrop = el('div', 'ctl-rail-backdrop ctl-noprint');
+        backdrop.addEventListener('click', function () { body.classList.remove('ctl-rail-open'); });
+        body.appendChild(backdrop);
+        document.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Escape') body.classList.remove('ctl-rail-open');
+        });
+        global.addEventListener('resize', function () {
+          if (global.innerWidth > 940) body.classList.remove('ctl-rail-open');
+        });
       }
       body.insertBefore(header, layout);
       body.insertBefore(s.box, layout);
@@ -274,6 +314,9 @@
       body.insertBefore(header, body.firstChild);
       body.insertBefore(s.box, header.nextSibling);
     }
+    var chnav = buildChapterNav(bookRoot);
+    if (chnav && main) main.appendChild(chnav);
+
     if (!body.querySelector('footer.ctl-footer')) {
       var f = el('footer', 'ctl-footer ctl-noprint');
       f.style.cssText = 'max-width:var(--ctl-wide);margin:0 auto;padding:0 24px 40px;color:var(--ctl-muted);font-size:12px';
