@@ -33,7 +33,7 @@ window.SEARCH_INDEX = [
     "t": "Time-Domain Specifications",
     "p": "sections/ch03-time-specs.html",
     "k": "",
-    "s": "Time-Domain Specifications 两个 sum，都 先一阶再二阶 （图里用按钮切，默认一阶）。三段式：原话 → 纠正 → 几何图 + 读图提示。 SUM 1 时"
+    "s": "Time-Domain Specifications 这一节按一条 因果链 组织，每一步都是上一步的结果： ① 极点在哪 → ② 时域图像长什么样 → ③ 从图像量出指标 → ④ "
   },
   {
     "t": "Ch3 · Dynamic Response",

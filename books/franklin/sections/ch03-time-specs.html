@@ -8,85 +8,86 @@
 <body data-ch="ch03-time-specs">
 <main class="ctl-main">
   <h1>Time-Domain Specifications</h1>
-  <p class="ctl-note">两个 sum，都<b>先一阶再二阶</b>（图里用按钮切，默认一阶）。三段式：原话 → 纠正 → 几何图 + 读图提示。</p>
+  <p class="ctl-note">这一节按一条<b>因果链</b>组织，每一步都是上一步的结果：<br>
+  <b>① 极点在哪 → ② 时域图像长什么样 → ③ 从图像量出指标 → ④ 指标的 s 域几何 → ⑤ 怎么达到这些指标</b></p>
 
-  <!-- ============ SUM 1 ============ -->
-  <h2>SUM 1　时域指标的图像理解</h2>
+  <!-- ===== ① ===== -->
+  <h2>① 极点的位置决定时域图像</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>极点的位置对时域图像的影响</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p>一个极点给出一个<b>模态</b>：$s_k$ → $e^{s_k t}$。<b>实部管衰减、虚部管振荡</b>——所以只要知道极点在 s 平面哪一格，就知道波形长什么样。</p>
+  <ul>
+    <li>实部 $<0$（左半平面）→ 衰减；$=0$（虚轴上）→ 等幅；$>0$（右半平面）→ 发散</li>
+    <li>"快极点 / 慢极点"是<b>相对衰减速率</b>：$|$实部$|$ 越大越快</li>
+    <li>一阶单调、二阶（共轭对）振荡</li>
+    <li><b>§3.3 只管极点</b>；零点的影响在 §3.5 单独讲</li>
+  </ul></div>
+
+  <div data-primitive="pole-catalog" data-title="图 ① 定性图鉴：s 平面上六种极点位置，各配一条自然响应波形"></div>
+  <p class="ctl-note">看图看哪里：<b>这张图不是用来拖的，是用来背的</b>（书上原话 commit it to memory）。把"点在哪个位置 → 波形长什么样"变成条件反射。</p>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>一阶：$h(t)=e^{-\sigma t}$，时间常数 $\tau=1/\sigma$，且 $t=0$ 的切线终止于 $t=\tau$（式 3.59）。</p>
+  <p>二阶共轭对：$h(t)=\dfrac{\omega_{n}}{\sqrt{1-\zeta^{2}}}e^{-\sigma t}\sin\omega_{d}t$（式 3.66），$\sigma=\zeta\omega_{n}$。</p>
+  </details>
+
+  <!-- ===== ② ===== -->
+  <h2>② 从时域图像归纳出指标</h2>
   <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>时域指标的图像理解（先一阶再二阶）</div>
 
   <div class="ctl-fix"><strong>纠正 / 补全：</strong>
-  <p><b>一阶只有一个参数 τ</b>，整条曲线由它定死。图上有四个几何量，其中两个其实是<b>同一件事</b>：</p>
+  <p><b>指标不是凭空定义的，都是从上面那张图上"量"出来的</b>——这是这一步的关键：先有图像，才有指标。</p>
   <table>
-    <thead><tr><th>几何说法</th><th>数值</th></tr></thead>
+    <thead><tr><th>指标</th><th>在图像上怎么量</th></tr></thead>
     <tbody>
-      <tr><td>$t=\tau$ 处的曲线高度</td><td>$63.2\%$</td></tr>
-      <tr><td>$t=0$ 处的<b>切线</b>在哪碰到终值</td><td>正好在 $t=\tau$</td></tr>
-      <tr><td>$10\%\to90\%$ 上升时间</td><td>$t_{r}=\tau\ln 9\approx2.20\tau$</td></tr>
-      <tr><td>$\pm1\%$ 误差带（$t_s$）</td><td>$t_{s}\approx4.6\tau$</td></tr>
+      <tr><td>上升时间 $t_{r}$</td><td>曲线从 <b>10%</b> 爬到 <b>90%</b> 的那段时间（Franklin 的定义，Fig 3.20）</td></tr>
+      <tr><td>超调量 $M_{p}$</td><td>峰值<b>高出终值</b>的那一截</td></tr>
+      <tr><td>峰值时间 $t_{p}$</td><td>峰值出现的<b>时刻</b></td></tr>
+      <tr><td>调节时间 $t_{s}$</td><td>曲线<b>最后一次</b>离开 $\pm1\%$ 带的时刻（Franklin 用 $\pm1\%$）</td></tr>
     </tbody>
   </table>
-  <p>"切线在 $\tau$ 处碰到终值"就是一阶图形的全部秘密：$\tau$ 既是时间尺度，也是初始斜率 $1/\tau$ 的倒数。</p>
+  <p><b>一阶只有一个参数 $\tau$</b>，图上有四个几何量，其中两个其实是<b>同一件事</b>：$t=\tau$ 处高度 $63.2\%$ ⟺ $t=0$ 的切线正好在 $t=\tau$ 处碰到终值。<b>$\tau$ 既是时间尺度，也是初始斜率 $1/\tau$ 的倒数。</b></p>
+  <p><b>二阶由 $\zeta$ 与 $\omega_{n}$ 两个参数定死</b>：$M_{p}$ <b>只由 $\zeta$</b> 决定（与 $\omega_{n}$ 无关），时间类指标（$t_{p},t_{r},t_{s}$）则都含 $\omega_{n}$。</p></div>
 
-  <p><b>二阶由 ζ 与 ωn 两个参数定死</b>，图上的几何量与公式一一对应：</p>
-  <table>
-    <thead><tr><th>图上看到的</th><th>公式</th><th>只由谁决定</th></tr></thead>
-    <tbody>
-      <tr><td>峰值超出终值的高度 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$</td><td><b>只由 ζ</b>，与 ωn 无关</td></tr>
-      <tr><td>峰值出现的时刻 $t_{p}$</td><td>$\pi/\omega_{d}$</td><td>ζ、ωn</td></tr>
-      <tr><td>衰减包络 $1+\dfrac{e^{-\sigma t}}{\sqrt{1-\zeta^{2}}}$ 碰到 $1\%$ 的时刻</td><td>$t_{s}\approx\dfrac{4.6}{\sigma}$</td><td><b>σ = ζωn</b></td></tr>
-      <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td>$t_{r}\cong\dfrac{1.8}{\omega_{n}}$</td><td>ωn</td></tr>
-    </tbody>
-  </table>
-  <p><b>一阶二阶的共同点</b>：调节时间都由"包络衰减到 $1\%$"决定——一阶 $4.6\tau$、二阶 $4.6/\sigma$。所以<b>σ（衰减率）才是决定 $t_s$ 的那个量</b>。这句话直接引出 SUM 2。</p></div>
-
-  <div data-primitive="step-metrics" data-title="几何图 ①：阶跃响应曲线 + 图上标出全部指标（按钮切一阶/二阶）"></div>
+  <div data-primitive="step-metrics" data-title="图 ② 阶跃响应曲线 + 图上标出全部指标（按钮切一阶 / 二阶）"></div>
   <p class="ctl-note">看图看哪里：一阶时拖 τ，注意<b>切线在 $t=\tau$ 处正好碰到终值</b>；切到二阶，拖 ζ 看 $M_p$ 变，再拖 ωn 看时间轴被拉伸压缩——<b>峰值高度不动</b>，因为 $M_p$ 只由 ζ 决定。</p>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
-  <p>一阶 $G(s)=\dfrac{K}{\tau s+1}$，$y(t)=K(1-e^{-t/\tau})$，$t_{r}=\tau\ln9$，$t_{s}=4.6\tau$（$\pm1\%$）。</p>
-  <p>二阶 $M_{p}=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$，$t_{p}=\dfrac{\pi}{\omega_{d}}$，$t_{s}=\dfrac{-\ln\left(p\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$（$p=0.01$）。</p>
+  <p>一阶：$t_{r}=\tau\ln9\approx2.20\tau$，$t_{s}=4.6\tau$（$\pm1\%$）。</p>
+  <p>二阶：$M_{p}=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$，$t_{p}=\dfrac{\pi}{\omega_{d}}$，$t_{r}\cong\dfrac{1.8}{\omega_{n}}$（Franklin 式 3.49），$t_{s}=\dfrac{-\ln\left(p\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$（$p=0.01$）。</p>
   </details>
 
-  <!-- ============ SUM 2 ============ -->
-  <h2>SUM 2　时域指标的 s 域几何化</h2>
+  <!-- ===== ③ ===== -->
+  <h2>③ 指标在 s 域的几何表示</h2>
   <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>时域指标的s域几何化（先一阶再二阶）</div>
 
   <div class="ctl-fix"><strong>纠正 / 补全：</strong>
-  <p><b>极点在 s 平面上的位置，就是时域指标的几何编码。</b></p>
-  <p><b>一阶</b>：极点落在实轴的 $-1/\tau$。<b>它到虚轴的水平距离就是 $1/\tau$</b>——距离越大，衰减越快，$t_{s}$ 越短。一阶的全部信息就是这一个距离。</p>
-  <p><b>二阶</b>：一对共轭极点 $-\sigma\pm j\omega_{d}$，<b>四个几何量各管一个指标</b>：</p>
+  <p>既然指标是从图像量的，而图像由极点决定——<b>指标就能直接对应到极点在 s 平面上的几个几何量</b>。<b>四个几何量各管一个指标</b>：</p>
   <table>
     <thead><tr><th>几何量</th><th>图上是什么</th><th>管哪个指标</th></tr></thead>
     <tbody>
       <tr><td>$\sigma=\zeta\omega_{n}$</td><td>到<b>虚轴</b>的水平距离</td><td>衰减快慢 → $t_{s}$</td></tr>
       <tr><td>$\omega_{d}$</td><td>到<b>实轴</b>的垂直距离</td><td>振荡快慢 → $t_{p}$</td></tr>
-      <tr><td>$\omega_{n}$</td><td>到<b>原点</b>的距离</td><td>整体时间尺度</td></tr>
+      <tr><td>$\omega_{n}$</td><td>到<b>原点</b>的距离</td><td>整体时间尺度 → $t_{r}$</td></tr>
       <tr><td>$\theta=\arcsin\zeta$</td><td>与 <b>$j\omega$ 轴</b>的夹角</td><td>阻尼 → $M_{p}$</td></tr>
       <tr><td>$\arccos\zeta$</td><td>与<b>负实轴</b>的夹角</td><td>与 $\theta$ <b>互余</b>（$\theta+\arccos\zeta=90^{\circ}$）</td></tr>
     </tbody>
   </table>
-  <p><b>三条最实用的读图法则</b>：</p>
-  <ul>
-    <li>极点<b>往右移</b>（$\sigma$ 变小）→ 衰减变慢、$t_{s}$ 变长</li>
-    <li>极点<b>往上下移</b>（$\omega_{d}$ 变大）→ 振荡变快、$t_{p}$ 变小</li>
-    <li><b>ζ 变而 ωn 不变</b> → 极点沿以原点为圆心、半径 $\omega_{n}$ 的<b>圆弧</b>滑动（因为 $\sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$）</li>
-  </ul></div>
+  <p><b>三条读图法则</b>：极点<b>往右</b>（$\sigma$ 小）→ 衰减慢、$t_{s}$ 长；极点<b>往上下</b>（$\omega_{d}$ 大）→ 振荡快、$t_{p}$ 短；<b>ζ 变而 ωn 不变</b> → 极点沿半径 $\omega_{n}$ 的<b>圆弧</b>滑动。</p></div>
 
-  <div data-primitive="pole-catalog" data-title="定性图鉴：s 平面上六种极点位置，各配一条自然响应波形"></div>
-  <p class="ctl-note">看图看哪里：<b>这张图不是用来拖的，是用来背的</b>（书上原话 commit it to memory）。左图六个点、右图六条波形，把"点在哪个位置 → 波形长什么样"变成条件反射；建起来之后，看到极点的位置就能直接想出差里。</p>
-
-  <div data-primitive="splane-geometry" data-title="几何图 ②：s 平面上的 σ / ωd / ωn / β，右侧阶跃响应联动（按钮切一阶/二阶）"></div>
-  <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了；同时橙色的 $\theta$ 变大、蓝色的 $\sigma$ 变大、$M_p$ 变小。三条刻度线分别是到虚轴、到实轴、到原点的距离。</p>
+  <div data-primitive="splane-geometry" data-title="图 ③ s 平面上标出 σ / ωd / ωn / θ，右侧阶跃响应同色对应（按钮切一阶 / 二阶）"></div>
+  <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了。<b>同一颜色就是同一个东西</b>：橙色的角 ↔ 橙色的 $M_p$，蓝色的水平距离 ↔ 蓝色的 $t_s$。</p>
 
   <div class="ctl-supp"><span class="ctl-tag" data-src="补：Franklin §3.3 里我先前跳过的一块">补</span>
   <p><b>部分分式展开 → 每一项的权重 → 谁主导早期、谁主导后期。</b></p>
-  <p>书上第一句关键话：<b>分子（零点）只影响每一项的系数，不影响形态</b>——形态由极点决定。原话是
+  <p>书上关键一句：<b>分子（零点）只影响每一项的系数，不影响形态</b>——形态由极点决定。原话是
   "the role of the numerator … is to influence the size of the coefficient that multiplies each component"。</p>
-  <p><b>例 3.25</b>：$H(s)=\dfrac{2s+1}{s^{2}+3s+2}$，极点 $s=-1,\,-2$，零点 $s=-\tfrac{1}{2}$。部分分式展开：</p>
-  <p>$$H(s)=\frac{-1}{s+1}+\frac{3}{s+2}\qquad\Longrightarrow\qquad h(t)=-e^{-t}+3e^{-2t}$$</p>
-  <p>两个极点 → 两个模态：$e^{-t}$（时间常数 $1$，<b>慢</b>）与 $e^{-2t}$（时间常数 $1/2$，<b>快</b>）。
-  <b>快的衰减得快，所以它只在开头有戏。</b></p>
+  <p><b>例 3.25</b>：$H(s)=\dfrac{2s+1}{s^{2}+3s+2}$，极点 $s=-1,\,-2$，零点 $s=-\tfrac{1}{2}$。部分分式：
+  $$H(s)=\frac{-1}{s+1}+\frac{3}{s+2}\qquad\Longrightarrow\qquad h(t)=-e^{-t}+3e^{-2t}$$</p>
+  <p>两个极点 → 两个模态：$e^{-t}$（时间常数 $1$，<b>慢</b>）与 $e^{-2t}$（时间常数 $1/2$，<b>快</b>）。快的衰减得快，所以它只在开头有戏。</p>
   <table>
     <thead><tr><th>$t$</th><th>慢项 $-e^{-t}$</th><th>快项 $3e^{-2t}$</th><th>和 $h(t)$</th><th>慢项占的比重</th></tr></thead>
     <tbody>
@@ -98,30 +99,56 @@
       <tr><td>$3$</td><td>$-0.050$</td><td>$0.007$</td><td>$-0.042$</td><td>$87\%$</td></tr>
     </tbody>
   </table>
-  <p class="ctl-note">两项大小相等的时刻：$-e^{-t}=3e^{-2t}\Rightarrow t=\ln 3\approx1.10$。看最后一列——<b>慢项的比重从 25% 涨到 88%</b>，这就是"快项退场、慢项接管"的过程。</p>
-  <p><b>一句话</b>：$h(t)$ 的形状 = 各极点的模态按"分子给的权重"叠起来，<b>快的项管早期、慢的项管后期</b>。这就是 Fig 3.17 想让你看到的东西。</p>
-  <p><b>为什么这是通往"主导极点"的门</b>：若某个极点离虚轴<b>远得多</b>（快得多），它在后期几乎为零——那么后期响应就由<b>最慢的那个（或那对）极点</b>决定。这就是主导极点，也是能用<b>低阶近似</b>代替高阶系统的依据（§3.5 会正式用起来）。</p>
+  <p class="ctl-note">两项相等的时刻：$-e^{-t}=3e^{-2t}\Rightarrow t=\ln3\approx1.10$。<b>慢项的比重从 25% 涨到 87%</b>——这就是"快项退场、慢项接管"。</p>
+  <p><b>这为什么是通往"主导极点"的门</b>：若某个极点离虚轴<b>远得多</b>，它在后期几乎为零——后期响应就由<b>最慢的那个（那对）极点</b>决定。这就是主导极点，也是能用<b>低阶近似</b>代替高阶系统的依据（§3.5 正式用起来）。</p>
   </div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
-  <p>极点 $s_{1,2}=-\zeta\omega_{n}\pm j\omega_{n}\sqrt{1-\zeta^{2}}$，于是</p>
   <p>$$\sigma=\zeta\omega_{n},\qquad \omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}},\qquad \sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$$</p>
   <p>角度（Franklin Fig 3.18）：$$\theta=\arcsin\zeta\ \text{（从 }j\omega\text{ 轴量）},\qquad \arccos\zeta\ \text{（从负实轴量）},\qquad \theta+\arccos\zeta=90^{\circ}$$</p>
   </details>
 
+  <!-- ===== ④ ===== -->
+  <h2>④ 怎么达到这些指标——通过什么</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>最后就是怎么满足这些指标，通过什么</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>先说一句最容易误解的</b>：你<b>不能直接"把极点放到那里"</b>。极点是你改<b>增益、校正装置、反馈结构</b>之后的<b>结果</b>——所以设计永远是"试 → 看极点跑到哪 → 再调"。这决定了下面三类手段的性质。</p>
+  <table>
+    <thead><tr><th>手段</th><th>它改变什么</th><th>能做什么 / 不能做什么</th></tr></thead>
+    <tbody>
+      <tr><td><b>改开环增益 $K$</b></td><td>闭环特征方程 $1+KG(s)H(s)=0$ 的解</td>
+        <td>极点沿<b>一条固定的根轨迹</b>滑动——只有<b>一维</b>自由度。$K$ 调大通常让极点往右/往上下跑（更快振荡、更小阻尼）</td></tr>
+      <tr><td><b>加零点 / 加极点</b><br>（校正装置）</td><td>根轨迹的<b>形状</b>本身</td>
+        <td>加左半平面<b>零点</b>把轨迹往左拉（更快、更稳）；加<b>极点</b>往右拉。这就是<b>超前 / 滞后校正</b></td></tr>
+      <tr><td><b>改反馈结构</b></td><td>把开环极点变成闭环极点的<b>映射</b></td>
+        <td>自由度最大：状态反馈可以<b>直接指定</b>闭环极点（极点配置）</td></tr>
+    </tbody>
+  </table>
+  <p><b>动参数之前先判稳</b>：拉氏判据（Routh，§3.6）先给出"$K$ 在什么范围内系统才稳定"——那是根轨迹与 $\omega$ 轴的交点，是所有设计的边界。</p>
+  <p><b>所以这条链的落点是后面三章</b>：</p>
+  <ul>
+    <li><b>Ch5 根轨迹法</b>：$K$ 变时极点怎么走——把手动试错变成<b>看图</b></li>
+    <li><b>Ch6 频域设计法</b>：用校正装置<b>改轨迹形状</b>——把轨迹主动"掰"到你要的地方</li>
+    <li><b>Ch7 状态空间设计</b>：直接给定极点位置反求反馈增益（<b>极点配置</b>）</li>
+  </ul>
+  <p class="ctl-note">一句话收束：<b>指标 → 要求极点在哪 → 用什么手段把极点挪过去</b>。这一章教你前两步，后三章教你第三步。</p></div>
+
+  <div class="ctl-gap">这一步按理该配一张图（拖 K 看极点沿根轨迹移动、同时看指标怎么变），但按我们定的规则我<b>不主动加图</b>。要的话说一声，我描述几何给你过目再动手。</div>
+
   <div class="ctl-test">
   <h4>自测（补）</h4>
   <ol>
-    <li>ωn 不变、ζ 从 0.7 降到 0.3，s 平面上的极点怎么动？$M_p$、$t_s$、$t_p$ 各怎么变？
+    <li>ωn 不变、ζ 从 0.7 降到 0.3，极点在 s 平面上怎么动？$M_p$、$t_s$、$t_p$ 各怎么变？
       <details><summary>答案</summary>
       <p>沿半径 $\omega_n$ 的圆弧向虚轴靠近。$\sigma=\zeta\omega_n$ 变小 → $t_s=4.6/\sigma$ <b>变长</b>；$\omega_d$ 变大 → $t_p=\pi/\omega_d$ <b>变短</b>；$\zeta$ 变小 → $M_p$ <b>变大</b>。</p></details></li>
-    <li>为什么说"$M_p$ 只由 ζ 决定"？
+    <li>只调增益 $K$，能让任意系统达到任意指标吗？为什么？
       <details><summary>答案</summary>
-      <p>$M_p=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$ 里没有 $\omega_n$。几何上：$M_p$ 只看<b>极点的方向</b>（与负实轴的夹角），不看它离原点多远。</p></details></li>
-    <li>一阶系统拖大 τ（极点往原点靠），$t_s$ 怎么变？为什么？
+      <p>不能。$K$ 只让极点沿<b>一条固定的根轨迹</b>滑动，是一维自由度；要落到轨迹外的位置，必须<b>加零点/极点（校正）或改反馈结构</b>。</p></details></li>
+    <li>为什么说"算 $e_{ss}$ 之前要先判稳"？
       <details><summary>答案</summary>
-      <p>$t_s\approx4.6\tau$ <b>变长</b>。几何原因：极点在 $-1/\tau$，τ 变大 → 到虚轴的距离 $1/\tau$ 变小 → 衰减更慢。</p></details></li>
+      <p>终值定理只对稳定系统成立（$sF(s)$ 极点须全在左半平面）。不稳定时它会给出一个有限但<b>假的</b>数——不是数学算错，是物理上根本没有终值。</p></details></li>
   </ol>
   </div>
 </main>
