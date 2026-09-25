@@ -11,7 +11,10 @@ window.BOOK = {
   chapters: [
     { id: 'ch01', num: 'Ch1', title: 'An Overview and Brief History of Feedback Control', zh: '绪论与反馈控制简史', status: 'gap' },
     { id: 'ch02', num: 'Ch2', title: 'Dynamic Models', zh: '动态模型', status: 'gap' },
-    { id: 'ch03', num: 'Ch3', title: 'System Modeling Diagrams', zh: '系统建模图', status: 'partial' },
+    { id: 'ch03', num: 'Ch3', title: 'Dynamic Response', zh: '动态响应', status: 'partial',
+      sections: [
+        { id: 'ch03-system-modeling', title: 'System Modeling Diagrams', zh: '系统建模图', status: 'partial' }
+      ] },
     { id: 'ch04', num: 'Ch4', title: 'A First Analysis of Feedback', zh: '反馈的初步分析', status: 'gap' },
     { id: 'ch05', num: 'Ch5', title: 'The Root-Locus Design Method', zh: '根轨迹设计法', status: 'gap' },
     { id: 'ch06', num: 'Ch6', title: 'The Frequency-Response Design Method', zh: '频率响应设计法', status: 'gap' },

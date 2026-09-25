@@ -3,105 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ch3 · System Modeling Diagrams</title>
+<title>Ch3 · Dynamic Response</title>
 </head>
 <body data-ch="ch03">
 <main class="ctl-main">
-  <h1>Ch3 · System Modeling Diagrams</h1>
-  <p class="ctl-note">本节结构来自你的笔记（第三章 · System Modeling Diagrams）。正文的推导与解释由我补写；<b>标「补」的地方是我超出你提纲加的内容</b>。</p>
+  <h1>Ch3 · Dynamic Response</h1>
+  <p class="ctl-note">动态响应 · 对应 Franklin 原书 Ch3。本章知识点较多，正文按子节拆分。</p>
 
-  <h2>1　由系统列写传递函数</h2>
-  <p>这是本章练习的基本题型。两条路，结果必须一致：</p>
-  <ul>
-    <li><b>时域路</b>：先列微分方程（机械用牛顿定律，电路用 KVL/KCL 加元件 V-I 关系），再在<b>零初始条件</b>下取拉氏变换，整理成 $G(s)=\dfrac{Y(s)}{U(s)}$。</li>
-    <li><b>图形路</b>：画出框图或信号流图，用方块化简或 Mason 公式直接求。</li>
-  </ul>
-  <p class="ctl-note">"零初始条件"不是可省的一步。含初始条件时拉氏变换会多出 $f(0^{-})$ 的附加项，那属于<b>零输入响应</b>，不属于传递函数。</p>
-
-  <h2>2　状态变量</h2>
-  <p>状态变量是能<b>完全刻画系统内部储能</b>的一组最少变量，通常取储能元件的量（电容电压、电感电流）。写成标准形式：</p>
-  <p>$$\dot{\mathbf{x}}=A\mathbf{x}+B u,\qquad y=C\mathbf{x}+D u$$</p>
-  <p>为什么要这么做：把一个 $n$ 阶微分方程换成 $n$ 个一阶方程，便于数值求解，也能直接处理多输入多输出。</p>
-
-  <h2>3　阶数的四重等价</h2>
-  <div class="ctl-supp"><span class="ctl-tag" data-src="你的发现（第三章笔记）">补</span>
-  你的原话是"特征方程的最高次对应系统积分 $1/s$ 的个数"。精确说法是这四个数是<b>同一个东西</b>：</div>
-  <p>$$n=\underbrace{\text{分母最高次}}_{\deg D(s)}=\underbrace{\text{状态变量个数}}_{\dim\mathbf{x}}=\underbrace{\text{积分器 }1/s\text{ 的个数}}=\underbrace{\text{特征方程的次数}}_{\deg\det(sI-A)}$$</p>
-  <p><b>为什么成立</b>：控制标准型里一个状态变量恰好对应一个积分器；而 $A$ 的特征多项式 $\det(sI-A)$ 就是传递函数的分母。</p>
-  <p class="ctl-note"><b>用途</b>：看到 $\dfrac{1}{s^{3}+3s^{2}+2s}$ 立刻就知道要 3 个状态变量、3 个积分器、特征方程是三次，不用去数图。<b>注意</b>：分子次数不影响阶数；若分子分母同次（$D\neq0$）会多一个直通项，但积分器个数仍然是 $n$。</p>
-
-  <h2>4　控制标准型与观测标准型</h2>
-  <p>以 $G(s)=\dfrac{b_{1}s+b_{0}}{s^{2}+a_{1}s+a_{0}}$ 为例（下面可以自己调系数看矩阵怎么变）：</p>
-
-  <div data-primitive="canonical-forms" data-title="交互 ① 标准型切换：拖系数 → 两套 A、B、C 矩阵实时重算"></div>
-
-  <p>写成矩阵：</p>
-  <table>
-    <thead><tr><th>标准型</th><th>$A$</th><th>$B$</th><th>$C$</th><th>特点</th></tr></thead>
-    <tbody>
-      <tr><td>控制标准型</td>
-        <td>$\begin{bmatrix}-a_{1} &amp; -a_{0}\\ 1 &amp; 0\end{bmatrix}$</td>
-        <td>$\begin{bmatrix}1\\0\end{bmatrix}$</td>
-        <td>$\begin{bmatrix}b_{1} &amp; b_{0}\end{bmatrix}$</td>
-        <td>$a_i$ 全堆在<b>第一行</b>，$b_i$ 全在 $C$ 里</td></tr>
-      <tr><td>观测标准型</td>
-        <td>$\begin{bmatrix}-a_{1} &amp; 1\\ -a_{0} &amp; 0\end{bmatrix}$</td>
-        <td>$\begin{bmatrix}b_{1}\\ b_{0}\end{bmatrix}$</td>
-        <td>$\begin{bmatrix}1 &amp; 0\end{bmatrix}$</td>
-        <td>$a_i$ 全堆在<b>第一列</b>，$b_i$ 全在 $B$ 里</td></tr>
-    </tbody>
-  </table>
-
-  <div class="ctl-supp"><span class="ctl-tag" data-src="补：两者的对偶关系">补</span>
-  两者不是随便两套写法，而是<b>转置对偶</b>：
-  $$A_{o}=A_{c}^{\mathsf T},\qquad B_{o}=C_{c}^{\mathsf T},\qquad C_{o}=B_{c}^{\mathsf T}$$
-  代进去验一下就知道：$-a_1$ 从 $A$ 的第一行跑到第一列，$b_i$ 从 $C$ 跑到 $B$，$B_c=\begin{bmatrix}1\\0\end{bmatrix}$ 转置后变成 $C_o=\begin{bmatrix}1 &amp; 0\end{bmatrix}$。记住了这条，两套矩阵不用分别背。</div>
-
-  <h2>5　Mason 增益公式</h2>
-  <p>信号流图不必化简，直接代公式：</p>
-  <p>$$G=\dfrac{1}{\Delta}\sum_{k}P_{k}\Delta_{k},\qquad \Delta=1-\sum_{i}L_{i}+\sum_{\text{互不接触}}L_{i}L_{j}-\sum L_{i}L_{j}L_{k}+\cdots$$</p>
-  <ul>
-    <li>$P_{k}$：第 $k$ 条<b>前向通道</b>的增益（从源点到汇点、每个节点只经过一次）</li>
-    <li>$L_{i}$：第 $i$ 个<b>回路</b>的增益（环上所有支路增益之积）</li>
-    <li>$\Delta_{k}$：把<b>与第 $k$ 条前向通道接触的回路全部删掉</b>之后重新算的 $\Delta$</li>
-    <li><b>互不接触</b> = 两个回路没有公共节点</li>
-  </ul>
-  <p class="ctl-note"><b>操作顺序</b>：① 数前向通道 → ② 数回路 → ③ 找互不接触的回路组合（两两、三三…）→ ④ 拼 $\Delta$ → ⑤ 对每条前向通道算 $\Delta_k$ → ⑥ 代公式。<b>第 ③ 步最容易漏</b>。</p>
-
-  <div data-primitive="mason-flow" data-title="交互 ② Mason 逐步展开：按顺序高亮前向通道 → 回路 → 互不接触回路对，右侧同步累加"></div>
-
-  <details class="ctl-fold">
-  <summary>用代数法验证上面这张流图（Mason 与直接解图必须一致）</summary>
-  <p>按节点写方程（$x_1$ 为输入）：</p>
-  <p>$$x_{2}=a x_{1}+f x_{2}\Rightarrow x_{2}=\dfrac{a}{1-f}x_{1},\qquad x_{3}=b x_{2}$$</p>
-  <p>$$x_{4}=c x_{3}+g x_{4}\Rightarrow x_{4}=\dfrac{c}{1-g}x_{3},\qquad x_{5}=e x_{4}+k x_{1}$$</p>
-  <p>于是</p>
-  <p>$$G=\dfrac{x_{5}}{x_{1}}=k+\dfrac{a b c e}{(1-f)(1-g)}=1+\dfrac{16}{0.5\times0.5}=1+64=65$$</p>
-  <p>Mason 那边：$\Delta=(1-f)(1-g)=0.25$，$P_1=16,\Delta_1=1$，$P_2=1,\Delta_2=\Delta$，故 $G=\dfrac{16\times1+1\times0.25}{0.25}=65$。<b>两者相等。</b></p>
-  <p class="ctl-note">建议做题时养成这个习惯：Mason 算完，用节点方程抽查一次。漏掉互不接触项是这一章最常见的错。</p>
-  </details>
-
-  <div class="ctl-test">
-  <h4>自测（补）</h4>
-  <ol>
-    <li>$G(s)=\dfrac{3s+1}{s^{2}+4s+5}$，写出控制标准型的 $A,B,C$，并说出系统有几个状态变量、几个积分器。
-      <details><summary>答案</summary>
-      <p>$A=\begin{bmatrix}-4 &amp; -5\\ 1 &amp; 0\end{bmatrix}$，$B=\begin{bmatrix}1\\0\end{bmatrix}$，$C=\begin{bmatrix}3 &amp; 1\end{bmatrix}$。分母是 $s^2$ → 2 个状态变量、2 个积分器、$\det(sI-A)=s^{2}+4s+5$。</p></details></li>
-    <li>某流图有 3 个回路：$L_1$ 与 $L_2$ 互不接触，$L_2$ 与 $L_3$ 互不接触，$L_1$ 与 $L_3$ <b>接触</b>。写出 $\Delta$。
-      <details><summary>答案</summary>
-      <p>$\Delta=1-(L_{1}+L_{2}+L_{3})+(L_{1}L_{2}+L_{2}L_{3})$。</p>
-      <p>没有三项乘积：那要求三个回路两两互不接触，而 $L_1$ 与 $L_3$ 接触，所以不存在。</p></details></li>
-    <li>为什么分子次数不影响状态变量的个数？
-      <details><summary>答案</summary>
-      <p>状态变量个数等于系统的<b>阶数</b>，也就是分母（特征多项式）的次数。分子只决定各个模态在输出里的权重（以及 $D$ 是否为 0），不增加储能元件，所以不改变状态变量个数。</p></details></li>
-    <li>控制标准型和观测标准型之间是什么关系？说出三个等式。
-      <details><summary>答案</summary>
-      <p>转置对偶：$A_{o}=A_{c}^{\mathsf T}$，$B_{o}=C_{c}^{\mathsf T}$，$C_{o}=B_{c}^{\mathsf T}$。</p></details></li>
-    <li>为什么 Mason 公式里的 $\Delta_{k}$ 不是直接等于 $\Delta$？
-      <details><summary>答案</summary>
-      <p>$\Delta_{k}$ 的求法是从 $\Delta$ 中<b>删掉所有与第 $k$ 条前向通道接触的回路</b>。只有当该前向通道不碰任何回路时，$\Delta_{k}$ 才等于 $\Delta$（本例中的 $P_2=k$ 就是这种）。</p></details></li>
-  </ol>
-  </div>
+  <h2>本章子节</h2>
+  <ul class="ctl-progress" data-sections></ul>
+  <p class="ctl-note">这个列表是自动生成的——子节写在 <code>book.config.js</code> 的 <code>sections</code> 里，这里不用手工维护。</p>
 </main>
 <script src="../../../kit/core/boot.js" data-book="../"></script>
 </body>

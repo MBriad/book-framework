@@ -203,3 +203,7 @@ body.ctl-rail-open .ctl-rail-backdrop{opacity:1;pointer-events:auto}
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .ctl-chnav-link.is-next .ctl-chnav-name{color:var(--ctl-accent)}
 .ctl-chnav-link.is-off{visibility:hidden}
+/* ---- 左栏两级：章（可点）→ 子节 ---- */
+.ctl-nav-group{margin:2px 0 4px}
+.ctl-nav-sub{list-style:none;margin:1px 0 3px 12px;padding:0 0 0 6px;border-left:1px solid var(--ctl-line)}
+.ctl-nav-sub .ctl-nav-link{padding:3px 6px;font-size:12.5px}

@@ -25,9 +25,15 @@ window.SEARCH_INDEX = [
   },
   {
     "t": "Ch3 · System Modeling Diagrams",
-    "p": "sections/ch03.html",
+    "p": "sections/ch03-system-modeling.html",
     "k": "",
     "s": "Ch3 · System Modeling Diagrams 本节结构来自你的笔记（第三章 · System Modeling Diagrams）。正文的推导与解释由我补写； 标「"
+  },
+  {
+    "t": "Ch3 · Dynamic Response",
+    "p": "sections/ch03.html",
+    "k": "",
+    "s": "Ch3 · Dynamic Response 动态响应 · 对应 Franklin 原书 Ch3。本章知识点较多，正文按子节拆分。 本章子节 这个列表是自动生成的——子节写在 bo"
   },
   {
     "t": "Ch4 · A First Analysis of Feedback",

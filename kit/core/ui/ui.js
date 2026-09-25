@@ -17,22 +17,57 @@
     return n;
   }
 
+  /* 章节查找：支持两级（章 → 子节） */
   function chapterOf(id) {
-    var b = global.BOOK || {};
+    var b = global.BOOK || {}, i, j;
     var list = (b.front || []).concat(b.chapters || []);
-    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    for (i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    for (i = 0; i < (b.chapters || []).length; i++) {
+      var ss = b.chapters[i].sections || [];
+      for (j = 0; j < ss.length; j++) if (ss[j].id === id) return ss[j];
+    }
     return null;
+  }
+
+  /* 当前页所属的章；子节返回它的父章 */
+  function parentChapterOf(id) {
+    var chs = (global.BOOK && global.BOOK.chapters) || [];
+    for (var i = 0; i < chs.length; i++) {
+      if (chs[i].id === id) return chs[i];
+      var ss = chs[i].sections || [];
+      for (var j = 0; j < ss.length; j++) if (ss[j].id === id) return chs[i];
+    }
+    return null;
+  }
+
+  /* 翻章序列：前置页 + 每章 + 每章的子节，展平成一维 */
+  function allPages() {
+    var b = global.BOOK || {}, out = [];
+    (b.front || []).forEach(function (p) {
+      out.push({ id: p.id, num: p.num || '', title: p.title, path: p.id + '.html' });
+    });
+    (b.chapters || []).forEach(function (c) {
+      out.push({ id: c.id, num: c.num, title: c.title, path: 'sections/' + c.id + '.html' });
+      (c.sections || []).forEach(function (s) {
+        out.push({ id: s.id, num: s.num || '', title: s.title, path: 'sections/' + s.id + '.html' });
+      });
+    });
+    return out;
   }
 
   function breadcrumb(bookRoot) {
     var chId = document.body.getAttribute('data-ch');
-    var parts = [];
-    parts.push('<a href="' + esc(bookRoot) + 'index.html">' + esc((global.BOOK && global.BOOK.short) || '总览') + '</a>');
-    var ch = chId ? chapterOf(chId) : null;
+    var parts = ['<a href="' + esc(bookRoot) + 'index.html">' + esc((global.BOOK && global.BOOK.short) || '总览') + '</a>'];
+    var ch = chId ? parentChapterOf(chId) : null;
     if (ch) {
-      parts.push(esc((ch.num ? ch.num + ' · ' : '') + ch.title));
-      var sec = document.body.getAttribute('data-sec');
-      if (sec) parts.push(esc(sec));
+      var sub = ch.id === chId ? null : chapterOf(chId);
+      if (sub) {
+        parts.push('<a href="' + esc(bookRoot + 'sections/' + ch.id + '.html') + '">' +
+          esc((ch.num ? ch.num + ' · ' : '') + ch.title) + '</a>');
+        parts.push(esc((sub.num ? sub.num + ' · ' : '') + sub.title));
+      } else {
+        parts.push(esc((ch.num ? ch.num + ' · ' : '') + ch.title));
+      }
     } else {
       var t = document.body.getAttribute('data-title');
       if (t) parts.push(esc(t));
@@ -101,22 +136,36 @@
     rail.appendChild(el('p', 'ctl-rail-title', '章节'));
     var ul = el('ul', 'ctl-nav');
     var cur = document.body.getAttribute('data-ch');
+    var b = global.BOOK || {};
+
     var home = el('li');
     home.innerHTML = '<a class="ctl-nav-link' + (cur ? '' : ' is-active') + '" href="' + esc(bookRoot) + 'index.html">' +
       '<span class="ctl-nav-num">—</span><span class="ctl-nav-name">总览</span></a>';
     ul.appendChild(home);
-    ((global.BOOK && global.BOOK.front) || []).forEach(function (p) {
+
+    (b.front || []).forEach(function (p) {
       var fli = el('li');
       fli.innerHTML = '<a class="ctl-nav-link' + (p.id === cur ? ' is-active' : '') + '" href="' +
         esc(bookRoot + p.id + '.html') + '"><span class="ctl-nav-num">—</span><span class="ctl-nav-name">' +
         esc(p.title) + '</span></a>';
       ul.appendChild(fli);
     });
-    ((global.BOOK && global.BOOK.chapters) || []).forEach(function (c) {
-      var li = el('li');
-      li.innerHTML = '<a class="ctl-nav-link' + (c.id === cur ? ' is-active' : '') + '" href="' +
+
+    (b.chapters || []).forEach(function (c) {
+      var subs = c.sections || [];
+      var li = el('li', subs.length ? 'ctl-nav-group' : '');
+      var html = '<a class="ctl-nav-link' + (c.id === cur ? ' is-active' : '') + '" href="' +
         esc(bookRoot + 'sections/' + c.id + '.html') + '"><span class="ctl-nav-num">' + esc(c.num) +
         '</span><span class="ctl-nav-name">' + esc(c.title) + '</span></a>';
+      if (subs.length) {
+        html += '<ul class="ctl-nav-sub">' + subs.map(function (s) {
+          return '<li><a class="ctl-nav-link is-sub' + (s.id === cur ? ' is-active' : '') + '" href="' +
+            esc(bookRoot + 'sections/' + s.id + '.html') + '">' +
+            (s.num ? '<span class="ctl-nav-num">' + esc(s.num) + '</span>' : '') +
+            '<span class="ctl-nav-name">' + esc(s.title) + '</span></a></li>';
+        }).join('') + '</ul>';
+      }
+      li.innerHTML = html;
       ul.appendChild(li);
     });
     rail.appendChild(ul);
@@ -185,51 +234,36 @@
     }, { passive: true });
   }
 
-  /* 翻章序列 = 前置页 + 各章（与左栏同源），每本书自动获得 */
-  function navContext() {
+  /* 页尾翻章的目标：在展平序列里找当前页的前后一项 */
+  function navTargets(bookRoot) {
     var cur = document.body.getAttribute('data-ch');
     if (!cur) return null;
-    var b = global.BOOK || {};
-    var list = (b.front || []).concat(b.chapters || []);
+    var list = allPages();
     var idx = -1;
     for (var i = 0; i < list.length; i++) if (list[i].id === cur) idx = i;
-    return idx < 0 ? null : { b: b, list: list, idx: idx };
-  }
-
-  function hrefOf(bookRoot, ctx, p) {
-    var f = ctx.b.front || [], isFront = false;
-    for (var i = 0; i < f.length; i++) if (f[i].id === p.id) isFront = true;
-    return bookRoot + (isFront ? p.id + '.html' : 'sections/' + p.id + '.html');
-  }
-
-  function navTargets(bookRoot) {
-    var ctx = navContext();
-    if (!ctx) return null;
-    var t = {
-      prev: ctx.idx > 0 ? hrefOf(bookRoot, ctx, ctx.list[ctx.idx - 1]) : null,
-      next: ctx.idx < ctx.list.length - 1 ? hrefOf(bookRoot, ctx, ctx.list[ctx.idx + 1]) : null
+    if (idx < 0) return null;
+    return {
+      prev: idx > 0 ? bookRoot + list[idx - 1].path : null,
+      next: idx < list.length - 1 ? bookRoot + list[idx + 1].path : null,
+      prevP: idx > 0 ? list[idx - 1] : null,
+      nextP: idx < list.length - 1 ? list[idx + 1] : null
     };
-    return (t.prev || t.next) ? t : null;
   }
 
   /* 页尾翻章：样式参考 d2l.ai 的底部翻页——箭头在外、章名在内，下一节用强调色 */
   function buildChapterNav(bookRoot) {
-    var ctx = navContext();
-    if (!ctx) return null;
     var t = navTargets(bookRoot);
     if (!t) return null;
     function side(p, href, cls, dir, arrow) {
-      if (!p) return '<span class="ctl-chnav-link is-off"></span>';
+      if (!p || !href) return '<span class="ctl-chnav-link is-off"></span>';
       return '<a class="ctl-chnav-link' + cls + '" href="' + esc(href) + '">' +
         '<span class="ctl-chnav-arrow" aria-hidden="true">' + arrow + '</span>' +
         '<span class="ctl-chnav-text"><span class="ctl-chnav-dir">' + dir + '</span>' +
         '<span class="ctl-chnav-name">' + esc((p.num ? p.num + ' · ' : '') + p.title) + '</span></span></a>';
     }
-    var prev = ctx.idx > 0 ? ctx.list[ctx.idx - 1] : null;
-    var next = ctx.idx < ctx.list.length - 1 ? ctx.list[ctx.idx + 1] : null;
     var nav = el('nav', 'ctl-chnav ctl-noprint');
     nav.setAttribute('aria-label', '章节导航');
-    nav.innerHTML = side(prev, t.prev, '', '上一节', '←') + side(next, t.next, ' is-next', '下一节', '→');
+    nav.innerHTML = side(t.prevP, t.prev, '', '上一节', '←') + side(t.nextP, t.next, ' is-next', '下一节', '→');
     return nav;
   }
 
@@ -352,6 +386,19 @@
           (c.zh ? '<br><span class="ctl-note">' + esc(c.zh) + '</span>' : '') + '</span>' +
           '<span class="ctl-badge" data-status="' + esc(c.status) + '">' + label + '</span></li>';
       }).join('');
+    }
+
+    var secBox = document.querySelector('[data-sections]');
+    if (secBox) {
+      var ch = parentChapterOf(document.body.getAttribute('data-ch'));
+      var subs = (ch && ch.sections) || [];
+      secBox.innerHTML = subs.length ? subs.map(function (s) {
+        var lab = s.status === 'done' ? '已填' : s.status === 'partial' ? '部分' : '待填';
+        return '<li><span class="ctl-ch">' + esc(s.num || '§') + '</span>' +
+          '<span class="ctl-nm"><a href="' + esc(bookRoot + 'sections/' + s.id + '.html') + '">' + esc(s.title) + '</a>' +
+          (s.zh ? '<br><span class="ctl-note">' + esc(s.zh) + '</span>' : '') + '</span>' +
+          '<span class="ctl-badge" data-status="' + esc(s.status || 'gap') + '">' + lab + '</span></li>';
+      }).join('') : '<li class="ctl-note">本章还没有子节。</li>';
     }
 
     applyTheme(saved, themeBtn);
