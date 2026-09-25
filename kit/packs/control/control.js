@@ -680,6 +680,66 @@
     paint();
   });
 
+  /* ---------------- ⑧ 积分器链：阶数 = 积分器个数，几何表示 ----------------
+     一排 1/s 方块，零交叉线。滑块改 n，链条长度跟着变。纯 SVG。 */
+  Ctl.Pack.register('integrator-chain', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
+    var st = { n: 3 };
+    var box = mk('div', 'ctl-ichain');
+    el.appendChild(box);
+    var ctl = controls(el);
+    var ro = readout(el);
+
+    function draw() {
+      var n = st.n, W = 620, H = 132, y = 62, bh = 44;
+      var x0 = 34, x1 = W - 26, unit = (x1 - x0) / n;
+      var bw = Math.min(72, unit * 0.5);
+      var p = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="n 级积分器链">' +
+        '<defs><marker id="ic-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+        '<path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>';
+      p += '<line x1="6" y1="' + y + '" x2="' + (x0 + (unit - bw) / 2 - 8) + '" y2="' + y + '" marker-end="url(#ic-ar)" style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none"/>';
+      p += '<text class="il" x="14" y="' + (y - 12) + '">u</text>';
+      for (var i = 0; i < n; i++) {
+        var bx = x0 + i * unit + (unit - bw) / 2;
+        p += '<rect class="ibox" x="' + bx + '" y="' + (y - bh / 2) + '" width="' + bw + '" height="' + bh + '" rx="6"/>';
+        p += '<text class="ibl" x="' + (bx + bw / 2) + '" y="' + (y + 5) + '">1/s</text>';
+        if (i > 0) {
+          var prevEnd = x0 + (i - 1) * unit + (unit - bw) / 2 + bw + 20;
+          p += '<line x1="' + prevEnd + '" y1="' + y + '" x2="' + (bx - 6) + '" y2="' + y + '" marker-end="url(#ic-ar)" style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none"/>';
+        }
+        var nx = bx + bw + 12;
+        p += '<circle class="ind" cx="' + nx + '" cy="' + y + '" r="4"/>';
+        p += '<text class="il" x="' + nx + '" y="' + (y + 26) + '">x' + (n - i) + '</text>';
+      }
+      var lastX = x0 + (n - 1) * unit + (unit - bw) / 2 + bw + 12;
+      p += '<line x1="' + (lastX + 8) + '" y1="' + y + '" x2="' + (W - 8) + '" y2="' + y + '" marker-end="url(#ic-ar)" style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none"/>';
+      p += '<text class="il" x="' + (W - 12) + '" y="' + (y - 12) + '">y</text>';
+      p += '</svg>';
+      box.innerHTML = p;
+    }
+    function refresh() {
+      draw();
+      var n = st.n, terms = [];
+      for (var k = n; k >= 0; k--) {
+        if (k === n) terms.push('s^' + n);
+        else if (k === 1) terms.push('a₁s');
+        else if (k === 0) terms.push('a₀');
+        else terms.push('a' + k + 's^' + k);
+      }
+      setReadout(ro, [
+        ['积分器个数', n],
+        ['状态变量个数', n],
+        ['分母最高次', 's^' + n],
+        ['特征多项式', terms.join(' + ')],
+        ['结论', '这四个数是同一个东西']
+      ]);
+    }
+    slider(ctl, '阶数 n', 1, 5, 1, st.n, function (v) { return String(v); }, function (v) { st.n = v; refresh(); });
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

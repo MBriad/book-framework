@@ -24,10 +24,10 @@ window.SEARCH_INDEX = [
     "s": "Ch2 · Dynamic Models 动态模型 · 对应 Franklin 原书 Ch2 缺口：本页尚未填入你的总结。你把该章的总结发给我后，这里会被替换为正文（你的内容 + "
   },
   {
-    "t": "Ch3 · System Modeling Diagrams",
+    "t": "System Modeling Diagrams",
     "p": "sections/ch03-system-modeling.html",
     "k": "",
-    "s": "Ch3 · System Modeling Diagrams 本节结构来自你的笔记（第三章 · System Modeling Diagrams）。正文的推导与解释由我补写； 标「"
+    "s": "System Modeling Diagrams 本节按你的笔记整理。你的总结按 分号 切成 sum，每个 sum 固定三段： ① 原话照贴 → ② 纠正 → ③ 几何/直观图 ；"
   },
   {
     "t": "Ch3 · Dynamic Response",

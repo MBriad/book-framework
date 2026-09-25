@@ -27,3 +27,9 @@ canvas.ctl-drag{cursor:crosshair}
 .ctl-mason .nl,.ctl-mason .gl{fill:var(--ctl-ink);font-size:13px;text-anchor:middle;font-family:inherit}
 .ctl-mason-note{margin-top:8px;font-size:14px;line-height:1.65;padding:8px 10px;
   background:var(--ctl-supp);border-left:3px solid var(--ctl-accent);border-radius:0 6px 6px 0}
+/* ---- 积分器链（几何原语） ---- */
+.ctl-ichain svg{display:block;width:100%;max-width:620px;margin:0 auto}
+.ctl-ichain .ibox{fill:var(--ctl-panel);stroke:var(--ctl-line);stroke-width:1.5}
+.ctl-ichain .ibl{fill:var(--ctl-ink);font-size:13px;text-anchor:middle;font-family:inherit}
+.ctl-ichain .ind{fill:var(--ctl-accent)}
+.ctl-ichain .il{fill:var(--ctl-muted);font-size:12px;text-anchor:middle;font-family:inherit}
