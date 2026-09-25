@@ -185,33 +185,67 @@
     }, { passive: true });
   }
 
-  /* 页尾翻章：序列 = 前置页 + 各章，与左栏同源，所以每本书自动获得 */
-  function pageHref(bookRoot, p, b) {
-    var f = b.front || [], isFront = false;
-    for (var i = 0; i < f.length; i++) if (f[i].id === p.id) isFront = true;
-    return bookRoot + (isFront ? p.id + '.html' : 'sections/' + p.id + '.html');
-  }
-
-  function buildChapterNav(bookRoot) {
+  /* 翻章序列 = 前置页 + 各章（与左栏同源），每本书自动获得 */
+  function navContext() {
     var cur = document.body.getAttribute('data-ch');
     if (!cur) return null;
     var b = global.BOOK || {};
     var list = (b.front || []).concat(b.chapters || []);
-    var idx = -1, i;
-    for (i = 0; i < list.length; i++) if (list[i].id === cur) idx = i;
-    if (idx < 0) return null;
-    function label(p) { return (p.num ? p.num + ' · ' : '') + p.title; }
-    function link(p, cls, dir) {
-      return '<a class="ctl-chnav-link' + cls + '" href="' + esc(pageHref(bookRoot, p, b)) + '">' +
-        '<span class="ctl-chnav-dir">' + dir + '</span>' +
-        '<span class="ctl-chnav-name">' + esc(label(p)) + '</span></a>';
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) if (list[i].id === cur) idx = i;
+    return idx < 0 ? null : { b: b, list: list, idx: idx };
+  }
+
+  function hrefOf(bookRoot, ctx, p) {
+    var f = ctx.b.front || [], isFront = false;
+    for (var i = 0; i < f.length; i++) if (f[i].id === p.id) isFront = true;
+    return bookRoot + (isFront ? p.id + '.html' : 'sections/' + p.id + '.html');
+  }
+
+  function navTargets(bookRoot) {
+    var ctx = navContext();
+    if (!ctx) return null;
+    var t = {
+      prev: ctx.idx > 0 ? hrefOf(bookRoot, ctx, ctx.list[ctx.idx - 1]) : null,
+      next: ctx.idx < ctx.list.length - 1 ? hrefOf(bookRoot, ctx, ctx.list[ctx.idx + 1]) : null
+    };
+    return (t.prev || t.next) ? t : null;
+  }
+
+  /* 左右滑动翻页。四重护栏缺一不可：
+     ① 只认单指；
+     ② 起点在交互控件内不触发（canvas 拖拽、range 滑杆、代码块、抽屉）；
+     ③ 起点距左右边缘 30px 内不触发（避开 iPadOS 的边缘返回手势）；
+     ④ 位移 > 60px 且水平位移 > 垂直位移 2 倍（斜着划不算）。 */
+  function wireSwipeNav(targets) {
+    var MIN = 60, EDGE = 30, RATIO = 2;
+    var x0 = 0, y0 = 0, tracking = false;
+    var BLOCK = 'canvas, pre, input, textarea, select, button, .ctl-rail, .ctl-rail-backdrop, [data-primitive], .ctl-seg';
+    function eligible(target) {
+      if (!target || !target.closest) return false;
+      if (target.closest(BLOCK)) return false;
+      if (document.body.classList.contains('ctl-rail-open')) return false;
+      return true;
     }
-    var nav = el('nav', 'ctl-chnav ctl-noprint');
-    nav.setAttribute('aria-label', '章节导航');
-    nav.innerHTML =
-      (idx > 0 ? link(list[idx - 1], '', '← 上一节') : '<span class="ctl-chnav-link is-off"></span>') +
-      (idx < list.length - 1 ? link(list[idx + 1], ' is-next', '下一节 →') : '<span class="ctl-chnav-link is-off"></span>');
-    return nav;
+    document.addEventListener('touchstart', function (e) {
+      tracking = false;
+      if (e.touches.length !== 1) return;
+      var t = e.touches[0];
+      if (t.clientX < EDGE || t.clientX > global.innerWidth - EDGE) return;
+      if (!eligible(e.target)) return;
+      x0 = t.clientX; y0 = t.clientY; tracking = true;
+    }, { passive: true });
+    document.addEventListener('touchcancel', function () { tracking = false; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (!tracking) return;
+      tracking = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      var dx = t.clientX - x0, dy = t.clientY - y0;
+      if (Math.abs(dx) < MIN || Math.abs(dx) < Math.abs(dy) * RATIO) return;
+      var go = dx < 0 ? targets.next : targets.prev;   // 向左划 = 下一节
+      if (go) global.location.href = go;
+    }, { passive: true });
   }
 
   function mountPrimitives() {
@@ -314,8 +348,11 @@
       body.insertBefore(header, body.firstChild);
       body.insertBefore(s.box, header.nextSibling);
     }
-    var chnav = buildChapterNav(bookRoot);
-    if (chnav && main) main.appendChild(chnav);
+    var targets = navTargets(bookRoot);
+    if (targets && main) {
+      main.appendChild(el('p', 'ctl-swipe-hint ctl-noprint', '← 左右滑动可翻页'));
+      wireSwipeNav(targets);
+    }
 
     if (!body.querySelector('footer.ctl-footer')) {
       var f = el('footer', 'ctl-footer ctl-noprint');
