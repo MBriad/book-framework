@@ -76,11 +76,5 @@ window.SEARCH_INDEX = [
     "p": "sections/ch10.html",
     "k": "",
     "s": "Ch10 · Control System Design: Principles and Case Studies 控制系统设计：原理与案例 · 对应 Franklin 原书 Ch"
-  },
-  {
-    "t": "二阶系统的单位阶跃响应",
-    "p": "samples/template-sample.html",
-    "k": "",
-    "s": "技术样板页。 本页内容全部是 演示用的示例文本 ，不代表任何结论，也不是你的总结。 它存在的唯一目的是让你验收视觉规范与交互能力。验收清单见 kit/README.md 。 二阶系"
   }
 ];

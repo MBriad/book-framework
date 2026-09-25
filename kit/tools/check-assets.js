@@ -55,7 +55,10 @@ if (!/\.ctl-mason \.br\{[^}]*fill:none/.test(packCss)) {
   bad++;
 }
 
+// 4) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
+const unused = [...registered].filter(n => !used.has(n));
 console.log('已注册组件: ' + [...registered].join(', '));
 console.log('页面在用组件: ' + [...used.keys()].join(', '));
+if (unused.length) console.log('⚠ 注册但无人使用: ' + unused.join(', ') + '（不是错误，但要盯住）');
 console.log(bad === 0 ? 'ASSET CHECK PASS' : 'ASSET CHECK FAIL (' + bad + ' 项)');
 process.exit(bad === 0 ? 0 : 1);
