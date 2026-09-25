@@ -110,8 +110,11 @@
     return out;
   }
   /* finalValue 传解析终值（直流增益）；不传则退回最后一个采样点。
+     band 是调节时间的误差带半宽，**默认 0.01（±1%）——Franklin 全书用的判据**；
+     若按 ±2% 口径算会小约 15%，两边不能混用。
      峰值用三点抛物线插值细化，否则离散采样的峰值会系统性低于理论超调量。 */
-  function stepMetrics(ys, finalValue) {
+  function stepMetrics(ys, finalValue, band) {
+    var tol = (band === undefined) ? 0.01 : band;
     var fin = (finalValue === undefined) ? (ys[ys.length - 1][1] || 1) : finalValue;
     var i, mi = 0;
     for (i = 0; i < ys.length; i++) if (ys[i][1] > ys[mi][1]) mi = i;
@@ -125,7 +128,7 @@
       }
     }
     var ts = 0;
-    for (i = ys.length - 1; i >= 0; i--) if (Math.abs(ys[i][1] - fin) > 0.02 * Math.abs(fin)) { ts = ys[i][0]; break; }
+    for (i = ys.length - 1; i >= 0; i--) if (Math.abs(ys[i][1] - fin) > tol * Math.abs(fin)) { ts = ys[i][0]; break; }
     return { final: fin, peak: peak, tp: tp, overshoot: (peak - fin) / Math.abs(fin) * 100, ts: ts };
   }
 
@@ -234,12 +237,12 @@
       fig.spec.xlim = [0, tmax];
       fig.spec.ylim = [0, Math.max(1.3, m.peak * 1.15)];
       var thr = z > 0 && z < 1 ? Math.exp(-Math.PI * z / Math.sqrt(1 - z * z)) * 100 : 0;
-      var thTs = z > 0 ? 4 / (z * wn) : NaN;
+      var thTs = z > 0 ? 4.6 / (z * wn) : NaN;
       setReadout(ro, [
         ['ζ', z.toFixed(2)], ['ωn', wn.toFixed(2) + ' rad/s'],
         ['超调量（仿真）', m.overshoot.toFixed(1) + '%'], ['超调量（理论）', thr.toFixed(1) + '%'],
-        ['调节时间 2%（仿真）', m.ts.toFixed(2) + ' s'],
-        ['调节时间（理论 4/ζωn 近似）', isFinite(thTs) ? thTs.toFixed(2) + ' s' : '—']
+        ['调节时间 ±1%（仿真）', m.ts.toFixed(2) + ' s'],
+        ['调节时间（理论 4.6/ζωn）', isFinite(thTs) ? thTs.toFixed(2) + ' s' : '—']
       ]);
       Fig.renderAll();
     }
@@ -380,7 +383,7 @@
         ['极点', pr.toFixed(2) + (pi >= 0.005 ? ' ± j' + pi.toFixed(2) : '')],
         ['零点', st.z.toFixed(2)],
         ['ωn', wnn.toFixed(3) + ' rad/s'], ['ζ', zz.toFixed(3)],
-        ['超调量', m.overshoot.toFixed(1) + '%'], ['调节时间 2%', m.ts.toFixed(2) + ' s']
+        ['超调量', m.overshoot.toFixed(1) + '%'], ['调节时间 ±1%', m.ts.toFixed(2) + ' s']
       ]);
       Fig.renderAll();
     }
@@ -446,7 +449,7 @@
       setReadout(ro, [
         ['当前情形', c.label], ['ωn', WN.toFixed(2) + ' rad/s'],
         ['超调量（仿真）', m.overshoot.toFixed(1) + '%'], ['超调量（理论）', thr.toFixed(1) + '%'],
-        ['调节时间 2%', m.ts.toFixed(2) + ' s']
+        ['调节时间 ±1%', m.ts.toFixed(2) + ' s']
       ]);
       Fig.renderAll();
     }

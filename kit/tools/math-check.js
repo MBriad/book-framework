@@ -16,7 +16,7 @@ all &= approx('den1 a2', den1[2], 4, 1e-9);
 var m1 = M.stepMetrics(M.stepFromTF(den1, [4], 12, 12 / 2000), 1);
 all &= approx('ζ=0.2 超调(%)', m1.overshoot, 52.66, 0.05);
 all &= approx('ζ=0.2 终值', m1.final, 1, 1e-6);
-all &= approx('ζ=0.2 ts(2%)', m1.ts, Math.log(50) / 0.4, 0.2);
+all &= approx('ζ=0.2 ts(±1%)', m1.ts, -Math.log(0.01 * Math.sqrt(1 - 0.2 * 0.2)) / 0.4, 0.3);
 
 // 2) 临界阻尼 ζ=1 → den = (s+2)^2
 var den2 = M.polyFromRoots([[-2, 0], [-2, 0]]);
