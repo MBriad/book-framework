@@ -47,6 +47,20 @@
 - 中间量单独列一行并说明来历（如 $\Delta_1=1$、$\Delta_2=0.25$ 要靠"接不接触"解释）
 - 未走到的步骤显示「？」，不要提前把答案漏出来
 
+## 3.6 控件、文案、图形三者必须一致
+
+**离散的参数不要用滑块。** 滑块能停在族里根本不存在的值上——高亮曲线只好自己现算，
+它不在参考灰线里，读数却写着那个值。用户原话：「这种离散值触发图的，你换成选值不是
+滑块不是更好吗」。离散就出**选值器**（`chips()`）。
+
+**文案里承诺的图上元素必须真的画出来。** 出过：附加极点模式的提示写「紫色虚线是无附加
+极点的基准」，代码却只在非 pole 模式算 `base`——那条虚线压根不存在。写提示时回头看一眼
+`draw()`。
+
+**凡随参数或模式变化的东西（尤其是读图提示）一律由组件在 `refresh()` 里重发**，不要在
+页面里写死；写死的一切换就对不上。这也是 `canonical-pair` 曾经整个抛 ReferenceError 的
+原因（调了 `note()` 却没声明 `note`）——组件报错时页面只留一片空白，不会自己喊。
+
 ## 4. 页面边界由用户定
 
 什么时候另起一页 / 另起一个子节，**由用户决定**。不要自作主张拆页。
@@ -59,7 +73,7 @@
 2. 现有原语确实做不出来；
 3. 用户**先确认了几何形状**。
 
-现有原语（11 个）：`step-2nd` `step-presets` `polezero-drag` `bode-cursor` `root-locus` `mason-flow` `integrator-chain` `canonical-pair` `step-metrics` `splane-geometry` `pole-catalog`。
+现有原语（12 个）：`step-2nd` `step-presets` `polezero-drag` `bode-cursor` `root-locus` `mason-flow` `integrator-chain` `canonical-pair` `step-metrics` `splane-geometry` `pole-catalog` `zero-pole-family`。
 
 > 理由：这个项目**内容是主体**。每加一个组件，用户就要在平板上多验一次，而内容一个字没增加。
 > 已经发生过：d3 在第 9 轮被选来画图，后来在 canvas.js 里自己写了坐标轴，**再也没回头删**，
