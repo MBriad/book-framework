@@ -30,6 +30,12 @@ window.SEARCH_INDEX = [
     "s": "System Modeling Diagrams 本节按你的笔记整理：你的总结按 分号 切成 sum，每个 sum 三段—— 原话（中性引用）→ 纠正（橙）→ 几何/直观图 ；我超"
   },
   {
+    "t": "Time-Domain Specifications",
+    "p": "sections/ch03-time-specs.html",
+    "k": "",
+    "s": "Time-Domain Specifications 两个 sum，都 先一阶再二阶 （图里用按钮切，默认一阶）。三段式：原话 → 纠正 → 几何图 + 读图提示。 SUM 1 时"
+  },
+  {
     "t": "Ch3 · Dynamic Response",
     "p": "sections/ch03.html",
     "k": "",

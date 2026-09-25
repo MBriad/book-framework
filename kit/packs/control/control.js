@@ -793,6 +793,264 @@
     render();
   });
 
+  /* ---------------- ⑩ 时域指标的图像理解：曲线上把指标标出来 ----------------
+     canvas（仿真曲线）。一阶默认，可切二阶。对应 Franklin Fig 3.20 的活版。 */
+  Ctl.Pack.register('step-metrics', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp0 = mk('p', 'ctl-widget-title'); tp0.textContent = ttl; el.appendChild(tp0); }
+    var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-md');
+    var ctl = controls(el), ro = readout(el);
+
+    var st = { mode: 'first', tau: 1, zeta: 0.3, wn: 2 };
+    var pts = [], info = {}, tmax = 6;
+
+    function firstCross(ys, level) {
+      for (var i = 0; i < ys.length; i++) if (ys[i][1] >= level) {
+        if (i === 0) return ys[0][0];
+        var a = ys[i - 1], b2 = ys[i];
+        var t = (level - a[1]) / ((b2[1] - a[1]) || 1);
+        return a[0] + (b2[0] - a[0]) * t;
+      }
+      return NaN;
+    }
+    function build() {
+      var den, num;
+      if (st.mode === 'first') {
+        den = [st.tau, 1]; num = [1];
+        info = { tau: st.tau };
+      } else {
+        var z = st.zeta, wn = st.wn;
+        var re = -z * wn, im = wn * Math.sqrt(Math.max(0, 1 - z * z));
+        den = polyFromRoots([[re, im], [re, -im]]); num = [wn * wn];
+        info = { zeta: z, wn: wn, sigma: -re, wd: im };
+      }
+      tmax = st.mode === 'first'
+        ? 6 * st.tau
+        : (info.sigma > 1e-3 ? Math.min(30, Math.max(3, 6 / info.sigma)) : Math.min(20, 4 * 2 * Math.PI / (info.wd || 1)));
+      pts = stepFromTF(den, num, tmax, tmax / 1200);
+      var m = stepMetrics(pts, 1);
+      info.m = m;
+      info.t10 = firstCross(pts, 0.1);
+      info.t90 = firstCross(pts, 0.9);
+      info.tr = info.t90 - info.t10;
+      info.ymax = Math.max(1.5, m.peak * 1.12);
+      if (st.mode === 'first') {
+        info.ts = 4.6 * st.tau;
+        info.tauY = 1 - Math.exp(-1);
+      } else {
+        info.ts = info.sigma > 1e-6 ? -Math.log(0.01 * Math.sqrt(1 - st.zeta * st.zeta)) / info.sigma : NaN;
+      }
+      Fig.renderAll();
+    }
+    var fig = Fig.create(f.canvas, {
+      xlim: [0, 6], ylim: [0, 1.6], xlabel: 't (s)', ylabel: 'y(t)',
+      draw: function (P) {
+        var C = P.C;
+        // 终值线 + ±1% 带
+        P.line([[P.xinv(P.L), 1], [P.xinv(P.R), 1]], C.muted, 1, [5, 4]);
+        if (isFinite(info.ts) && info.ts <= tmax) {
+          P.line([[info.ts, 0.99], [info.ts, 1.01]], C.accent2, 1.2);
+          P.line([[0, 0.99], [tmax, 0.99]], C.accent2, 1, [3, 3]);
+          P.line([[0, 1.01], [tmax, 1.01]], C.accent2, 1, [3, 3]);
+          P.text('t\u209B', P.x(info.ts), P.y(0.955), C.accent2, 'center', 'middle');
+          P.line([[info.ts, 0.98], [info.ts, 1.02]], C.accent2, 1);
+        }
+        // 上升时间（10%→90%）的尺寸线
+        if (isFinite(info.tr)) {
+          P.line([[info.t10, 0.1], [info.t10, info.ymax * 0.82]], C.line, 1, [2, 3]);
+          P.line([[info.t90, 0.9], [info.t90, info.ymax * 0.82]], C.line, 1, [2, 3]);
+          P.line([[info.t10, info.ymax * 0.82], [info.t90, info.ymax * 0.82]], C.accent, 1.2);
+          P.dot(info.t10, info.ymax * 0.82, C.accent, 2.5);
+          P.dot(info.t90, info.ymax * 0.82, C.accent, 2.5);
+          P.text('t\u1D63 (10%→90%)', P.x((info.t10 + info.t90) / 2), P.y(info.ymax * 0.82) - 10, C.accent, 'center', 'middle');
+        }
+        if (st.mode === 'first') {
+          // 初始斜率切线：t=0 处的切线正好在 t=τ 处到达终值
+          P.line([[0, 0], [st.tau, 1]], C.accent2, 1.2, [4, 3]);
+          P.dot(st.tau, info.tauY, C.accent2, 3.5);
+          P.line([[st.tau, 0], [st.tau, info.tauY]], C.accent2, 1, [2, 3]);
+          P.text('τ：63.2%', P.x(st.tau) + 34, P.y(info.tauY) + 4, C.accent2, 'center', 'middle');
+        } else {
+          // 峰值：Mp 与 tp
+          var m = info.m;
+          if (m.peak > 1.001) {
+            P.line([[m.tp, 1], [m.tp, m.peak]], C.accent2, 1.4);
+            P.dot(m.tp, m.peak, C.accent2, 3.5);
+            P.text('M\u209A', P.x(m.tp) + 16, P.y((1 + m.peak) / 2), C.accent2, 'center', 'middle');
+            P.line([[m.tp, 0], [m.tp, m.peak]], C.accent2, 1, [2, 3]);
+            P.text('t\u209A', P.x(m.tp), P.y(info.ymax * 0.06), C.accent2, 'center', 'middle');
+          }
+          // 衰减包络 1 + e^{-σt}/√(1-ζ²)
+          var env = [], sig = info.sigma, k = 1 / Math.sqrt(Math.max(1e-6, 1 - st.zeta * st.zeta));
+          for (var i = 0; i <= 200; i++) { var t = tmax * i / 200; env.push([t, 1 + Math.exp(-sig * t) * k]); }
+          P.line(env, C.accent, 1.2, [5, 4]);
+          P.text('包络 1+e^{-σt}/√(1-ζ²)', P.x(tmax * 0.36), P.y(Math.min(info.ymax - 0.12, 1 + 1.2 * k * 0.45)), C.accent, 'center', 'middle');
+        }
+        P.line(pts, C.ink, 1.8);
+      }
+    });
+    function seg() { return segmented(ctl, [{ label: '一阶' }, { label: '二阶' }], function (it, k) { st.mode = k === 0 ? 'first' : 'second'; syncCtl(); build(); }); }
+    var slTau = slider(ctl, 'τ', 0.3, 3, 0.05, st.tau, function (v) { return v.toFixed(2); }, function (v) { st.tau = v; build(); });
+    var slZ = slider(ctl, 'ζ', 0, 1.2, 0.02, st.zeta, function (v) { return v.toFixed(2); }, function (v) { st.zeta = v; build(); });
+    var slW = slider(ctl, 'ωn', 0.5, 5, 0.1, st.wn, function (v) { return v.toFixed(1); }, function (v) { st.wn = v; build(); });
+    function syncCtl() {
+      slTau.input.parentNode.style.display = st.mode === 'first' ? '' : 'none';
+      slZ.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
+      slW.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
+      var bs = ctl.querySelectorAll('.ctl-seg button');
+      if (bs.length === 2) {
+        bs[0].setAttribute('aria-pressed', st.mode === 'first' ? 'true' : 'false');
+        bs[1].setAttribute('aria-pressed', st.mode === 'second' ? 'true' : 'false');
+      }
+      fig.spec.xlim = [0, tmax];
+      fig.spec.ylim = [0, info.ymax || 1.6];
+    }
+    function refresh() {
+      build();
+      syncCtl();
+      if (st.mode === 'first') {
+        setReadout(ro, [
+          ['τ', st.tau.toFixed(2) + ' s'],
+          ['t=τ 时到', '63.2%'],
+          ['初始斜率', (1 / st.tau).toFixed(2)],
+          ['上升时间 10→90%', info.tr.toFixed(3) + ' s'],
+          ['调节时间 ±1%', info.ts.toFixed(2) + ' s（= 4.6τ）']
+        ]);
+      } else {
+        setReadout(ro, [
+          ['ζ / ωn', st.zeta.toFixed(2) + ' / ' + st.wn.toFixed(1)],
+          ['σ = ζωn', info.sigma.toFixed(3)],
+          ['ωd', info.wd.toFixed(3)],
+          ['Mp（仿真）', info.m.overshoot.toFixed(1) + '%'],
+          ['tp', info.m.tp.toFixed(3) + ' s'],
+          ['tr 10→90%', info.tr.toFixed(3) + ' s'],
+          ['ts ±1%', isFinite(info.ts) ? info.ts.toFixed(2) + ' s' : '—']
+        ]);
+      }
+      Fig.renderAll();
+    }
+    seg();
+    toolbar(el, fig, 'step-metrics');
+    build(); syncCtl(); refresh();
+  });
+
+  /* ---------------- ⑪ 时域指标的 s 域几何化：极点位置 → 指标 ----------------
+     canvas。左边 s 平面标出 σ / ωd / ωn / β 四个几何量，右边阶跃响应联动。 */
+  Ctl.Pack.register('splane-geometry', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp1 = mk('p', 'ctl-widget-title'); tp1.textContent = ttl; el.appendChild(tp1); }
+    var wrap = scaffold(el);
+    var fz = figBox(wrap, 'ctl-h-md', true), fs = figBox(wrap, 'ctl-h-md');
+    var ctl = controls(el), ro = readout(el);
+
+    var st = { mode: 'first', tau: 1, zeta: 0.3, wn: 2 };
+    var pts = [], info = {}, SX = [-4, 1.2], SY = [-3, 3];
+
+    function build() {
+      var den, num;
+      if (st.mode === 'first') {
+        den = [st.tau, 1]; num = [1];
+        info = { p: -1 / st.tau, sigma: 1 / st.tau };
+      } else {
+        var z = st.zeta, wn = st.wn;
+        var re = -z * wn, im = wn * Math.sqrt(Math.max(0, 1 - z * z));
+        den = polyFromRoots([[re, im], [re, -im]]); num = [wn * wn];
+        info = { re: re, im: im, sigma: -re, wd: im, wn: wn, beta: Math.acos(Math.min(1, z)) };
+      }
+      var tmax = st.mode === 'first' ? 6 * st.tau
+        : (info.sigma > 1e-3 ? Math.min(30, Math.max(3, 6 / info.sigma)) : Math.min(20, 4 * 2 * Math.PI / (info.wd || 1)));
+      pts = stepFromTF(den, num, tmax, tmax / 1200);
+      info.tmax = tmax;
+      info.m = stepMetrics(pts, 1);
+      // s 平面范围随参数走，否则 ωn 一大极点就出画
+      var rx = st.mode === 'first' ? Math.max(2, 1.5 / st.tau) : Math.max(2, 1.3 * st.wn);
+      var ry = st.mode === 'first' ? 1.5 : Math.max(1.2, 1.15 * st.wn);
+      figZ.spec.xlim = [-rx, 1];
+      figZ.spec.ylim = [-ry, ry];
+      Fig.renderAll();
+    }
+    var figZ = Fig.create(fz.canvas, {
+      xlim: SX, ylim: SY, equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        function dim(x1, y1, x2, y2, label, dx, dy) {
+          P.line([[x1, y1], [x2, y2]], C.accent, 1.2, [3, 3]);
+          P.dot(x1, y1, C.accent, 2.5); P.dot(x2, y2, C.accent, 2.5);
+          if (label) P.text(label, P.x((x1 + x2) / 2) + (dx || 0), P.y((y1 + y2) / 2) + (dy || 0), C.accent, 'center', 'middle');
+        }
+        if (st.mode === 'first') {
+          P.dot(info.p, 0, C.ink, 6);
+          P.line([[info.p - 0.12, -0.12], [info.p + 0.12, 0.12]], C.ink, 1.6);
+          P.line([[info.p - 0.12, 0.12], [info.p + 0.12, -0.12]], C.ink, 1.6);
+          dim(0, 0, info.p, 0, 'σ = 1/τ = ' + info.sigma.toFixed(2), 0, -16);
+        } else {
+          var a = [[info.re, info.im], [info.re, -info.im]];
+          for (var i = 0; i < 2; i++) {
+            P.dot(a[i][0], a[i][1], C.ink, 5);
+            P.line([[a[i][0] - 0.11, a[i][1] - 0.11], [a[i][0] + 0.11, a[i][1] + 0.11]], C.ink, 1.6);
+            P.line([[a[i][0] - 0.11, a[i][1] + 0.11], [a[i][0] + 0.11, a[i][1] - 0.11]], C.ink, 1.6);
+          }
+          dim(0, info.im, info.re, info.im, 'σ = ζωn = ' + info.sigma.toFixed(2), 0, -14);
+          dim(info.re, 0, info.re, info.im, 'ωd = ' + info.wd.toFixed(2), 26, 0);
+          dim(0, 0, info.re, info.im, 'ωn = ' + info.wn.toFixed(2), -30, 12);
+          // 与负实轴的夹角 β
+          var rr = Math.min(1.6, info.wn * 0.55);
+          var arc = [];
+          for (var k = 0; k <= 30; k++) {
+            var th = Math.PI - info.beta * (k / 30);   // 从负实轴转到极点方向
+            arc.push([rr * Math.cos(th), rr * Math.sin(th)]);
+          }
+          P.line(arc, C.accent2, 1.4);
+          P.text('β = arccos ζ = ' + (info.beta * 180 / Math.PI).toFixed(0) + '°',
+            P.x(-rr * 1.15), P.y(rr * 0.62), C.accent2, 'right', 'middle');
+        }
+      }
+    });
+    var figS = Fig.create(fs.canvas, {
+      xlim: [0, 6], ylim: [0, 1.7], xlabel: 't (s)', ylabel: 'y(t)',
+      draw: function (P) {
+        var C = P.C;
+        P.line([[0, 1], [info.tmax, 1]], C.muted, 1, [5, 4]);
+        P.line(pts, C.ink, 1.8);
+        if (st.mode === 'second' && info.m.peak > 1.001) {
+          P.line([[info.m.tp, 1], [info.m.tp, info.m.peak]], C.accent2, 1.4);
+          P.dot(info.m.tp, info.m.peak, C.accent2, 3.5);
+        }
+      }
+    });
+    var slTau = slider(ctl, 'τ', 0.3, 3, 0.05, st.tau, function (v) { return v.toFixed(2); }, function (v) { st.tau = v; build(); refresh(); });
+    var slZ = slider(ctl, 'ζ', 0, 1.2, 0.02, st.zeta, function (v) { return v.toFixed(2); }, function (v) { st.zeta = v; build(); refresh(); });
+    var slW = slider(ctl, 'ωn', 0.5, 5, 0.1, st.wn, function (v) { return v.toFixed(1); }, function (v) { st.wn = v; build(); refresh(); });
+    segmented(ctl, [{ label: '一阶' }, { label: '二阶' }], function (it, k) { st.mode = k === 0 ? 'first' : 'second'; build(); refresh(); });
+    function refresh() {
+      slTau.input.parentNode.style.display = st.mode === 'first' ? '' : 'none';
+      slZ.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
+      slW.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
+      if (st.mode === 'first') {
+        setReadout(ro, [
+          ['极点', info.p.toFixed(2) + '（实轴）'],
+          ['到虚轴距离', info.sigma.toFixed(2) + '  = 1/τ'],
+          ['结论', '离虚轴越远 → 衰减越快、调节时间越短']
+        ]);
+      } else {
+        setReadout(ro, [
+          ['极点', info.re.toFixed(2) + ' ± j' + info.im.toFixed(2)],
+          ['σ = ζωn（水平）', info.sigma.toFixed(3) + '　决定衰减'],
+          ['ωd（垂直）', info.wd.toFixed(3) + '　决定振荡'],
+          ['ωn（到原点）', info.wn.toFixed(3)],
+          ['β = arccos ζ', (info.beta * 180 / Math.PI).toFixed(1) + '°　与负实轴夹角']
+        ]);
+      }
+      Fig.renderAll();
+    }
+    toolbar(el, figZ, 'splane-geometry');
+    build(); refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

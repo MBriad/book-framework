@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time-Domain Specifications</title>
+</head>
+<body data-ch="ch03-time-specs">
+<main class="ctl-main">
+  <h1>Time-Domain Specifications</h1>
+  <p class="ctl-note">两个 sum，都<b>先一阶再二阶</b>（图里用按钮切，默认一阶）。三段式：原话 → 纠正 → 几何图 + 读图提示。</p>
+
+  <!-- ============ SUM 1 ============ -->
+  <h2>SUM 1　时域指标的图像理解</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>时域指标的图像理解（先一阶再二阶）</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>一阶只有一个参数 τ</b>，整条曲线由它定死。图上有四个几何量，其中两个其实是<b>同一件事</b>：</p>
+  <table>
+    <thead><tr><th>几何说法</th><th>数值</th></tr></thead>
+    <tbody>
+      <tr><td>$t=\tau$ 处的曲线高度</td><td>$63.2\%$</td></tr>
+      <tr><td>$t=0$ 处的<b>切线</b>在哪碰到终值</td><td>正好在 $t=\tau$</td></tr>
+      <tr><td>$10\%\to90\%$ 上升时间</td><td>$t_{r}=\tau\ln 9\approx2.20\tau$</td></tr>
+      <tr><td>$\pm1\%$ 误差带（$t_s$）</td><td>$t_{s}\approx4.6\tau$</td></tr>
+    </tbody>
+  </table>
+  <p>"切线在 $\tau$ 处碰到终值"就是一阶图形的全部秘密：$\tau$ 既是时间尺度，也是初始斜率 $1/\tau$ 的倒数。</p>
+
+  <p><b>二阶由 ζ 与 ωn 两个参数定死</b>，图上的几何量与公式一一对应：</p>
+  <table>
+    <thead><tr><th>图上看到的</th><th>公式</th><th>只由谁决定</th></tr></thead>
+    <tbody>
+      <tr><td>峰值超出终值的高度 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$</td><td><b>只由 ζ</b>，与 ωn 无关</td></tr>
+      <tr><td>峰值出现的时刻 $t_{p}$</td><td>$\pi/\omega_{d}$</td><td>ζ、ωn</td></tr>
+      <tr><td>衰减包络 $1+\dfrac{e^{-\sigma t}}{\sqrt{1-\zeta^{2}}}$ 碰到 $1\%$ 的时刻</td><td>$t_{s}\approx\dfrac{4.6}{\sigma}$</td><td><b>σ = ζωn</b></td></tr>
+      <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td>$t_{r}\cong\dfrac{1.8}{\omega_{n}}$</td><td>ωn</td></tr>
+    </tbody>
+  </table>
+  <p><b>一阶二阶的共同点</b>：调节时间都由"包络衰减到 $1\%$"决定——一阶 $4.6\tau$、二阶 $4.6/\sigma$。所以<b>σ（衰减率）才是决定 $t_s$ 的那个量</b>。这句话直接引出 SUM 2。</p></div>
+
+  <div data-primitive="step-metrics" data-title="几何图 ①：阶跃响应曲线 + 图上标出全部指标（按钮切一阶/二阶）"></div>
+  <p class="ctl-note">看图看哪里：一阶时拖 τ，注意<b>切线在 $t=\tau$ 处正好碰到终值</b>；切到二阶，拖 ζ 看 $M_p$ 变，再拖 ωn 看时间轴被拉伸压缩——<b>峰值高度不动</b>，因为 $M_p$ 只由 ζ 决定。</p>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>一阶 $G(s)=\dfrac{K}{\tau s+1}$，$y(t)=K(1-e^{-t/\tau})$，$t_{r}=\tau\ln9$，$t_{s}=4.6\tau$（$\pm1\%$）。</p>
+  <p>二阶 $M_{p}=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$，$t_{p}=\dfrac{\pi}{\omega_{d}}$，$t_{s}=\dfrac{-\ln\left(p\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$（$p=0.01$）。</p>
+  </details>
+
+  <!-- ============ SUM 2 ============ -->
+  <h2>SUM 2　时域指标的 s 域几何化</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>时域指标的s域几何化（先一阶再二阶）</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>极点在 s 平面上的位置，就是时域指标的几何编码。</b></p>
+  <p><b>一阶</b>：极点落在实轴的 $-1/\tau$。<b>它到虚轴的水平距离就是 $1/\tau$</b>——距离越大，衰减越快，$t_{s}$ 越短。一阶的全部信息就是这一个距离。</p>
+  <p><b>二阶</b>：一对共轭极点 $-\sigma\pm j\omega_{d}$，<b>四个几何量各管一个指标</b>：</p>
+  <table>
+    <thead><tr><th>几何量</th><th>图上是什么</th><th>管哪个指标</th></tr></thead>
+    <tbody>
+      <tr><td>$\sigma=\zeta\omega_{n}$</td><td>到<b>虚轴</b>的水平距离</td><td>衰减快慢 → $t_{s}$</td></tr>
+      <tr><td>$\omega_{d}$</td><td>到<b>实轴</b>的垂直距离</td><td>振荡快慢 → $t_{p}$</td></tr>
+      <tr><td>$\omega_{n}$</td><td>到<b>原点</b>的距离</td><td>整体时间尺度</td></tr>
+      <tr><td>$\beta=\arccos\zeta$</td><td>与<b>负实轴</b>的夹角</td><td>阻尼 → $M_{p}$</td></tr>
+    </tbody>
+  </table>
+  <p><b>三条最实用的读图法则</b>：</p>
+  <ul>
+    <li>极点<b>往右移</b>（$\sigma$ 变小）→ 衰减变慢、$t_{s}$ 变长</li>
+    <li>极点<b>往上下移</b>（$\omega_{d}$ 变大）→ 振荡变快、$t_{p}$ 变小</li>
+    <li><b>ζ 变而 ωn 不变</b> → 极点沿以原点为圆心、半径 $\omega_{n}$ 的<b>圆弧</b>滑动（因为 $\sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$）</li>
+  </ul></div>
+
+  <div data-primitive="splane-geometry" data-title="几何图 ②：s 平面上的 σ / ωd / ωn / β，右侧阶跃响应联动（按钮切一阶/二阶）"></div>
+  <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了；同时 $\beta$ 变小、$\sigma$ 变大、$M_p$ 变小。三条刻度线分别是到虚轴、到实轴、到原点的距离。</p>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>极点 $s_{1,2}=-\zeta\omega_{n}\pm j\omega_{n}\sqrt{1-\zeta^{2}}$，于是</p>
+  <p>$$\sigma=\zeta\omega_{n},\qquad \omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}},\qquad \zeta=\cos\beta,\qquad \sigma^{2}+\omega_{d}^{2}=\omega_{n}^{2}$$</p>
+  </details>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>ωn 不变、ζ 从 0.7 降到 0.3，s 平面上的极点怎么动？$M_p$、$t_s$、$t_p$ 各怎么变？
+      <details><summary>答案</summary>
+      <p>沿半径 $\omega_n$ 的圆弧向虚轴靠近。$\sigma=\zeta\omega_n$ 变小 → $t_s=4.6/\sigma$ <b>变长</b>；$\omega_d$ 变大 → $t_p=\pi/\omega_d$ <b>变短</b>；$\zeta$ 变小 → $M_p$ <b>变大</b>。</p></details></li>
+    <li>为什么说"$M_p$ 只由 ζ 决定"？
+      <details><summary>答案</summary>
+      <p>$M_p=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$ 里没有 $\omega_n$。几何上：$M_p$ 只看<b>极点的方向</b>（与负实轴的夹角），不看它离原点多远。</p></details></li>
+    <li>一阶系统拖大 τ（极点往原点靠），$t_s$ 怎么变？为什么？
+      <details><summary>答案</summary>
+      <p>$t_s\approx4.6\tau$ <b>变长</b>。几何原因：极点在 $-1/\tau$，τ 变大 → 到虚轴的距离 $1/\tau$ 变小 → 衰减更慢。</p></details></li>
+  </ol>
+  </div>
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>
