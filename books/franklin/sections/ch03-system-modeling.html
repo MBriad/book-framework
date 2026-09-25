@@ -46,47 +46,8 @@
     <li>所以控制标准型的 $a_i$ <b>全在第一行</b>、$b_i$ <b>全在 $C$ 里</b>——不是人为约定，是这张图<b>画出来就长这样</b>。</li>
   </ul></div>
 
-  <svg viewBox="0 0 620 280" role="img" aria-label="控制标准型框图">
-    <defs><marker id="cc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>
-    <g style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none">
-      <line x1="8" y1="90" x2="44" y2="90" marker-end="url(#cc-ar)"/>
-      <circle cx="66" cy="90" r="16"/>
-      <line x1="82" y1="90" x2="108" y2="90" marker-end="url(#cc-ar)"/>
-      <line x1="188" y1="90" x2="224" y2="90" marker-end="url(#cc-ar)"/>
-      <circle cx="244" cy="90" r="16"/>
-      <line x1="260" y1="90" x2="296" y2="90" marker-end="url(#cc-ar)"/>
-      <line x1="376" y1="90" x2="412" y2="90" marker-end="url(#cc-ar)"/>
-      <circle cx="432" cy="90" r="16"/>
-      <line x1="448" y1="90" x2="490" y2="90" marker-end="url(#cc-ar)"/>
-      <circle cx="508" cy="90" r="16"/>
-      <line x1="524" y1="90" x2="566" y2="90" marker-end="url(#cc-ar)"/>
-      <line x1="244" y1="106" x2="244" y2="212"/>
-      <line x1="432" y1="106" x2="432" y2="212"/>
-      <line x1="432" y1="212" x2="66" y2="212"/>
-      <line x1="66" y1="212" x2="66" y2="108" marker-end="url(#cc-ar)"/>
-      <line x1="244" y1="74" x2="244" y2="34"/>
-      <line x1="432" y1="74" x2="432" y2="34"/>
-      <line x1="244" y1="34" x2="508" y2="34"/>
-      <line x1="508" y1="34" x2="508" y2="72" marker-end="url(#cc-ar)"/>
-    </g>
-    <g style="stroke:var(--ctl-line);fill:var(--ctl-panel)">
-      <rect x="112" y="68" width="76" height="44" rx="6"/>
-      <rect x="300" y="68" width="76" height="44" rx="6"/>
-    </g>
-    <g style="fill:var(--ctl-ink);font-size:13px;font-family:inherit;text-anchor:middle">
-      <text x="150" y="95">1/s</text><text x="338" y="95">1/s</text>
-      <text x="244" y="96">x₁</text><text x="432" y="96">x₂</text>
-      <text x="66" y="78">+</text><text x="66" y="118">−</text>
-      <text x="508" y="78">+</text><text x="508" y="118">+</text>
-      <text x="20" y="78">u</text><text x="578" y="84">y</text>
-      <text x="256" y="186">a₁</text><text x="444" y="186">a₀</text>
-      <text x="256" y="58">b₁</text><text x="444" y="58">b₀</text>
-    </g>
-  </svg>
+  <div data-primitive="canonical-pair" data-default="ctrl" data-title="几何图 ②：控制标准型框图（按钮可切到观测标准型对比）"></div>
   <p class="ctl-note">二阶情形（$G=\dfrac{b_1s+b_0}{s^{2}+a_1s+a_0}$）：$x_1$、$x_2$ 各有一个 $1/s$；$a_1,a_0$ 回到同一个求和点；$b_1,b_0$ 汇到输出求和点。</p>
-
-  <div class="ctl-gap">这张图是<b>静态</b>的，先让你确认几何。确认后我把它做成可切换的交互（切到观测标准型时箭头整体反向）。</div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
@@ -99,7 +60,7 @@
 
   <div class="ctl-fix"><strong>纠正：</strong>完整名是 <b>observable canonical form</b>（观测标准型）。它和控制标准型是<b>转置对偶</b>：
   $$A_{o}=A_{c}^{\mathsf T},\qquad B_{o}=C_{c}^{\mathsf T},\qquad C_{o}=B_{c}^{\mathsf T}$$
-  <b>几何上</b>：把 SUM 2 那张图的<b>每条箭头反向</b>，并把输入输出的角色对调，就得到它。</div>
+  <b>几何上要说准</b>：不能简单说成"把框图箭头反过来"——那样得到的是一张输入输出对调的图。<b>准确说法</b>：信号流图转置（箭头全部反向）<b>再把输入输出对调</b>；落到框图上它是<b>另外一张图</b>，$a_i$、$b_i$ 都换了位置（见下面切换对比）。</div>
 
   <div class="ctl-supp"><span class="ctl-tag" data-src="补：两种标准型的结构对照">补</span>
   <table style="margin:.2em 0">
@@ -112,7 +73,8 @@
     </tbody>
   </table></div>
 
-  <div class="ctl-gap">这条的几何交互图<b>待建</b>：基于 SUM 2 那张图做「箭头整体反向」的切换，一眼看出对偶。我试的两版观测型布局都会撞线，而<b>我在这里看不到渲染结果</b>——所以先等你确认 SUM 2 的几何，再基于它做，不另起一张。</div>
+    <div data-primitive="canonical-pair" data-default="obs" data-title="几何图 ③：观测标准型框图（按钮可切回控制标准型对比）"></div>
+  <p class="ctl-note">对比着看两处换位：$b_i$ 从"输出抽头"变成<b>输入灌进各状态</b>的通道；$a_i$ 不再回到输入端，而是<b>作用在状态之间</b>；$y$ 直接取 $x_1$。</p>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>

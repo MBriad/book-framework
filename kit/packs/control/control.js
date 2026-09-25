@@ -513,74 +513,6 @@
     update();
   });
 
-  /* ---------------- ⑥ 标准型切换：控制标准型 ↔ 观测标准型 ----------------
-     纯 DOM（矩阵用 HTML 表格），不用 canvas。 */
-  Ctl.Pack.register('canonical-forms', function (el) {
-    el.classList.add('ctl-widget');
-    var ttl = el.getAttribute('data-title');
-    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
-
-    var st = { a1: 1.5, a0: 2, b1: 0.5, b0: 1 };
-    var which = 'ctrl';
-    var ctl = controls(el);
-    var box = mk('div', 'ctl-forms');
-    el.appendChild(box);
-    var ro = readout(el);
-
-    function fx(v) { var r = Math.round(v * 100) / 100; return r === 0 ? '0' : String(r); }
-    function cell(v, cls) { return '<td class="' + cls + '">' + v + '</td>'; }
-    function matrix(rows) {
-      return '<span class="ctl-mat"><table><tbody>' +
-        rows.map(function (r) { return '<tr>' + r.join('') + '</tr>'; }).join('') +
-        '</tbody></table></span>';
-    }
-    function poleText() {
-      var a1 = st.a1, a0 = st.a0, disc = a1 * a1 - 4 * a0;
-      if (disc >= 0) {
-        var r = Math.sqrt(disc);
-        return fx((-a1 + r) / 2) + ' 与 ' + fx((-a1 - r) / 2) + '（两个实根）';
-      }
-      return fx(-a1 / 2) + ' ± j' + fx(Math.sqrt(-disc) / 2) + '（一对共轭复根）';
-    }
-    function render() {
-      var A, Bm, Cm;
-      if (which === 'ctrl') {
-        A = matrix([[cell(fx(-st.a1), 'src-a'), cell(fx(-st.a0), 'src-a')],
-                    [cell('1', 'src-s'), cell('0', 'src-s')]]);
-        Bm = matrix([[cell('1', 'src-s')], [cell('0', 'src-s')]]);
-        Cm = matrix([[cell(fx(st.b1), 'src-b'), cell(fx(st.b0), 'src-b')]]);
-      } else {
-        A = matrix([[cell(fx(-st.a1), 'src-a'), cell('1', 'src-s')],
-                    [cell(fx(-st.a0), 'src-a'), cell('0', 'src-s')]]);
-        Bm = matrix([[cell(fx(st.b1), 'src-b')], [cell(fx(st.b0), 'src-b')]]);
-        Cm = matrix([[cell('1', 'src-s')], [cell('0', 'src-s')]]);
-      }
-      box.innerHTML =
-        '<div class="ctl-forms-row"><span class="ctl-forms-tag">传递函数</span>' +
-        '<span class="ctl-eq">G(s) = (' + fx(st.b1) + 's + ' + fx(st.b0) + ') / (s² + ' +
-        fx(st.a1) + 's + ' + fx(st.a0) + ')</span></div>' +
-        '<div class="ctl-forms-row"><span class="ctl-forms-tag">' +
-        (which === 'ctrl' ? '控制标准型' : '观测标准型') + '</span>' + A + Bm + Cm + '</div>' +
-        '<div class="ctl-forms-row"><span class="ctl-forms-tag">来源</span>' +
-        '<span class="ctl-note">蓝色 ← a₁、a₀　　橙色 ← b₁、b₀　　灰色 ← 结构常数</span></div>';
-      var stable = st.a1 > 0 && st.a0 > 0;
-      setReadout(ro, [
-        ['特征方程', 's² + ' + fx(st.a1) + 's + ' + fx(st.a0) + ' = 0'],
-        ['特征根', poleText()],
-        ['稳定性', stable ? '稳定（两极点在左半平面）' : '不稳定'],
-        ['阶数', '2 = 状态变量 2 个 = 积分器 1/s 两个 = 分母最高次 s²']
-      ]);
-    }
-    segmented(ctl, [{ label: '控制标准型' }, { label: '观测标准型' }], function (it, k) {
-      which = k === 0 ? 'ctrl' : 'obs'; render();
-    });
-    slider(ctl, 'a₁', 0, 3, 0.1, st.a1, function (v) { return v.toFixed(1); }, function (v) { st.a1 = v; render(); });
-    slider(ctl, 'a₀', 0.5, 6, 0.1, st.a0, function (v) { return v.toFixed(1); }, function (v) { st.a0 = v; render(); });
-    slider(ctl, 'b₁', -2, 2, 0.1, st.b1, function (v) { return v.toFixed(1); }, function (v) { st.b1 = v; render(); });
-    slider(ctl, 'b₀', -4, 4, 0.1, st.b0, function (v) { return v.toFixed(1); }, function (v) { st.b0 = v; render(); });
-    render();
-  });
-
   /* ---------------- ⑦ Mason 逐步展开 ----------------
      纯 SVG，不用 canvas。例子：P₁=abce、P₂=k，两条回路 f、g 互不接触。
      Mason 结果 G=(P₁Δ₁+P₂Δ₂)/Δ 已与代数解对拍：都等于 65。 */
@@ -739,6 +671,126 @@
     }
     slider(ctl, '阶数 n', 1, 5, 1, st.n, function (v) { return String(v); }, function (v) { st.n = v; refresh(); });
     refresh();
+  });
+
+  /* ---------------- ⑨ 两种标准型的框图对照 ----------------
+     几何原语：控制标准型 / 观测标准型 两张无交叉框图，按钮切换对比。
+     data-default="obs" 可让某处默认显示观测型。 */
+  Ctl.Pack.register('canonical-pair', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
+
+    var uid = 'cp' + (Ctl.Pack._uid = (Ctl.Pack._uid || 0) + 1);
+    var CTRL = '<svg viewBox="0 0 620 280" role="img" aria-label="控制标准型框图">' +
+      '<defs><marker id="__ID__c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+      '<path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>' +
+      '<g style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none">' +
+      '<line x1="8" y1="90" x2="48" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<circle cx="66" cy="90" r="16"/>' +
+      '<line x1="82" y1="90" x2="110" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<line x1="188" y1="90" x2="226" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<circle cx="244" cy="90" r="16"/>' +
+      '<line x1="260" y1="90" x2="298" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<line x1="376" y1="90" x2="414" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<circle cx="432" cy="90" r="16"/>' +
+      '<line x1="448" y1="90" x2="490" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<circle cx="508" cy="90" r="16"/>' +
+      '<line x1="524" y1="90" x2="566" y2="90" marker-end="url(#__ID__c)"/>' +
+      '<line x1="244" y1="106" x2="244" y2="212"/>' +
+      '<line x1="432" y1="106" x2="432" y2="212"/>' +
+      '<line x1="432" y1="212" x2="66" y2="212"/>' +
+      '<line x1="66" y1="212" x2="66" y2="108" marker-end="url(#__ID__c)"/>' +
+      '<line x1="244" y1="74" x2="244" y2="34"/>' +
+      '<line x1="432" y1="74" x2="432" y2="34"/>' +
+      '<line x1="244" y1="34" x2="508" y2="34"/>' +
+      '<line x1="508" y1="34" x2="508" y2="72" marker-end="url(#__ID__c)"/>' +
+      '</g>' +
+      '<g style="stroke:var(--ctl-line);fill:var(--ctl-panel)">' +
+      '<rect x="112" y="68" width="76" height="44" rx="6"/><rect x="300" y="68" width="76" height="44" rx="6"/></g>' +
+      '<g style="fill:var(--ctl-ink);font-size:13px;font-family:inherit;text-anchor:middle">' +
+      '<text x="150" y="95">1/s</text><text x="338" y="95">1/s</text>' +
+      '<text x="244" y="96">x₁</text><text x="432" y="96">x₂</text>' +
+      '<text x="66" y="76">+</text><text x="66" y="120">−</text>' +
+      '<text x="508" y="76">+</text><text x="508" y="120">+</text>' +
+      '<text x="20" y="76">u</text><text x="578" y="96">y</text>' +
+      '<text x="256" y="186">a₁</text><text x="444" y="186">a₀</text>' +
+      '<text x="256" y="56">b₁</text><text x="444" y="56">b₀</text></g></svg>';
+
+    var OBS = '<svg viewBox="0 0 620 330" role="img" aria-label="观测标准型框图">' +
+      '<defs><marker id="__ID__o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+      '<path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>' +
+      '<g style="stroke:var(--ctl-ink);stroke-width:1.6;fill:none">' +
+      '<line x1="8" y1="160" x2="36" y2="160"/>' +
+      '<line x1="40" y1="80" x2="40" y2="240"/>' +
+      '<line x1="40" y1="80" x2="82" y2="80" marker-end="url(#__ID__o)"/>' +
+      '<line x1="40" y1="240" x2="82" y2="240" marker-end="url(#__ID__o)"/>' +
+      '<circle cx="100" cy="80" r="16"/><circle cx="100" cy="240" r="16"/>' +
+      '<line x1="116" y1="80" x2="134" y2="80" marker-end="url(#__ID__o)"/>' +
+      '<line x1="212" y1="80" x2="227" y2="80" marker-end="url(#__ID__o)"/>' +
+      '<circle cx="244" cy="80" r="15"/>' +
+      '<line x1="259" y1="80" x2="320" y2="80" marker-end="url(#__ID__o)"/>' +
+      '<line x1="116" y1="240" x2="134" y2="240" marker-end="url(#__ID__o)"/>' +
+      '<line x1="212" y1="240" x2="227" y2="240" marker-end="url(#__ID__o)"/>' +
+      '<circle cx="244" cy="240" r="15"/>' +
+      '<line x1="244" y1="225" x2="244" y2="150"/><line x1="244" y1="150" x2="100" y2="150"/>' +
+      '<line x1="100" y1="150" x2="100" y2="96" marker-end="url(#__ID__o)"/>' +
+      '<line x1="244" y1="95" x2="244" y2="120"/><line x1="244" y1="120" x2="300" y2="120"/>' +
+      '<line x1="300" y1="120" x2="300" y2="290"/><line x1="300" y1="290" x2="100" y2="290"/>' +
+      '<line x1="100" y1="290" x2="100" y2="256" marker-end="url(#__ID__o)"/>' +
+      '<line x1="244" y1="65" x2="244" y2="20"/><line x1="244" y1="20" x2="100" y2="20"/>' +
+      '<line x1="100" y1="20" x2="100" y2="64" marker-end="url(#__ID__o)"/>' +
+      '</g>' +
+      '<g style="stroke:var(--ctl-line);fill:var(--ctl-panel)">' +
+      '<rect x="136" y="58" width="76" height="44" rx="6"/><rect x="136" y="218" width="76" height="44" rx="6"/></g>' +
+      '<g style="fill:var(--ctl-ink);font-size:13px;font-family:inherit;text-anchor:middle">' +
+      '<text x="174" y="85">1/s</text><text x="174" y="245">1/s</text>' +
+      '<text x="244" y="85">x₁</text><text x="244" y="245">x₂</text>' +
+      '<text x="84" y="68">+</text><text x="84" y="110">+</text><text x="86" y="48">−</text>' +
+      '<text x="84" y="228">+</text><text x="86" y="272">−</text>' +
+      '<text x="20" y="148">u</text><text x="330" y="96">y</text>' +
+      '<text x="58" y="68">b₁</text><text x="58" y="260">b₀</text>' +
+      '<text x="172" y="142">1</text><text x="172" y="12">a₁</text><text x="312" y="182">a₀</text></g></svg>';
+
+    var box = mk('div', 'ctl-cpair');
+    box.innerHTML =
+      '<div class="cpane" data-form="ctrl">' + CTRL.split('__ID__').join(uid) + '</div>' +
+      '<div class="cpane" data-form="obs" hidden>' + OBS.split('__ID__').join(uid) + '</div>';
+    el.appendChild(box);
+    var ctl = controls(el);
+    var ro = readout(el);
+
+    var which = el.getAttribute('data-default') === 'obs' ? 'obs' : 'ctrl';
+    function render() {
+      var panes = box.querySelectorAll('.cpane');
+      for (var k = 0; k < panes.length; k++) panes[k].hidden = panes[k].getAttribute('data-form') !== which;
+      if (which === 'ctrl') {
+        setReadout(ro, [
+          ['闭环 $a_i$ 的位置', '各状态 → 送回输入端求和点'],
+          ['$b_i$ 的位置', '各状态 → 汇到输出求和点'],
+          ['$y$', '各状态加权之和'],
+          ['$A$', '[−a₁, −a₀; 1, 0]'], ['$B$', '[1; 0]'], ['$C$', '[b₁, b₀]']
+        ]);
+      } else {
+        setReadout(ro, [
+          ['闭环 $a_i$ 的位置', '作用在状态之间（不回到输入端）'],
+          ['$b_i$ 的位置', '输入 → 灌进各个状态'],
+          ['$y$', '直接取 $x_1$'],
+          ['$A$', '[−a₁, 1; −a₀, 0]'], ['$B$', '[b₁; b₀]'], ['$C$', '[1, 0]']
+        ]);
+      }
+      if (global.renderMathInElement) {
+        try { global.renderMathInElement(ro, { delimiters: [{ left: '$', right: '$', display: false }], throwOnError: false }); } catch (e) {}
+      }
+    }
+    segmented(ctl, [{ label: '控制标准型' }, { label: '观测标准型' }], function (it, k) {
+      which = k === 0 ? 'ctrl' : 'obs'; render();
+    });
+    if (which === 'obs') {
+      var btns = ctl.querySelectorAll('.ctl-seg button');
+      if (btns.length === 2) { btns[0].setAttribute('aria-pressed', 'false'); btns[1].setAttribute('aria-pressed', 'true'); }
+    }
+    render();
   });
 
   Ctl.ControlMath = {
