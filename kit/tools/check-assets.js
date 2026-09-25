@@ -81,7 +81,35 @@ for (const b of controlJs.matchAll(/register\('([^']+)'[\s\S]*?(?=register\('|Ct
   }
 }
 
-// 6) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
+// 6) JS 字符串里的 LaTeX：反斜杠必须写成 \\，否则会被吃掉
+//    出过的事故：'$\zeta$' 运行时是 '$zeta$'（\z 不是合法转义，反斜杠直接消失），
+//    '$\pm1\%$' 变成 '$pm1%$'，而 '$t=\tau$' 里的 \t 是**合法**转义 → 变成一个真正的 TAB。
+//    页面上看到的就是 "zeta"、"pm1%" 和一个莫名其妙的制表符。
+{
+  // 只用含 $ 的字符串来判：那是 LaTeX。BS 用 fromCharCode 拿到，
+  // 免得这段检查代码自己又踩一遍同样的转义坑。
+  const BS = String.fromCharCode(92);
+  const LF = String.fromCharCode(10);
+  for (const m of controlJs.matchAll(/'[^']*'/g)) {
+    const lit = m[0];
+    if (lit.indexOf('$') < 0) continue;
+    const inner = lit.slice(1, -1);
+    for (let i = 0; i < inner.length; i++) {
+      if (inner[i] !== BS) continue;
+      const c = inner[i + 1];
+      if (c === BS) { i++; continue; }        // 两个反斜杠 = 正确写法，跳过这一对
+      if (!c || !/[a-zA-Z]/.test(c)) continue;
+      if (c === 'u' || c === 'x') continue;   // 合法的 Unicode 转义
+      const line = controlJs.slice(0, m.index).split(LF).length;
+      console.log('✗ control.js:' + line + '  字符串里的 ' + BS + c +
+        ' 会被当成转义吃掉（LaTeX 要写两个反斜杠）: ' + lit.slice(0, 56));
+      bad++;
+      break;
+    }
+  }
+}
+
+// 7) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
 const unused = [...registered].filter(n => !used.has(n));
 console.log('已注册组件: ' + [...registered].join(', '));
 console.log('页面在用组件: ' + [...used.keys()].join(', '));
