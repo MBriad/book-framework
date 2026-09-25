@@ -599,19 +599,19 @@
       '<defs><marker id="mason-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
       '<path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>' +
       '<path class="br" data-b="k" d="M48,186 C48,258 540,258 540,186" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="294" y="268">k</text>' +
+      '<text class="gl" x="294" y="268">k = 1</text>' +
       '<line class="br" data-b="a" x1="64" y1="170" x2="150" y2="170" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="107" y="160">a</text>' +
+      '<text class="gl" x="107" y="160">a = 2</text>' +
       '<line class="br" data-b="b" x1="184" y1="170" x2="270" y2="170" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="227" y="160">b</text>' +
+      '<text class="gl" x="227" y="160">b = 2</text>' +
       '<line class="br" data-b="c" x1="304" y1="170" x2="390" y2="170" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="347" y="160">c</text>' +
+      '<text class="gl" x="347" y="160">c = 2</text>' +
       '<line class="br" data-b="e" x1="424" y1="170" x2="522" y2="170" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="473" y="160">e</text>' +
+      '<text class="gl" x="473" y="160">e = 2</text>' +
       '<path class="br" data-b="f" d="M158,157 C138,112 198,112 178,157" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="168" y="104">f</text>' +
+      '<text class="gl" x="168" y="104">f = 0.5</text>' +
       '<path class="br" data-b="g" d="M398,157 C378,112 438,112 418,157" marker-end="url(#mason-ar)"/>' +
-      '<text class="gl" x="408" y="104">g</text>' +
+      '<text class="gl" x="408" y="104">g = 0.5</text>' +
       '<circle class="nd" data-n="1" cx="48" cy="170" r="16"/><text class="nl" x="48" y="175">1</text>' +
       '<circle class="nd" data-n="2" cx="168" cy="170" r="16"/><text class="nl" x="168" y="175">2</text>' +
       '<circle class="nd" data-n="3" cx="288" cy="170" r="16"/><text class="nl" x="288" y="175">3</text>' +
@@ -626,7 +626,7 @@
 
     var STEPS = [
       { t: '整张信号流图。先别急着算，按顺序数：<b>前向通道</b> → <b>回路</b> → <b>互不接触的回路对</b>。', hot: [], hotN: [] },
-      { t: '<b>第 1 条前向通道</b>：1→2→3→4→5，增益 $P_1=abce=16$。', hot: ['a', 'b', 'c', 'e'], hotN: ['1', '2', '3', '4', '5'] },
+      { t: '<b>第 1 条前向通道</b>：1→2→3→4→5。$P_1=abce=2\\times2\\times2\\times2=16$。', hot: ['a', 'b', 'c', 'e'], hotN: ['1', '2', '3', '4', '5'] },
       { t: '<b>第 2 条前向通道</b>：1→5 直通，增益 $P_2=k=1$。走下面那条弧线。', hot: ['k'], hotN: ['1', '5'] },
       { t: '<b>回路 L₁</b>：节点 2 上的自环，$L_1=f=0.5$。回路增益 = 环上所有支路增益之积。', hot: ['f'], hotN: ['2'] },
       { t: '<b>回路 L₂</b>：节点 4 上的自环，$L_2=g=0.5$。', hot: ['g'], hotN: ['4'] },
@@ -663,13 +663,14 @@
       note.innerHTML = '<b>第 ' + (cur + 1) + ' / ' + STEPS.length + ' 步</b>　' + s.t;
       typeset(note);
       setReadout(ro, [
-        ['P₁ = a·b·c·e', val(P1, 1)],
-        ['P₂ = k', val(P2, 2)],
-        ['L₁ = f', val(L1, 3)],
-        ['L₂ = g', val(L2, 4)],
-        ['L₁L₂（互不接触）', val(L1L2, 5)],
-        ['Δ = 1 − (L₁+L₂) + L₁L₂', val(D, 5)],
-        ['G = (P₁Δ₁ + P₂Δ₂)/Δ', val(GT, 6)]
+        ['P₁', val('abce = 2×2×2×2 = 16', 1)],
+        ['P₂', val('k = 1', 2)],
+        ['L₁', val('f = 0.5', 3)],
+        ['L₂', val('g = 0.5', 4)],
+        ['L₁L₂（互不接触）', val('0.5 × 0.5 = 0.25', 5)],
+        ['Δ', val('1 − (0.5+0.5) + 0.25 = 0.25', 5)],
+        ['Δ₁ / Δ₂', val('1 / 0.25（P₁ 碰两条回路，P₂ 谁都不碰）', 6)],
+        ['G', val('(16×1 + 1×0.25) / 0.25 = 65', 6)]
       ]);
       prevB.disabled = cur === 0;
       nextB.disabled = cur === STEPS.length - 1;
