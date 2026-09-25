@@ -16,7 +16,8 @@
       ink: cssVar('--ctl-ink', '#111'), muted: cssVar('--ctl-muted', '#666'),
       line: cssVar('--ctl-line', '#ccc'), grid: cssVar('--ctl-grid', '#eee'),
       accent: cssVar('--ctl-accent', '#1f6feb'), accent2: cssVar('--ctl-accent2', '#b45309'),
-      c3: cssVar('--ctl-c3', '#0f766e'), c4: cssVar('--ctl-c4', '#7c3aed')
+      c3: cssVar('--ctl-c3', '#0f766e'), c4: cssVar('--ctl-c4', '#7c3aed'),
+      c5: cssVar('--ctl-c5', '#dc2626')
     };
   }
 

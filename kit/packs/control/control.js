@@ -808,8 +808,6 @@
      canvas（仿真曲线）。一阶默认，可切二阶。对应 Franklin Fig 3.20 的活版。 */
   Ctl.Pack.register('step-metrics', function (el) {
     el.classList.add('ctl-widget');
-    var ttl = el.getAttribute('data-title');
-    if (ttl) { var tp0 = mk('p', 'ctl-widget-title'); tp0.textContent = ttl; el.appendChild(tp0); }
     var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-md');
     var ctl = controls(el), ro = readout(el);
 
@@ -862,9 +860,12 @@
         P.line([[P.xinv(P.L), 1], [P.xinv(P.R), 1]], C.muted, 1, [5, 4]);
 
         if (st.mode === 'first') {
-          // t=0 的切线正好在 t=τ 处碰到终值——这是 τ 的几何本质
-          P.line([[0, 0], [st.tau, 1]], C.accent2, 1.8, [6, 3]);
-          P.line([[st.tau, 0], [st.tau, 1]], C.accent2, 1, [2, 3]);
+          // t=0 的切线正好在 t=τ 处碰到终值——这是 τ 的几何本质。
+          // 用红色，与橙色的 τ 竖线区分开，免得看不出哪条是切线。
+          P.line([[0, 0], [st.tau, 1]], C.c5, 2.2);
+          P.dot(0, 0, C.c5, 3.5);
+          P.text('t = 0 处的切线', P.x(st.tau), P.y(1.13), C.c5, 'center', 'middle');
+          P.line([[st.tau, 0], [st.tau, 1]], C.accent2, 1.2, [2, 3]);
           P.dot(st.tau, info.tauY, C.accent2, 4);
           P.text('τ = ' + st.tau.toFixed(2) + '　到 63.2%', P.x(st.tau) + 10, P.y(info.tauY), C.accent2, 'left', 'middle');
         } else {
@@ -952,8 +953,6 @@
      canvas。左边 s 平面标出 σ / ωd / ωn / β 四个几何量，右边阶跃响应联动。 */
   Ctl.Pack.register('splane-geometry', function (el) {
     el.classList.add('ctl-widget');
-    var ttl = el.getAttribute('data-title');
-    if (ttl) { var tp1 = mk('p', 'ctl-widget-title'); tp1.textContent = ttl; el.appendChild(tp1); }
     var wrap = scaffold(el);
     var fz = figBox(wrap, 'ctl-h-md', true), fs = figBox(wrap, 'ctl-h-md');
     var lg = mk('div', 'ctl-legend');
@@ -1122,9 +1121,7 @@
      图鉴的价值就在"一眼看全"，加拖拽反而毁掉它。 */
   Ctl.Pack.register('pole-catalog', function (el) {
     el.classList.add('ctl-widget');
-    var ttl = el.getAttribute('data-title');
-    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
-    var wrap = scaffold(el);
+    var wrap = scaffold(el);   // scaffold 内部已加标题，不要再手写一遍
     var fz = figBox(wrap, 'ctl-h-lg'), fs = figBox(wrap, 'ctl-h-xl');
 
     var TMAX = 4;

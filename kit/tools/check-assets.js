@@ -55,7 +55,15 @@ if (!/\.ctl-mason \.br\{[^}]*fill:none/.test(packCss)) {
   bad++;
 }
 
-// 4) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
+// 4) 调了 scaffold() 又手写标题 → 标题会重复（scaffold 内部已经加过一次）
+for (const b of controlJs.matchAll(/register\('([^']+)'[\s\S]*?(?=register\('|Ctl\.ControlMath)/g)) {
+  if (b[0].includes('scaffold(el)') && b[0].includes("'ctl-widget-title'")) {
+    console.log('✗ ' + b[1] + '：调了 scaffold() 又手写 ctl-widget-title —— 标题会重复显示两次');
+    bad++;
+  }
+}
+
+// 5) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
 const unused = [...registered].filter(n => !used.has(n));
 console.log('已注册组件: ' + [...registered].join(', '));
 console.log('页面在用组件: ' + [...used.keys()].join(', '));
