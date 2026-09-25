@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T1 · 起始页：怎么测</title>
+</head>
+<body data-ch="t1">
+<main class="ctl-main">
+
+  <h1>T1 · 滑动测试 · 起始页</h1>
+  <p class="ctl-note">这是一本独立的测试小书，不占用 Franklin 那本的导航。测完可以删掉整个 <code>books/swipe-test/</code>。</p>
+
+  <div class="ctl-supp"><span class="ctl-tag" data-src="测试说明">测</span>
+  <strong>向左划 = 下一节</strong>，向右划 = 上一节。在本页正文的<b>空白处</b>横向划动手指试试。</div>
+
+  <h2>基本滑动</h2>
+  <ol>
+    <li>本页空白处<b>向左划</b> → 应该翻到 T2</li>
+    <li>到 T2 后<b>向右划</b> → 应该回到本页</li>
+    <li>连续向左划，能 T1 → T2 → T3 → T4 一路走完</li>
+    <li>垂直上下滚动页面 → <b>不应该</b>翻页</li>
+  </ol>
+
+  <h2>边缘滑动</h2>
+  <p>把手指放在<b>屏幕最左侧 30 像素以内</b>再向右划 → <b>不应该</b>翻页（这是留给 iPadOS 返回手势的，划了可能直接退出页面）。</p>
+
+  <p class="ctl-note">下一站的 T2 / T3 专测「不该翻的时候别翻」——那是这次改动最容易出问题的地方。</p>
+
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>

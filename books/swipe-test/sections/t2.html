@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T2 · 护栏一：交互图与代码块</title>
+</head>
+<body data-ch="t2">
+<main class="ctl-main">
+
+  <h1>T2 · 护栏一：交互图与代码块</h1>
+
+  <div class="ctl-supp"><span class="ctl-tag" data-src="测试说明">测</span>
+  <strong>按在这两张图上横向划，页面不应该跳走。</strong>手指落在图上的拖动应该被交互图自己吃掉——只动图，页面纹丝不动。这是本次改动最容易坏的地方，请重点试。</div>
+
+  <div data-primitive="polezero-drag" data-title="测点 ①：在 s 平面上拖极点、拖零点，试着横着划"></div>
+
+  <div data-primitive="root-locus" data-title="测点 ②：拖 K 的滑杆，以及直接在图上横着划"></div>
+
+  <h2>测点 ③：超宽代码块</h2>
+  <p>下面这段故意写得很宽（会横向滚动）。在代码块上横向划，也应该只滚动代码、不翻页。</p>
+  <pre><code>G = tf(30, [1 11 10 0]);  margin(G);  %% 这是一行故意写得很长的注释，用来制造横向滚动条，测试代码块上的横向滑动是否会被翻页手势抢走</code></pre>
+
+  <h2>测点 ④：正文空白处</h2>
+  <p>这一段是普通正文。在<b>这里</b>向左划，就应该正常翻到 T3——说明护栏只挡住了控件，没有把整页的滑动一起挡死。</p>
+
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>

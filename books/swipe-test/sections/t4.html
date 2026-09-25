@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T4 · 结果对照清单</title>
+</head>
+<body data-ch="t4">
+<main class="ctl-main">
+
+  <h1>T4 · 结果对照清单</h1>
+  <p class="ctl-note">逐条对照。哪一条不符就把编号和当时的操作告诉我。</p>
+
+  <div class="ctl-test">
+  <h4>滑动翻页</h4>
+  <ol>
+    <li>正文空白处向左划 → 翻到下一节</li>
+    <li>正文空白处向右划 → 回到上一节</li>
+    <li>T1→T4 能一路划完；T4 向左划<b>没有反应</b>（已是最后一节）</li>
+    <li>T1 向右划<b>没有反应</b>（已是第一节）</li>
+    <li>垂直上下滚动 → 不翻页</li>
+    <li>斜着划（大概 45°）→ 不翻页</li>
+    <li>最左侧 30px 以内向右划 → 不翻页</li>
+    <li>双指捏合缩放 → 不翻页</li>
+  </ol>
+  </div>
+
+  <div class="ctl-test">
+  <h4>护栏：不该翻的时候别翻</h4>
+  <ol>
+    <li>在 s 平面图（polezero）上横向拖 → 只动极点，页面不动</li>
+    <li>在根轨迹图上横向划 → 页面不动</li>
+    <li>在 ζ / ωn 滑杆上左右拖 → 只动滑块，页面不动</li>
+    <li>点四个分段按钮 → 只切换情形，页面不动</li>
+    <li>在超宽代码块上横向划 → 只滚动代码，页面不动</li>
+  </ol>
+  </div>
+
+  <div class="ctl-test">
+  <h4>其他</h4>
+  <ol>
+    <li>触屏设备：页尾有一行小字「← 左右滑动可翻页」</li>
+    <li>桌面浏览器：页尾<b>没有</b>那行小字，也<b>没有任何翻页按钮</b></li>
+    <li>窄屏：点「目录」展开后，点屏幕空白处能收起，且不会误触链接</li>
+    <li>顶部标签页标题、左右栏、暗色切换都正常</li>
+  </ol>
+  </div>
+
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>
