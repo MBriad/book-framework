@@ -110,6 +110,53 @@
     </tbody>
   </table>
 
+  <h3>反馈结构：开环、闭环、误差传递函数</h3>
+  <svg viewBox="0 0 560 176" width="100%" style="max-width:560px;display:block;margin:.8em auto .2em" role="img" aria-label="标准反馈回路方框图">
+    <defs>
+      <marker id="ctl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-ink)"/>
+      </marker>
+    </defs>
+    <g style="stroke:var(--ctl-ink);stroke-width:1.5;fill:none">
+      <line x1="10" y1="62" x2="44" y2="62" marker-end="url(#ctl-arrow)"/>
+      <circle cx="62" cy="62" r="16"/>
+      <line x1="78" y1="62" x2="146" y2="62" marker-end="url(#ctl-arrow)"/>
+      <rect x="148" y="40" width="106" height="44" rx="6" style="stroke:var(--ctl-line);fill:var(--ctl-panel)"/>
+      <line x1="254" y1="62" x2="404" y2="62" marker-end="url(#ctl-arrow)"/>
+      <line x1="340" y1="62" x2="340" y2="136"/>
+      <line x1="340" y1="136" x2="62" y2="136"/>
+      <line x1="62" y1="136" x2="62" y2="80" marker-end="url(#ctl-arrow)"/>
+      <rect x="186" y="114" width="100" height="44" rx="6" style="stroke:var(--ctl-line);fill:var(--ctl-panel)"/>
+    </g>
+    <g style="fill:var(--ctl-ink);font-size:13px;font-family:inherit">
+      <text x="17" y="52">R</text>
+      <text x="201" y="68" text-anchor="middle">G(s)</text>
+      <text x="412" y="67">Y</text>
+      <text x="236" y="142" text-anchor="middle">H(s)</text>
+      <text x="44" y="48" text-anchor="middle">+</text>
+      <text x="74" y="94" text-anchor="middle">−</text>
+    </g>
+  </svg>
+  <p>前向通路 $G(s)$，反馈通路 $H(s)$，相加点处 $E(s)=R(s)-H(s)Y(s)$。</p>
+  <table>
+    <thead><tr><th>量</th><th>表达式</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>开环传递函数（回路增益）$L(s)$</td><td>$G(s)H(s)$</td><td>把回路断开后，前向通路与反馈通路的乘积</td></tr>
+      <tr><td>闭环传递函数 $\dfrac{Y}{R}$</td><td>$\dfrac{G}{1+GH}$</td><td>参考输入到输出</td></tr>
+      <tr><td>误差传递函数 $\dfrac{E}{R}$</td><td>$\dfrac{1}{1+GH}$</td><td>$E=R-HY$ 是<b>相加点处</b>的作用误差</td></tr>
+      <tr><td>闭环特征方程</td><td>$1+G(s)H(s)=0$</td><td>稳定性、根轨迹、Bode 判稳都从它出发</td></tr>
+      <tr><td>单位反馈 $H=1$</td><td>$\dfrac{G}{1+G}$，$\dfrac{1}{1+G}$</td><td>最常见的情形</td></tr>
+      <tr><td>稳态误差</td><td>$e_{ss}=\lim_{s\to0}sE(s)$</td><td>终值定理，<b>前提是系统稳定</b></td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note"><b>两个最常混的点</b>：①「开环传递函数」<b>不是</b>「没有反馈的系统」——它指的是<b>把回路断开后</b>得到的 $GH$，判稳、画根轨迹、看 Bode 用的都是它；②误差 $E=R-HY$ 是相加点处的信号，当 $H\neq1$ 时它和 $R-Y$ 不是一回事。</p>
+
+  <h3>扰动作用下的传递函数</h3>
+  <p>结构：$R\to$ 相加点 $\to G_{1}\to$ 相加点（扰动 $D$ 由此注入）$\to G_{2}\to Y$，反馈通路 $H$。回路增益 $L=G_{1}G_{2}H$。</p>
+  <p>$$\left.\dfrac{Y}{D}\right|_{R=0}=\dfrac{G_{2}}{1+L},\qquad\qquad \left.\dfrac{Y}{R}\right|_{D=0}=\dfrac{G_{1}G_{2}}{1+L}$$</p>
+  <p>$$\left.\dfrac{E}{D}\right|_{R=0}=-\dfrac{G_{2}H}{1+L}$$</p>
+  <p class="ctl-note">$Y/D$ 的分子里只有 $G_{2}$——扰动注在对象<b>输入端</b>，所以它不经过 $G_{1}$。要压低扰动对输出的影响，靠的是<b>分母里的 $G_{1}$</b>（加大控制器增益）。这就是控制器要放在扰动点<b>之前</b>的原因。</p>
+
   <h3>初值定理与终值定理</h3>
   <p>$$f(0^{+})=\lim_{s\to\infty}sF(s)\qquad\qquad f(\infty)=\lim_{s\to0}sF(s)$$</p>
   <p class="ctl-note"><b>终值定理的适用条件</b>：只有 $sF(s)$ 的极点全部在左半平面（原点处最多允许一个一阶极点）时成立。右半平面有极点、或虚轴上有共轭极点（等幅振荡）时，用它会得到错误答案——那种情况根本没有终值。</p>
