@@ -76,6 +76,30 @@
   <div data-primitive="splane-geometry" data-title="几何图 ②：s 平面上的 σ / ωd / ωn / β，右侧阶跃响应联动（按钮切一阶/二阶）"></div>
   <p class="ctl-note">看图看哪里：拖 ζ，看极点是沿<b>圆弧</b>滑动而不是直线——因为 ωn 被固定住了；同时橙色的 $\theta$ 变大、蓝色的 $\sigma$ 变大、$M_p$ 变小。三条刻度线分别是到虚轴、到实轴、到原点的距离。</p>
 
+  <div class="ctl-supp"><span class="ctl-tag" data-src="补：Franklin §3.3 里我先前跳过的一块">补</span>
+  <p><b>部分分式展开 → 每一项的权重 → 谁主导早期、谁主导后期。</b></p>
+  <p>书上第一句关键话：<b>分子（零点）只影响每一项的系数，不影响形态</b>——形态由极点决定。原话是
+  "the role of the numerator … is to influence the size of the coefficient that multiplies each component"。</p>
+  <p><b>例 3.25</b>：$H(s)=\dfrac{2s+1}{s^{2}+3s+2}$，极点 $s=-1,\,-2$，零点 $s=-\tfrac{1}{2}$。部分分式展开：</p>
+  <p>$$H(s)=\frac{-1}{s+1}+\frac{3}{s+2}\qquad\Longrightarrow\qquad h(t)=-e^{-t}+3e^{-2t}$$</p>
+  <p>两个极点 → 两个模态：$e^{-t}$（时间常数 $1$，<b>慢</b>）与 $e^{-2t}$（时间常数 $1/2$，<b>快</b>）。
+  <b>快的衰减得快，所以它只在开头有戏。</b></p>
+  <table>
+    <thead><tr><th>$t$</th><th>慢项 $-e^{-t}$</th><th>快项 $3e^{-2t}$</th><th>和 $h(t)$</th><th>慢项占的比重</th></tr></thead>
+    <tbody>
+      <tr><td>$0$</td><td>$-1.000$</td><td>$3.000$</td><td>$2.000$</td><td>$25\%$</td></tr>
+      <tr><td>$0.5$</td><td>$-0.607$</td><td>$1.104$</td><td>$0.497$</td><td>$35\%$</td></tr>
+      <tr><td>$1$</td><td>$-0.368$</td><td>$0.406$</td><td>$0.038$</td><td>$48\%$</td></tr>
+      <tr><td>$1.5$</td><td>$-0.223$</td><td>$0.149$</td><td>$-0.074$</td><td>$60\%$</td></tr>
+      <tr><td>$2$</td><td>$-0.135$</td><td>$0.055$</td><td>$-0.080$</td><td>$71\%$</td></tr>
+      <tr><td>$3$</td><td>$-0.050$</td><td>$0.007$</td><td>$-0.042$</td><td>$87\%$</td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note">两项大小相等的时刻：$-e^{-t}=3e^{-2t}\Rightarrow t=\ln 3\approx1.10$。看最后一列——<b>慢项的比重从 25% 涨到 88%</b>，这就是"快项退场、慢项接管"的过程。</p>
+  <p><b>一句话</b>：$h(t)$ 的形状 = 各极点的模态按"分子给的权重"叠起来，<b>快的项管早期、慢的项管后期</b>。这就是 Fig 3.17 想让你看到的东西。</p>
+  <p><b>为什么这是通往"主导极点"的门</b>：若某个极点离虚轴<b>远得多</b>（快得多），它在后期几乎为零——那么后期响应就由<b>最慢的那个（或那对）极点</b>决定。这就是主导极点，也是能用<b>低阶近似</b>代替高阶系统的依据（§3.5 会正式用起来）。</p>
+  </div>
+
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
   <p>极点 $s_{1,2}=-\zeta\omega_{n}\pm j\omega_{n}\sqrt{1-\zeta^{2}}$，于是</p>
