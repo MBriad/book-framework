@@ -45,7 +45,7 @@
   <ul>
     <li>$t=\tau$ 时到达稳态的 $63.2\%$</li>
     <li>$t=3\tau\to95.0\%$；$t=4\tau\to98.2\%$；$t=5\tau\to99.3\%$</li>
-    <li>调节时间：$t_{s}\approx4\tau$（$\pm2\%$ 带）；$t_{s}\approx3\tau$（$\pm5\%$ 带）</li>
+    <li>调节时间（一阶是精确的：$t_{s}=\tau\ln\dfrac{1}{p}$）：$\pm1\%\to4.6\tau$；$\pm2\%\to3.9\tau$；$\pm5\%\to3.0\tau$</li>
     <li>上升时间（$10\%\to90\%$）：$t_{r}=\tau\ln 9\approx2.20\,\tau$</li>
     <li>初始斜率：$\left.\dfrac{dy}{dt}\right|_{0^{+}}=\dfrac{K}{\tau}$</li>
     <li><b>没有超调、不振荡</b>——一阶系统永远单调</li>
@@ -74,12 +74,13 @@
       <tr><td>超调量 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}\times100\%$</td><td><b>只由 $\zeta$ 决定</b>，与 $\omega_{n}$ 无关</td></tr>
       <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td>$t_{r}\cong\dfrac{1.8}{\omega_{n}}$</td><td><b>Franklin 的定义</b>（Fig 3.20）。式 (3.49) 是取 $\zeta=0.5$ 读出的设计粗估式，只对无零点二阶系统准确</td></tr>
       <tr><td>上升时间 $t_{r}$（$0\to100\%$）</td><td>$\dfrac{\pi-\beta}{\omega_{d}}$，$\beta=\arccos\zeta$</td><td>另一种定义（<b>不是</b> Franklin 的），有精确闭式解</td></tr>
-      <tr><td>调节时间 $t_{s}$</td><td>$\dfrac{4}{\zeta\omega_{n}}$（2% 带）；$\dfrac{3}{\zeta\omega_{n}}$（5% 带）</td><td>包络线近似，考试通用</td></tr>
+      <tr><td>调节时间 $t_{s}$</td><td>$t_{s}\cong\dfrac{4.6}{\zeta\omega_{n}}$（$\pm1\%$ 带）</td><td><b>Franklin 全书用的判据</b>，$\ln100=4.6$</td></tr>
+      <tr><td>调节时间（其它判据）</td><td>$\dfrac{4}{\zeta\omega_{n}}$（$\pm2\%$）；$\dfrac{3}{\zeta\omega_{n}}$（$\pm5\%$）</td><td>别的教材/课程的口径，<b>与上一行差约 15%</b></td></tr>
       <tr><td>延迟时间 $t_{d}$</td><td>$\dfrac{1+0.7\zeta}{\omega_{n}}$</td><td>到稳态值 50% 所需时间</td></tr>
       <tr><td>稳态值</td><td>$y(\infty)=G(0)=1$</td><td>标准形式已归一</td></tr>
     </tbody>
   </table>
-  <p class="ctl-note">调节时间更精确的写法（按包络解出）是 $t_{s}=\dfrac{-\ln\left(0.02\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$。题目若问"精确值"用它，否则用 $4/\zeta\omega_{n}$。</p>
+  <p class="ctl-note">调节时间的精确写法（按包络 $e^{-\zeta\omega_{n}t}/\sqrt{1-\zeta^{2}}$ 解出）：$t_{s}=\dfrac{-\ln\left(p\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$，$p$ 是误差带半宽（$\pm1\%$ 取 $0.01$，$\pm2\%$ 取 $0.02$）。<b>做题先确认判据再动笔</b>：$\ln(1/0.01)=4.6$、$\ln(1/0.02)=3.9$，同一道题两种判据答案差约 $15\%$。<b>Franklin 用 $\pm1\%$。</b></p>
 
   <p><b>上升时间两个定义的数值对照</b>（表中为 $t_{r}\cdot\omega_{n}$，用时除以 $\omega_{n}$）。<b>左列是 Franklin 的定义</b>：</p>
   <table>
