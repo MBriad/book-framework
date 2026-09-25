@@ -71,6 +71,45 @@
 
   <div class="ctl-gap">这一步按理该配一张图（一族不同 $alpha$ 的阶跃响应，看 $M_p$/$t_r$ 怎么变、而终值都停在 1），但按我们定的规则我<b>不主动加图</b>。要的话说一声，我描述几何给你过目再动手。</div>
 
+  <h2>右半平面零点与初始反冲</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>还有右半平面的奇数个零点，让系统响应（阶跃测试为例子）在初始反冲</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>结论：奇数个右半平面零点 → 阶跃响应起始就朝反方向冲。</b>这条可以证明，而且只用两条我们记过的公式。</p>
+
+  <p><b>第一步，初始斜率</b>（速查页「单位阶跃响应的初值斜率」那条）：</p>
+  <p>$$\dot y(0^{+})=\lim_{s\to\infty}s\,G(s)=K$$</p>
+  <p>只要<b>相对阶为 1</b>（分子比分母低一阶），这个极限就是分子最高次系数 $K$，也是系统的高频增益。</p>
+
+  <p><b>第二步，稳态值</b>（终值定理）：</p>
+  <p>$$y(\infty)=G(0)=K\,\frac{\prod(-z_{i})}{\prod(-p_{j})}$$</p>
+  <p>系统稳定 → 所有极点都在左半平面 → $-p_{j}\gt0$ → 分母乘积为正；分子里<b>每个左半平面零点给一个正因子，每个右半平面零点给一个负因子</b>。于是</p>
+  <p>$$\operatorname{sign}G(0)=\operatorname{sign}(K)\cdot(-1)^{n_{\text{RHP}}}$$</p>
+  <p><b>要"初始反冲"，就是要求起始斜率与稳态值反号</b>：</p>
+  <p>$$\operatorname{sign}(K)\ne\operatorname{sign}(K)\cdot(-1)^{n_{\text{RHP}}}\quad\Longrightarrow\quad (-1)^{n_{\text{RHP}}}=-1\quad\Longrightarrow\quad \boxed{n_{\text{RHP}}\ \text{为奇数}}$$</p>
+
+  <p><b>两个前提，抄结论时别漏</b>：</p>
+  <ol>
+    <li><b>相对阶必须等于 1</b>。若分子比分母低得更多，$\lim_{s\to\infty}sG(s)=0$，起始斜率为零，这个判据<b>不适用</b>（反冲会不会出现要看更高阶的项，不能靠数奇偶下结论）。</li>
+    <li>前提是<b>稳态值不为零</b>。若 $G(0)=0$（分子在原点有零点），谈"反冲"没有意义。</li>
+  </ol>
+
+  <p><b>一个可核对的例子</b>：$G(s)=\dfrac{-2(s-1)}{(s+1)(s+2)}$，相对阶 1，一个右半平面零点。</p>
+  <table>
+    <thead><tr><th>量</th><th>值</th><th>怎么来的</th></tr></thead>
+    <tbody>
+      <tr><td>$y(0^{+})$</td><td>$0$</td><td>严格真分式，起始必为 0</td></tr>
+      <tr><td>初始斜率 $\dot y(0^{+})$</td><td>$K=-2$（<b>往下</b>）</td><td>$\lim sG(s)$</td></tr>
+      <tr><td>稳态值 $y(\infty)$</td><td>$G(0)=+1$（<b>在上面</b>）</td><td>$\dfrac{-2\times(-1)}{1\times2}=1$</td></tr>
+      <tr><td>实际最低点</td><td>$-0.333$，在 $t=0.41$</td><td>数值解阶跃响应</td></tr>
+    </tbody>
+  </table>
+  <p>起点在 0、<b>先往下冲到 $-0.33$</b>、再回升收敛到 $+1$——这就是"初始反冲"的样子。奇偶判据在这里是 1 个 RHP 零点（奇数）✓。</p>
+  <p class="ctl-note"><b>直觉</b>：零点越靠近虚轴，反冲越猛；越远越看不出来——和 §3.5 里 $\alpha$ 的规律一致。</p>
+  </div>
+
+  <div class="ctl-gap">这一条也该配一张图（一条先下后上的阶跃响应曲线，标出起始斜率与终值反号），按规则我<b>不主动加图</b>。要的话说一声。</div>
+
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
   <p>零点项：$H=H_{0}+\dfrac{1}{\alpha\zeta}H_{d}$，$\;y=y_{0}+\dfrac{1}{\alpha\zeta}\dot y_{0}$，零点在 $s=-\alpha\sigma$。</p>
@@ -90,6 +129,9 @@
     <li>附加极点对超调的影响，和零点相比有什么不同？
       <details><summary>答案</summary>
       <p>附加极点<b>主要增大上升时间</b>（拖慢响应），通常<b>不增超调</b>；零点则<b>增大超调、减小上升时间</b>。两者方向几乎相反。</p></details></li>
+    <li>某系统有 <b>3 个</b>右半平面零点、相对阶为 1、稳态值为正。阶跃响应起始朝哪边走？如果是 2 个呢？
+      <details><summary>答案</summary>
+      <p>3 个（奇数）→ 起始斜率与稳态值<b>反号</b>，<b>先往下冲</b>；2 个（偶数）→ 同号，起始就朝稳态值方向走。<b>前提是相对阶 = 1</b>，否则判据不成立。</p></details></li>
     <li>747 那个例子里，为什么高度会先下降？
       <details><summary>答案</summary>
       <p>传递函数里有<b>右半平面零点</b> $(s-6)$ → 非最小相位 → 初始响应朝反方向。物理上：舵面上偏先产生向下力，机身转起来之后升力才建立。</p></details></li>
