@@ -201,6 +201,37 @@
       set: function (x) { i.value = x; v.textContent = fmt(x); }
     };
   }
+  /* 离散参数的选值器。**离散就別用滑块**——滑块能停在族里没有的值上，
+     于是画出来的曲线不在参考族里、读数和看得见的曲线也对不上。
+     复用 .ctl-seg 的样式，返回 set / setValues 两个方法。 */
+  function chips(parent, label, values, initial, fmt, onpick) {
+    var w = mk('div', 'ctl-ctl');
+    var s = mk('span'); s.textContent = label; w.appendChild(s);
+    var d = mk('div', 'ctl-seg'); w.appendChild(d); parent.appendChild(w);
+    var vals = values.slice(), btns = [];
+    function build() {
+      d.innerHTML = ''; btns = [];
+      vals.forEach(function (val) {
+        var b = mk('button'); b.type = 'button'; b.textContent = fmt(val);
+        b.addEventListener('click', function () {
+          btns.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+          b.setAttribute('aria-pressed', 'true');
+          onpick(val);
+        });
+        btns.push(b); d.appendChild(b);
+      });
+    }
+    function set(val) {
+      btns.forEach(function (b, k) {
+        b.setAttribute('aria-pressed', Math.abs(vals[k] - val) < 1e-9 ? 'true' : 'false');
+      });
+    }
+    build(); set(initial);
+    return {
+      set: set,
+      setValues: function (v2, keep) { vals = v2.slice(); build(); set(keep === undefined ? vals[0] : keep); }
+    };
+  }
   function segmented(parent, items, onpick) {
     var d = mk('div', 'ctl-seg'), btns = [];
     items.forEach(function (it, k) {
@@ -736,9 +767,10 @@
         ['特征多项式', terms.join(' + ')],
         ['结论', '这四个数是同一个东西']
       ]);
-      note('链上现在有 <b>' + n + '</b> 级 <code>1/s</code>：方块数 = 状态变量数 = 分母最高次 = ' + n + '。拖 n，看这三个数一起变——这就是「同一个东西」。');
+      note('链上现在有 <b>' + n + '</b> 级 <code>1/s</code>：方块数 = 状态变量数 = 分母最高次 = ' + n + '。换个 n，看这三个数一起变——这就是「同一个东西」。');
     }
-    slider(ctl, '阶数 n', 1, 5, 1, st.n, function (v) { return String(v); }, function (v) { st.n = v; refresh(); });
+    chips(ctl, '阶数 n', [1, 2, 3, 4, 5], st.n, function (v) { return String(v); },
+      function (v) { st.n = v; refresh(); });
     refresh();
   });
 
@@ -1281,7 +1313,6 @@
     var st = { mode: 'lhp', zeta: 0.5, alpha: 1 };
     var TMAX = 10;
     var FAM = { lhp: [0.5, 1, 2, 3, 10], rhp: [-0.5, -1, -2, -4], pole: [0.5, 1, 2, 3, 10] };
-    var RANGE = { lhp: [0.3, 10], rhp: [-4, -0.3], pole: [0.3, 10] };
     var cache = {};
 
     function tfFor(mode, zeta, alpha) {
@@ -1297,7 +1328,8 @@
           var tf = tfFor(st.mode, st.zeta, a);
           o[a] = stepFromTF(tf.den, tf.num, TMAX, TMAX / 900);
         });
-        if (st.mode !== 'pole') o['base'] = stepFromTF([1, 2 * st.zeta, 1], [1], TMAX, TMAX / 900);
+        // 三种模式都要这条基准（提示里承诺的紫色虚线），别只在零点模式下算
+        o['base'] = stepFromTF([1, 2 * st.zeta, 1], [1], TMAX, TMAX / 900);
         cache[key] = o;
       }
       return cache[key];
@@ -1319,14 +1351,14 @@
     });
     var slZ = slider(ctl, 'ζ', 0.15, 1, 0.05, st.zeta, function (v) { return v.toFixed(2); },
       function (v) { st.zeta = v; refresh(); });
-    var slA = slider(ctl, 'α', 0.3, 10, 0.1, st.alpha, function (v) { return v.toFixed(1); },
+    /* α 是**离散**的：族里就只有 FAM[mode] 这几个值。滑块能停在 7.2 这种
+       既不在族里、读数和灰线也对不上的位置上——所以用选值。 */
+    var chA = chips(ctl, 'α', FAM[st.mode], st.alpha, function (v) { return String(v); },
       function (v) { st.alpha = v; refresh(); });
     var segs = segmented(ctl, [{ label: 'LHP 零点' }, { label: 'RHP 零点' }, { label: '附加极点' }], function (it, k) {
       st.mode = k === 0 ? 'lhp' : (k === 1 ? 'rhp' : 'pole');
       st.alpha = st.mode === 'rhp' ? -1 : 1;
-      slA.input.min = RANGE[st.mode][0];
-      slA.input.max = RANGE[st.mode][1];
-      slA.set(st.alpha);
+      chA.setValues(FAM[st.mode], st.alpha);
       refresh();
     });
     // 允许页面用 data-default="rhp" / "pole" 指定初始模式
@@ -1338,21 +1370,15 @@
         var want = (st.mode === 'rhp' && kk === 1) || (st.mode === 'pole' && kk === 2);
         b2.setAttribute('aria-pressed', want ? 'true' : 'false');
       });
-      slA.input.min = RANGE[st.mode][0];
-      slA.input.max = RANGE[st.mode][1];
-      slA.set(st.alpha);   // 别忘了把滑块的值也搬过去，否则显示的数和画出的曲线不一致
+      chA.setValues(FAM[st.mode], st.alpha);
     }
     function refresh() {
-      var cs = family(), cur = cs[st.alpha];
-      if (!cur) {   // α 不在族里就现算
-        var tf = tfFor(st.mode, st.zeta, st.alpha);
-        cur = stepFromTF(tf.den, tf.num, TMAX, TMAX / 900);
-      }
+      var cs = family(), cur = cs[st.alpha];   // α 一定是族里的值（选值器保证）
       var m = stepMetrics(cur, 1);
       var t10 = firstCrossT(cur, 0.1), t90 = firstCrossT(cur, 0.9);
       var name = st.mode === 'lhp' ? 'LHP 零点 α' : (st.mode === 'rhp' ? 'RHP 零点 α' : '附加极点 α');
       setReadout(ro, [
-        [name, st.alpha.toFixed(1)],
+        [name, String(st.alpha)],
         ['ζ', st.zeta.toFixed(2)],
         ['Mp', m.overshoot.toFixed(1) + '%'],
         ['tr（10→90%）', (t90 - t10).toFixed(2)],
