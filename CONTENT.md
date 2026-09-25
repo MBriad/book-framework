@@ -59,7 +59,7 @@
 2. 现有原语确实做不出来；
 3. 用户**先确认了几何形状**。
 
-现有原语（8 个）：`step-2nd` `step-presets` `polezero-drag` `bode-cursor` `root-locus` `mason-flow` `integrator-chain` `canonical-pair`。
+现有原语（11 个）：`step-2nd` `step-presets` `polezero-drag` `bode-cursor` `root-locus` `mason-flow` `integrator-chain` `canonical-pair` `step-metrics` `splane-geometry` `pole-catalog`。
 
 > 理由：这个项目**内容是主体**。每加一个组件，用户就要在平板上多验一次，而内容一个字没增加。
 > 已经发生过：d3 在第 9 轮被选来画图，后来在 canvas.js 里自己写了坐标轴，**再也没回头删**，

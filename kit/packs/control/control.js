@@ -1115,6 +1115,91 @@
     build(); refresh();
   });
 
+  /* ---------------- ⑫ 极点位置图鉴（Franklin Fig 3.16 那种） ----------------
+     左：s 平面上 6 个代表点；右：6 条小波形一一对应。纯定性、无交互——
+     图鉴的价值就在"一眼看全"，加拖拽反而毁掉它。 */
+  Ctl.Pack.register('pole-catalog', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
+    var wrap = scaffold(el);
+    var fz = figBox(wrap, 'ctl-h-lg'), fs = figBox(wrap, 'ctl-h-xl');
+
+    var TMAX = 4;
+    var CASES = [
+      { n: '①', lab: 's = −3', sub: '迅速衰减', pos: [[-3, 0]], f: function (t) { return Math.exp(-3 * t); } },
+      { n: '②', lab: 's = −0.5', sub: '缓缓衰减', pos: [[-0.5, 0]], f: function (t) { return Math.exp(-0.5 * t); } },
+      { n: '③', lab: 's = −0.5 ± j3', sub: '衰减振荡', pos: [[-0.5, 3], [-0.5, -3]], f: function (t) { return Math.exp(-0.5 * t) * Math.sin(3 * t); } },
+      { n: '④', lab: 's = ±j3', sub: '等幅振荡', pos: [[0, 3], [0, -3]], f: function (t) { return Math.sin(3 * t); } },
+      { n: '⑤', lab: 's = +0.5', sub: '发散', pos: [[0.5, 0]], f: function (t) { return Math.exp(0.5 * t); } },
+      { n: '⑥', lab: 's = 0', sub: '不衰减也不发散', pos: [[0, 0]], f: function (t) { return 1; } }
+    ];
+    // 各自归一化到 max|y| = 1：形状保留（发散那条也从 0 涨到 1，仍看得出涨）
+    CASES.forEach(function (c) {
+      var mx = 0;
+      for (var k = 0; k <= 200; k++) mx = Math.max(mx, Math.abs(c.f(TMAX * k / 200)));
+      c.norm = mx || 1;
+    });
+
+    Fig.create(fz.canvas, {
+      xlim: [-3.7, 1.3], ylim: [-3.5, 3.5], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        for (var i = 0; i < CASES.length; i++) {
+          var c = CASES[i];
+          for (var k = 0; k < c.pos.length; k++) {
+            var x = c.pos[k][0], y = c.pos[k][1];
+            P.line([[x - 0.11, y - 0.11], [x + 0.11, y + 0.11]], C.ink, 1.6);
+            P.line([[x - 0.11, y + 0.11], [x + 0.11, y - 0.11]], C.ink, 1.6);
+          }
+          var p0 = c.pos[0];
+          P.text(c.n, P.x(p0[0]) + (p0[0] < -0.2 ? -17 : 17), P.y(p0[1]) + (p0[1] > 0 ? -15 : 15), C.accent, 'center', 'middle');
+        }
+      }
+    });
+
+    Fig.create(fs.canvas, {
+      bare: true, xlim: [0, 1], ylim: [0, 1], padding: { l: 6, r: 6, t: 6, b: 6 },
+      draw: function (P) {
+        var C = P.C, ctx = P.ctx, n = CASES.length;
+        var top0 = P.T, band = (P.B - P.T) / n;
+        for (var i = 0; i < n; i++) {
+          var c = CASES[i];
+          var top = top0 + i * band + 6, bot = top0 + (i + 1) * band - 6;
+          var mid = (top + bot) / 2, amp = (bot - top) / 2 - 3;
+          var x0 = P.L + 118, x1 = P.R - 8;
+          var px = function (t) { return x0 + (x1 - x0) * (t / TMAX); };
+          var py = function (v) { return mid - v * amp; };
+          ctx.save();
+          ctx.beginPath(); ctx.moveTo(x0, mid); ctx.lineTo(x1, mid);
+          ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.beginPath();
+          for (var k = 0; k <= 240; k++) {
+            var t = TMAX * k / 240;
+            var X = px(t), Y = py(c.f(t) / c.norm);
+            if (k === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
+          }
+          ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6; ctx.lineJoin = 'round'; ctx.stroke();
+          if (i > 0) {
+            ctx.beginPath(); ctx.moveTo(P.L, top0 + i * band); ctx.lineTo(P.R, top0 + i * band);
+            ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.stroke();
+          }
+          ctx.restore();
+          P.text(c.n, P.L + 22, mid - 8, C.accent, 'center', 'middle');
+          P.text(c.lab, P.L + 38, mid - 8, C.ink, 'left', 'middle');
+          P.text(c.sub, P.L + 38, mid + 9, C.muted, 'left', 'middle');
+        }
+        P.text('t →', (P.L + P.R) / 2, P.B + 11, C.muted, 'center', 'middle');
+      }
+    });
+
+    var lg = mk('div', 'ctl-legend');
+    lg.innerHTML = '<span>六条都是<b>冲激响应</b>（自然响应）；横轴同一时间尺度 0–4 s，纵轴各自归一化——<b>只看形状与快慢</b></span>';
+    el.appendChild(lg);
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

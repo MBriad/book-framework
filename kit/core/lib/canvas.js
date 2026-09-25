@@ -167,7 +167,7 @@
         }
       };
       fig.P = P;
-      drawFrame(P, spec, C, xl, yl);
+      if (!spec.bare) drawFrame(P, spec, C, xl, yl);   // bare：自绘图，不要外层坐标框
       spec.draw(P, spec);
       return true;
     };
