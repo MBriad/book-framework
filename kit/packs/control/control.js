@@ -470,44 +470,76 @@
   });
 
   /* ---------------- ⑤ 根轨迹：K 滑块 ---------------- */
+  /* ---------------- ⑭ 拖 K：极点沿根轨迹移动 → 指标怎么变 ----------------
+     G(s) = K/(s(s+1)(s+2))，单位反馈。左：根轨迹与闭环极点；右：闭环阶跃响应。
+     这是「指标 → 怎么达到」那一步的正解：K 只让极点沿一条固定轨迹滑动。 */
   Ctl.Pack.register('root-locus', function (el) {
-    var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-md');
+    var wrap = scaffold(el);   // scaffold 内部已加标题
+    var fz = figBox(wrap, 'ctl-h-md'), fs = figBox(wrap, 'ctl-h-md');
     var ctl = controls(el), ro = readout(el);
+
     var KMAX = 20, SAMPLES = 400;
     var locus = [];
     for (var i = 0; i <= SAMPLES; i++) {
       var k = KMAX * i / SAMPLES;
       locus.push({ K: k, roots: rootsOf([1, 3, 2, k]) });
     }
-    var cur = 0.5;
-    var fig = Fig.create(f.canvas, {
+    var cur = 0.5, pts = [], info = { m: { peak: 0, tp: 0, overshoot: 0, ts: 0 }, tmax: 10, ymax: 1.6 };
+
+    function rebuild() {
+      var den = [1, 3, 2, cur], num = [cur];
+      var rs = rootsOf(den);
+      var slowest = Math.max.apply(null, rs.map(function (z) { return z[0]; }));
+      var tmax = slowest < -1e-3 ? Math.min(30, Math.max(4, 5 / Math.abs(slowest))) : 20;
+      pts = stepFromTF(den, num, tmax, tmax / 900);
+      info.m = stepMetrics(pts, 1);
+      info.tmax = tmax;
+      info.ymax = Math.max(1.6, info.m.peak * 1.15);
+      fs.spec.xlim = [0, tmax];
+      fs.spec.ylim = [0, info.ymax];
+    }
+    var figZ = Fig.create(fz.canvas, {
       xlim: [-5, 1], ylim: [-3, 3], equal: true, xlabel: 'Re', ylabel: 'Im',
       draw: function (P) {
-        var rx = rangeX(P), ry = rangeY(P);
-        P.line([[0, ry[0]], [0, ry[1]]], P.C.line, 1);
-        P.line([[rx[0], 0], [rx[1], 0]], P.C.line, 1);
-        var i, j;
-        for (i = 0; i < locus.length; i++) {
-          for (j = 0; j < locus[i].roots.length; j++) P.dot(locus[i].roots[j][0], locus[i].roots[j][1], P.C.grid, 1.1);
+        var C = P.C, j, q;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        for (j = 0; j < locus.length; j++) {
+          for (q = 0; q < locus[j].roots.length; q++) P.dot(locus[j].roots[q][0], locus[j].roots[q][1], C.grid, 1.1);
         }
-        P.dot(0, 0, P.C.accent2, 4.5); P.dot(-1, 0, P.C.accent2, 4.5); P.dot(-2, 0, P.C.accent2, 4.5);
+        P.dot(0, 0, C.accent2, 4.5); P.dot(-1, 0, C.accent2, 4.5); P.dot(-2, 0, C.accent2, 4.5);
         var r = rootsOf([1, 3, 2, cur]);
-        for (j = 0; j < r.length; j++) P.dot(r[j][0], r[j][1], P.C.accent, 4.5);
+        for (j = 0; j < r.length; j++) P.dot(r[j][0], r[j][1], C.accent, 5.5);
+        P.text('× 开环极点　● 当前闭环极点', P.x(P.xinv(P.L) + 0.15), P.y(P.yinv(P.T)) + 12, C.muted, 'left', 'middle');
+      }
+    });
+    var figS = Fig.create(fs.canvas, {
+      xlim: [0, 10], ylim: [0, 1.6], xlabel: 't (s)', ylabel: 'y(t)',
+      draw: function (P) {
+        var C = P.C;
+        P.line([[0, 1], [P.xinv(P.R), 1]], C.muted, 1.2, [5, 4]);
+        P.line(pts, C.ink, 2);
+        if (info.m.peak > 1.001) {
+          P.line([[info.m.tp, 1], [info.m.tp, info.m.peak]], C.accent2, 1.8);
+          P.dot(info.m.tp, info.m.peak, C.accent2, 3.5);
+          P.text('Mp = ' + info.m.overshoot.toFixed(1) + '%', P.x(info.m.tp) + 8, P.y((1 + info.m.peak) / 2), C.accent2, 'left', 'middle');
+        }
       }
     });
     function criticalK() {
-      for (var i = 1; i < locus.length; i++) {
-        var a = Math.max.apply(null, locus[i - 1].roots.map(function (z) { return z[0]; }));
-        var b = Math.max.apply(null, locus[i].roots.map(function (z) { return z[0]; }));
+      for (var i2 = 1; i2 < locus.length; i2++) {
+        var a = Math.max.apply(null, locus[i2 - 1].roots.map(function (z) { return z[0]; }));
+        var b = Math.max.apply(null, locus[i2].roots.map(function (z) { return z[0]; }));
         if (a <= 0 && b > 0) {
           var t = a / (a - b || 1);
-          return locus[i - 1].K + (locus[i].K - locus[i - 1].K) * t;
+          return locus[i2 - 1].K + (locus[i2].K - locus[i2 - 1].K) * t;
         }
       }
       return null;
     }
     var kc = criticalK();
     function update() {
+      rebuild();
       var r = rootsOf([1, 3, 2, cur]);
       var stable = r.every(function (z) { return z[0] < -1e-9; });
       var margin = r.some(function (z) { return Math.abs(z[0]) < 1e-6; });
@@ -515,12 +547,14 @@
         ['K', cur.toFixed(2)],
         ['闭环极点', r.map(function (z) { return z[0].toFixed(2) + (Math.abs(z[1]) > 1e-3 ? (z[1] > 0 ? '+' : '') + 'j' + z[1].toFixed(2) : ''); }).join(', ')],
         ['稳定性', stable ? '稳定' : (margin ? '临界' : '不稳定')],
-        ['临界 K', kc !== null ? kc.toFixed(2) : '超出扫描范围']
+        ['临界 K', kc !== null ? kc.toFixed(2) : '超出扫描范围'],
+        ['Mp', info.m.overshoot.toFixed(1) + '%'],
+        ['ts ±1%', info.m.ts.toFixed(2) + ' s']
       ]);
       Fig.renderAll();
     }
-    slider(ctl, 'K', 0, KMAX, 0.05, cur, function (v) { return v.toFixed(2); }, function (v) { cur = v; update(); });
-    toolbar(el, fig, 'root-locus');
+    slider(ctl, 'K', 0.05, KMAX, 0.05, cur, function (v) { return v.toFixed(2); }, function (v) { cur = v; update(); });
+    toolbar(el, figZ, 'root-locus');
     update();
   });
 
@@ -1197,6 +1231,101 @@
     var lg = mk('div', 'ctl-legend');
     lg.innerHTML = '<span>六条都是<b>冲激响应</b>（自然响应）；横轴同一时间尺度 0–4 s，纵轴各自归一化——<b>只看形状与快慢</b></span>';
     el.appendChild(lg);
+  });
+
+  /* ---------------- ⑬ 零点 / 附加极点的影响：一族阶跃响应 ----------------
+     三种模式共用同一个归一化参数 α（式 3.80 / 3.82），归一化时间 τ = ωn·t。
+     所有曲线都归一化到直流增益 1 —— 所以终值全停在 1，差别只在瞬态。
+     用户问的「零点对 steady value 的影响」在这里一眼可见。 */
+  Ctl.Pack.register('zero-pole-family', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el), f = figBox(wrap, 'ctl-h-lg');
+    var ctl = controls(el), ro = readout(el);
+
+    var st = { mode: 'lhp', zeta: 0.5, alpha: 1 };
+    var TMAX = 10;
+    var FAM = { lhp: [0.5, 1, 2, 3, 10], rhp: [-0.5, -1, -2, -4], pole: [0.5, 1, 2, 3, 10] };
+    var RANGE = { lhp: [0.3, 10], rhp: [-4, -0.3], pole: [0.3, 10] };
+    var cache = {};
+
+    function tfFor(mode, zeta, alpha) {
+      var den0 = [1, 2 * zeta, 1];
+      if (mode === 'pole') return { den: mulReal([1 / (alpha * zeta), 1], den0), num: [1] };
+      return { den: den0, num: [1 / (alpha * zeta), 1] };
+    }
+    function family() {
+      var key = st.mode + '|' + st.zeta;
+      if (!cache[key]) {
+        var o = {};
+        FAM[st.mode].forEach(function (a) {
+          var tf = tfFor(st.mode, st.zeta, a);
+          o[a] = stepFromTF(tf.den, tf.num, TMAX, TMAX / 900);
+        });
+        if (st.mode !== 'pole') o['base'] = stepFromTF([1, 2 * st.zeta, 1], [1], TMAX, TMAX / 900);
+        cache[key] = o;
+      }
+      return cache[key];
+    }
+    var fig = Fig.create(f.canvas, {
+      xlim: [0, TMAX], ylim: [0, 2], xlabel: '归一化时间 τ = ωn·t', ylabel: 'y',
+      draw: function (P) {
+        var C = P.C, cs = family();
+        P.line([[0, 1], [P.xinv(P.R), 1]], C.muted, 1.4, [5, 4]);
+        FAM[st.mode].forEach(function (a) {
+          if (Math.abs(a - st.alpha) < 1e-9) return;
+          P.line(cs[a], C.line, 1.2);
+        });
+        if (cs['base']) P.line(cs['base'], C.c4, 1.2, [4, 3]);
+        var cur = cs[st.alpha];
+        if (cur) P.line(cur, C.accent, 2.6);
+        P.text('终值恒为 1', P.x(TMAX * 0.72), P.y(1.05), C.muted, 'center', 'middle');
+      }
+    });
+    var slZ = slider(ctl, 'ζ', 0.15, 1, 0.05, st.zeta, function (v) { return v.toFixed(2); },
+      function (v) { st.zeta = v; refresh(); });
+    var slA = slider(ctl, 'α', 0.3, 10, 0.1, st.alpha, function (v) { return v.toFixed(1); },
+      function (v) { st.alpha = v; refresh(); });
+    var segs = segmented(ctl, [{ label: 'LHP 零点' }, { label: 'RHP 零点' }, { label: '附加极点' }], function (it, k) {
+      st.mode = k === 0 ? 'lhp' : (k === 1 ? 'rhp' : 'pole');
+      st.alpha = st.mode === 'rhp' ? -1 : 1;
+      slA.input.min = RANGE[st.mode][0];
+      slA.input.max = RANGE[st.mode][1];
+      slA.set(st.alpha);
+      refresh();
+    });
+    // 允许页面用 data-default="rhp" / "pole" 指定初始模式
+    var def = el.getAttribute('data-default');
+    if (def === 'rhp') { st.mode = 'rhp'; st.alpha = -1; }
+    else if (def === 'pole') { st.mode = 'pole'; }
+    if (st.mode !== 'lhp') {
+      segs.forEach(function (b2, kk) {
+        var want = (st.mode === 'rhp' && kk === 1) || (st.mode === 'pole' && kk === 2);
+        b2.setAttribute('aria-pressed', want ? 'true' : 'false');
+      });
+      slA.input.min = RANGE[st.mode][0];
+      slA.input.max = RANGE[st.mode][1];
+      slA.set(st.alpha);   // 别忘了把滑块的值也搬过去，否则显示的数和画出的曲线不一致
+    }
+    function refresh() {
+      var cs = family(), cur = cs[st.alpha];
+      if (!cur) {   // α 不在族里就现算
+        var tf = tfFor(st.mode, st.zeta, st.alpha);
+        cur = stepFromTF(tf.den, tf.num, TMAX, TMAX / 900);
+      }
+      var m = stepMetrics(cur, 1);
+      var t10 = firstCrossT(cur, 0.1), t90 = firstCrossT(cur, 0.9);
+      var name = st.mode === 'lhp' ? 'LHP 零点 α' : (st.mode === 'rhp' ? 'RHP 零点 α' : '附加极点 α');
+      setReadout(ro, [
+        [name, st.alpha.toFixed(1)],
+        ['ζ', st.zeta.toFixed(2)],
+        ['Mp', m.overshoot.toFixed(1) + '%'],
+        ['tr（10→90%）', (t90 - t10).toFixed(2)],
+        ['终值', cur[cur.length - 1][1].toFixed(3) + '（归一化，与 α 无关）']
+      ]);
+      Fig.renderAll();
+    }
+    toolbar(el, fig, 'zero-pole-family');
+    refresh();
   });
 
   Ctl.ControlMath = {

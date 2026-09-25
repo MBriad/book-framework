@@ -69,7 +69,8 @@
   <p><b>一句话收束</b>：<b>零点抢速度、加超调；附加极点拖慢它、压超调。两者都在"离复极点实部 4 倍以内"才明显。</b></p>
   </div>
 
-  <div class="ctl-gap">这一步按理该配一张图（一族不同 $alpha$ 的阶跃响应，看 $M_p$/$t_r$ 怎么变、而终值都停在 1），但按我们定的规则我<b>不主动加图</b>。要的话说一声，我描述几何给你过目再动手。</div>
+  <div data-primitive="zero-pole-family" data-default="lhp" data-title="图：一族阶跃响应——LHP 零点 / RHP 零点 / 附加极点（拖 α 与 ζ）"></div>
+  <p class="ctl-note">看图看哪里：<b>所有曲线的终值都停在 1</b>——直流增益已归一化，所以零点与附加极点<b>只改瞬态、不改稳态</b>。拖 α 看 $M_p$ 与 $t_r$ 怎么变；切到「RHP 零点」，曲线会<b>先往下冲</b>。</p>
 
   <h2>右半平面零点与初始反冲</h2>
   <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>还有右半平面的奇数个零点，让系统响应（阶跃测试为例子）在初始反冲</div>
@@ -108,7 +109,8 @@
   <p class="ctl-note"><b>直觉</b>：零点越靠近虚轴，反冲越猛；越远越看不出来——和 §3.5 里 $\alpha$ 的规律一致。</p>
   </div>
 
-  <div class="ctl-gap">这一条也该配一张图（一条先下后上的阶跃响应曲线，标出起始斜率与终值反号），按规则我<b>不主动加图</b>。要的话说一声。</div>
+  <div data-primitive="zero-pole-family" data-default="rhp" data-title="图：RHP 零点 → 阶跃响应先往下冲再回升（拖 α 看反冲深度）"></div>
+  <p class="ctl-note">看图看哪里：起点在 0，<b>先往下冲出一个坑，再回升到 $+1$</b>。α 越接近 $-1$（零点越靠近虚轴）坑越深；α 越负（零点越往右半平面深处）反冲越看不出来。</p>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
