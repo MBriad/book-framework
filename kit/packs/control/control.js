@@ -1019,16 +1019,20 @@
           dim(0, info.im, info.re, info.im, 'σ = ' + info.sigma.toFixed(2), C.accent, 0, -14);
           dim(info.re, 0, info.re, info.im, 'ωd = ' + info.wd.toFixed(2), C.c3, 30, 0);
           dim(0, 0, info.re, info.im, 'ωn = ' + info.wn.toFixed(2), C.c4, -34, 14);
-          // 与负实轴的夹角 β
+          // Franklin Fig 3.18：θ = arcsin ζ，从 jω 轴量到极点方向
           var rr = Math.min(1.6, info.wn * 0.55);
+          var span = Math.PI / 2 - info.beta;           // = arcsin ζ
           var arc = [];
           for (var k = 0; k <= 30; k++) {
-            var th = Math.PI - info.beta * (k / 30);   // 从负实轴转到极点方向
+            var th = Math.PI / 2 + span * (k / 30);
             arc.push([rr * Math.cos(th), rr * Math.sin(th)]);
           }
           P.line(arc, C.accent2, 1.6);
-          P.text('β = ' + (info.beta * 180 / Math.PI).toFixed(0) + '°',
-            P.x(-rr * 1.2), P.y(rr * 0.66), C.accent2, 'right', 'middle');
+          if (span > 0.04) {
+            var mid = Math.PI / 2 + span / 2;
+            P.text('θ = ' + (span * 180 / Math.PI).toFixed(0) + '°',
+              P.x(rr * 1.5 * Math.cos(mid)), P.y(rr * 1.5 * Math.sin(mid)), C.accent2, 'center', 'middle');
+          }
         }
       }
     });
