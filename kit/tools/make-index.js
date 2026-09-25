@@ -32,6 +32,9 @@ function collect(dir) {
 }
 
 const targets = [];
+for (const f of collect(bookDir)) {
+  if (f !== 'index.html') targets.push(['', f]);   // 书根的前置页（如 knowledge.html）
+}
 for (const f of collect(path.join(bookDir, 'sections'))) targets.push(['sections/', f]);
 for (const f of collect(path.join(bookDir, 'samples'))) targets.push(['samples/', f]);
 

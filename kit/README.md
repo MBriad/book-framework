@@ -46,6 +46,22 @@
 - 顶栏是**单行通栏**（高度 56px，内容贴视口两侧，不受 `--ctl-wide` 约束），依次为：标题 / 面包屑 / 目录(窄屏) / 暗色 / 搜索+打印。正文与侧栏仍受 `--ctl-wide` 约束。
 - 顶栏下滑时收起、上滑时恢复（顶部 140px 内不收起；抽屉打开时强制可见；打印时不受影响）。收起状态由 `body.ctl-header-hidden` 控制。
 
+## 前置页（书开头）
+
+每本书可以在 `book.config.js` 里声明若干**前置页**，它们排在左栏「总览」之后、各章之前：
+
+```js
+front: [
+  { id: 'knowledge', title: '知识点速查', zh: '做题时卡住就来这查' }
+]
+```
+
+页面文件放在书根（`books/<slug>/knowledge.html`），`<body data-ch="knowledge">` 与 `id` 对上即可在左栏高亮。
+
+**知识点速查页的写法**：每条知识点一个 `<h3>`。右侧目录本来就自动扫描 `<h2>/<h3>`，所以跳转索引是白捡的；
+顶栏全站搜索也能搜到（记得跑一次 `make-index.js`）。给页面的 `<main>` 加 `ctl-kp-page` 类，`<h3>` 会密排、
+不再像大标题。
+
 ## 三层内容
 
 | 层 | 写法 |
@@ -97,7 +113,7 @@
 
 ## 新增一本书
 
-1. 复制 `books/_template/` 为 `books/<slug>/`，改 `book.config.js`（书名、章节表、状态）。
+1. 复制 `books/_template/` 为 `books/<slug>/`，改 `book.config.js`（书名、章节表、状态、`front` 前置页）。
 2. 删掉模板里多余的章节页，为每一节建一个 `sections/<id>.html`。
 3. 生成搜索索引：`node kit/tools/make-index.js books/<slug>`（可选）。
 4. 浏览器双击 `books/<slug>/index.html`。

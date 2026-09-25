@@ -1,5 +1,11 @@
 window.SEARCH_INDEX = [
   {
+    "t": "知识点速查",
+    "p": "knowledge.html",
+    "k": "",
+    "s": "知识点速查 做题时的查阅页，不按章节分组。每条知识点一个三级标题，右侧目录会自动变成跳转索引，顶栏搜索也能搜到。 缺口：内容待提供。把知识点直接丢给我（文字、LaTeX 或截图都行"
+  },
+  {
     "t": "App · Appendices",
     "p": "sections/appendix.html",
     "k": "",

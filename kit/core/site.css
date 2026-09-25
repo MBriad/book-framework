@@ -174,3 +174,11 @@ h2,h3{scroll-margin-top:82px}
   .ctl-header,.ctl-rail{transition:none}
   .ctl-rail-left{transition:none}
 }
+/* ---- 知识点速查页（前置页）：每个知识点一个 h3，右侧目录即为跳转索引 ---- */
+.ctl-kp-page h2{margin-top:1.8em}
+.ctl-kp-page h3{font-size:15px;line-height:1.5;margin:1.5em 0 .2em;padding:0;
+  border-bottom:0;font-weight:600}
+.ctl-kp-page h3::before{content:"";display:inline-block;width:3px;height:.95em;background:var(--ctl-accent);
+  border-radius:2px;margin-right:8px;vertical-align:-1px}
+.ctl-kp-page p{margin:.3em 0}
+.ctl-kp-page .ctl-kp-src{font-size:12px;color:var(--ctl-muted)}

@@ -18,7 +18,8 @@
   }
 
   function chapterOf(id) {
-    var list = (global.BOOK && global.BOOK.chapters) || [];
+    var b = global.BOOK || {};
+    var list = (b.front || []).concat(b.chapters || []);
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
     return null;
   }
@@ -29,7 +30,7 @@
     parts.push('<a href="' + esc(bookRoot) + 'index.html">' + esc((global.BOOK && global.BOOK.short) || '总览') + '</a>');
     var ch = chId ? chapterOf(chId) : null;
     if (ch) {
-      parts.push(esc(ch.num + ' · ' + ch.title));
+      parts.push(esc((ch.num ? ch.num + ' · ' : '') + ch.title));
       var sec = document.body.getAttribute('data-sec');
       if (sec) parts.push(esc(sec));
     } else {
@@ -104,6 +105,13 @@
     home.innerHTML = '<a class="ctl-nav-link' + (cur ? '' : ' is-active') + '" href="' + esc(bookRoot) + 'index.html">' +
       '<span class="ctl-nav-num">—</span><span class="ctl-nav-name">总览</span></a>';
     ul.appendChild(home);
+    ((global.BOOK && global.BOOK.front) || []).forEach(function (p) {
+      var fli = el('li');
+      fli.innerHTML = '<a class="ctl-nav-link' + (p.id === cur ? ' is-active' : '') + '" href="' +
+        esc(bookRoot + p.id + '.html') + '"><span class="ctl-nav-num">—</span><span class="ctl-nav-name">' +
+        esc(p.title) + '</span></a>';
+      ul.appendChild(fli);
+    });
     ((global.BOOK && global.BOOK.chapters) || []).forEach(function (c) {
       var li = el('li');
       li.innerHTML = '<a class="ctl-nav-link' + (c.id === cur ? ' is-active' : '') + '" href="' +

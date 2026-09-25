@@ -4,6 +4,10 @@ window.BOOK = {
   short: 'Franklin 自控原理',
   subtitle: '自动控制原理复习演示',
   authors: 'Gene F. Franklin · J. David Powell · Abbas Emami-Naeini',
+  // 前置页：排在左栏「总览」之后、各章之前（每本书都可以有）
+  front: [
+    { id: 'knowledge', title: '知识点速查', zh: '做题时卡住就来这查' }
+  ],
   chapters: [
     { id: 'ch01', num: 'Ch1', title: 'An Overview and Brief History of Feedback Control', zh: '绪论与反馈控制简史', status: 'gap' },
     { id: 'ch02', num: 'Ch2', title: 'Dynamic Models', zh: '动态模型', status: 'gap' },
