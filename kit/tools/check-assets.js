@@ -63,7 +63,25 @@ for (const b of controlJs.matchAll(/register\('([^']+)'[\s\S]*?(?=register\('|Ct
   }
 }
 
-// 5) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
+// 5) 改坐标范围时，点名子的必须是 Fig 对象：`X.spec.xlim = …`
+//    出过的事故：root-locus 里写成 fs.spec.xlim —— fs 是 figBox() 返回的 {box, canvas}，
+//    根本没有 spec 属性，于是整个组件初始化就抛
+//    "Cannot set properties of undefined (setting 'xlim')"，那一整块图是空白的。
+//    node --check 只看语法，1–4 项也全是静态文本匹配，都查不出来。
+{
+  const figVars = new Set();
+  for (const m of controlJs.matchAll(/(?:var\s+)?([A-Za-z_$][\w$]*)\s*=\s*Fig\.create\(/g)) figVars.add(m[1]);
+  for (const m of controlJs.matchAll(/\b([A-Za-z_$][\w$]*)\.spec\.\w+\s*=/g)) {
+    if (!figVars.has(m[1])) {
+      const line = controlJs.slice(0, m.index).split('\n').length;
+      console.log('✗ control.js:' + line + '  ' + m[1] + '.spec.* —— ' + m[1] +
+        ' 不是 Fig.create() 的返回值（本文件的图对象只有：' + [...figVars].join(', ') + '）');
+      bad++;
+    }
+  }
+}
+
+// 6) 信息性报告：注册了但没有任何页面在用的组件（腐烂预警，不算失败）
 const unused = [...registered].filter(n => !used.has(n));
 console.log('已注册组件: ' + [...registered].join(', '));
 console.log('页面在用组件: ' + [...used.keys()].join(', '));

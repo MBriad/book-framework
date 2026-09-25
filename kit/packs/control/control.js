@@ -543,8 +543,8 @@
       info.m = stepMetrics(pts, 1);
       info.tmax = tmax;
       info.ymax = Math.max(1.6, info.m.peak * 1.15);
-      fs.spec.xlim = [0, tmax];
-      fs.spec.ylim = [0, info.ymax];
+      figS.spec.xlim = [0, tmax];   // figS 才是 Fig 对象；fs 是 figBox 的 {box, canvas}
+      figS.spec.ylim = [0, info.ymax];
     }
     var figZ = Fig.create(fz.canvas, {
       xlim: [-5, 1], ylim: [-3, 3], equal: true, xlabel: 'Re', ylabel: 'Im',
