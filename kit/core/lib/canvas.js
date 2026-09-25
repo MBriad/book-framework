@@ -15,7 +15,8 @@
       bg: cssVar('--ctl-bg', '#fff'), panel: cssVar('--ctl-panel', '#fff'),
       ink: cssVar('--ctl-ink', '#111'), muted: cssVar('--ctl-muted', '#666'),
       line: cssVar('--ctl-line', '#ccc'), grid: cssVar('--ctl-grid', '#eee'),
-      accent: cssVar('--ctl-accent', '#1f6feb'), accent2: cssVar('--ctl-accent2', '#b45309')
+      accent: cssVar('--ctl-accent', '#1f6feb'), accent2: cssVar('--ctl-accent2', '#b45309'),
+      c3: cssVar('--ctl-c3', '#0f766e'), c4: cssVar('--ctl-c4', '#7c3aed')
     };
   }
 

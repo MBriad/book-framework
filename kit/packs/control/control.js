@@ -109,6 +109,17 @@
     }
     return out;
   }
+  /* 首次穿越某个水平的时刻（线性插值） */
+  function firstCrossT(ys, level) {
+    for (var i = 0; i < ys.length; i++) if (ys[i][1] >= level) {
+      if (i === 0) return ys[0][0];
+      var a = ys[i - 1], b = ys[i];
+      var t = (level - a[1]) / ((b[1] - a[1]) || 1);
+      return a[0] + (b[0] - a[0]) * t;
+    }
+    return NaN;
+  }
+
   /* finalValue 传解析终值（直流增益）；不传则退回最后一个采样点。
      band 是调节时间的误差带半宽，**默认 0.01（±1%）——Franklin 全书用的判据**；
      若按 ±2% 口径算会小约 15%，两边不能混用。
@@ -943,6 +954,8 @@
     if (ttl) { var tp1 = mk('p', 'ctl-widget-title'); tp1.textContent = ttl; el.appendChild(tp1); }
     var wrap = scaffold(el);
     var fz = figBox(wrap, 'ctl-h-md', true), fs = figBox(wrap, 'ctl-h-md');
+    var lg = mk('div', 'ctl-legend');
+    el.appendChild(lg);
     var ctl = controls(el), ro = readout(el);
 
     var st = { mode: 'first', tau: 1, zeta: 0.3, wn: 2 };
@@ -964,6 +977,15 @@
       pts = stepFromTF(den, num, tmax, tmax / 1200);
       info.tmax = tmax;
       info.m = stepMetrics(pts, 1);
+      info.t10 = firstCrossT(pts, 0.1);
+      info.t90 = firstCrossT(pts, 0.9);
+      info.tr = info.t90 - info.t10;
+      info.ymax = Math.max(1.5, info.m.peak * 1.12);
+      info.ts = st.mode === 'first'
+        ? 4.6 * st.tau
+        : (info.sigma > 1e-6 ? -Math.log(0.01 * Math.sqrt(1 - st.zeta * st.zeta)) / info.sigma : NaN);
+      figS.spec.xlim = [0, tmax];
+      figS.spec.ylim = [0, info.ymax];
       // s 平面范围随参数走，否则 ωn 一大极点就出画
       var rx = st.mode === 'first' ? Math.max(2, 1.5 / st.tau) : Math.max(2, 1.3 * st.wn);
       var ry = st.mode === 'first' ? 1.5 : Math.max(1.2, 1.15 * st.wn);
@@ -977,16 +999,16 @@
         var C = P.C;
         P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
         P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
-        function dim(x1, y1, x2, y2, label, dx, dy) {
-          P.line([[x1, y1], [x2, y2]], C.accent, 1.2, [3, 3]);
-          P.dot(x1, y1, C.accent, 2.5); P.dot(x2, y2, C.accent, 2.5);
-          if (label) P.text(label, P.x((x1 + x2) / 2) + (dx || 0), P.y((y1 + y2) / 2) + (dy || 0), C.accent, 'center', 'middle');
+        function dim(x1, y1, x2, y2, label, col, dx, dy) {
+          P.line([[x1, y1], [x2, y2]], col, 1.4, [3, 3]);
+          P.dot(x1, y1, col, 2.5); P.dot(x2, y2, col, 2.5);
+          if (label) P.text(label, P.x((x1 + x2) / 2) + (dx || 0), P.y((y1 + y2) / 2) + (dy || 0), col, 'center', 'middle');
         }
         if (st.mode === 'first') {
           P.dot(info.p, 0, C.ink, 6);
           P.line([[info.p - 0.12, -0.12], [info.p + 0.12, 0.12]], C.ink, 1.6);
           P.line([[info.p - 0.12, 0.12], [info.p + 0.12, -0.12]], C.ink, 1.6);
-          dim(0, 0, info.p, 0, 'σ = 1/τ = ' + info.sigma.toFixed(2), 0, -16);
+          dim(0, 0, info.p, 0, 'σ = 1/τ = ' + info.sigma.toFixed(2), C.accent, 0, -18);
         } else {
           var a = [[info.re, info.im], [info.re, -info.im]];
           for (var i = 0; i < 2; i++) {
@@ -994,9 +1016,9 @@
             P.line([[a[i][0] - 0.11, a[i][1] - 0.11], [a[i][0] + 0.11, a[i][1] + 0.11]], C.ink, 1.6);
             P.line([[a[i][0] - 0.11, a[i][1] + 0.11], [a[i][0] + 0.11, a[i][1] - 0.11]], C.ink, 1.6);
           }
-          dim(0, info.im, info.re, info.im, 'σ = ζωn = ' + info.sigma.toFixed(2), 0, -14);
-          dim(info.re, 0, info.re, info.im, 'ωd = ' + info.wd.toFixed(2), 26, 0);
-          dim(0, 0, info.re, info.im, 'ωn = ' + info.wn.toFixed(2), -30, 12);
+          dim(0, info.im, info.re, info.im, 'σ = ' + info.sigma.toFixed(2), C.accent, 0, -14);
+          dim(info.re, 0, info.re, info.im, 'ωd = ' + info.wd.toFixed(2), C.c3, 30, 0);
+          dim(0, 0, info.re, info.im, 'ωn = ' + info.wn.toFixed(2), C.c4, -34, 14);
           // 与负实轴的夹角 β
           var rr = Math.min(1.6, info.wn * 0.55);
           var arc = [];
@@ -1004,9 +1026,9 @@
             var th = Math.PI - info.beta * (k / 30);   // 从负实轴转到极点方向
             arc.push([rr * Math.cos(th), rr * Math.sin(th)]);
           }
-          P.line(arc, C.accent2, 1.4);
-          P.text('β = arccos ζ = ' + (info.beta * 180 / Math.PI).toFixed(0) + '°',
-            P.x(-rr * 1.15), P.y(rr * 0.62), C.accent2, 'right', 'middle');
+          P.line(arc, C.accent2, 1.6);
+          P.text('β = ' + (info.beta * 180 / Math.PI).toFixed(0) + '°',
+            P.x(-rr * 1.2), P.y(rr * 0.66), C.accent2, 'right', 'middle');
         }
       }
     });
@@ -1015,10 +1037,41 @@
       draw: function (P) {
         var C = P.C;
         P.line([[0, 1], [info.tmax, 1]], C.muted, 1, [5, 4]);
+        // 蓝 σ：衰减包络（到虚轴的水平距离就是衰减率）
+        if (st.mode === 'second') {
+          var kk = 1 / Math.sqrt(Math.max(1e-6, 1 - st.zeta * st.zeta));
+          var lo = [], hi = [];
+          for (var i = 0; i <= 160; i++) {
+            var t = info.tmax * i / 160, e = Math.exp(-info.sigma * t) * kk;
+            lo.push([t, 1 - e]); hi.push([t, 1 + e]);
+          }
+          P.line(hi, C.accent, 1.2, [5, 4]);
+          P.line(lo, C.accent, 1.2, [5, 4]);
+        }
         P.line(pts, C.ink, 1.8);
+        // 蓝 σ → ts
+        if (isFinite(info.ts) && info.ts <= info.tmax) {
+          P.line([[0, 0.99], [info.tmax, 0.99]], C.accent, 1, [3, 3]);
+          P.line([[0, 1.01], [info.tmax, 1.01]], C.accent, 1, [3, 3]);
+          P.line([[info.ts, 0.99], [info.ts, 1.01]], C.accent, 1.6);
+          P.text('ts', P.x(info.ts), P.y(0.93), C.accent, 'center', 'middle');
+        }
+        // 青 ωd → tp ；橙 β → Mp
         if (st.mode === 'second' && info.m.peak > 1.001) {
-          P.line([[info.m.tp, 1], [info.m.tp, info.m.peak]], C.accent2, 1.4);
+          P.line([[info.m.tp, 0], [info.m.tp, info.m.peak]], C.c3, 1.2, [3, 3]);
+          P.text('tp', P.x(info.m.tp), P.y(info.ymax * 0.055), C.c3, 'center', 'middle');
+          P.line([[info.m.tp, 1], [info.m.tp, info.m.peak]], C.accent2, 1.6);
           P.dot(info.m.tp, info.m.peak, C.accent2, 3.5);
+          P.text('Mp', P.x(info.m.tp) + 18, P.y((1 + info.m.peak) / 2), C.accent2, 'center', 'middle');
+        }
+        // 紫 ωn → tr
+        if (isFinite(info.tr) && info.tr > 0) {
+          var yb = info.ymax * 0.86;
+          P.line([[info.t10, 0.1], [info.t10, yb]], C.c4, 1, [2, 3]);
+          P.line([[info.t90, 0.9], [info.t90, yb]], C.c4, 1, [2, 3]);
+          P.line([[info.t10, yb], [info.t90, yb]], C.c4, 1.4);
+          P.dot(info.t10, yb, C.c4, 2.5); P.dot(info.t90, yb, C.c4, 2.5);
+          P.text('tr', P.x((info.t10 + info.t90) / 2), P.y(yb) - 11, C.c4, 'center', 'middle');
         }
       }
     });
@@ -1031,18 +1084,24 @@
       slZ.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
       slW.input.parentNode.style.display = st.mode === 'second' ? '' : 'none';
       if (st.mode === 'first') {
+        lg.innerHTML = '<span><i style="background:var(--ctl-accent)"></i>蓝：到虚轴的水平距离 σ = 1/τ → 衰减率，管 ts</span>';
         setReadout(ro, [
           ['极点', info.p.toFixed(2) + '（实轴）'],
-          ['到虚轴距离', info.sigma.toFixed(2) + '  = 1/τ'],
-          ['结论', '离虚轴越远 → 衰减越快、调节时间越短']
+          ['σ（蓝）', info.sigma.toFixed(2) + ' = 1/τ'],
+          ['结论', '离虚轴越远 → 衰减越快、ts 越短']
         ]);
       } else {
+        lg.innerHTML =
+          '<span><i style="background:var(--ctl-accent)"></i>蓝 σ 水平距离 → ts</span>' +
+          '<span><i style="background:var(--ctl-c3)"></i>青 ωd 垂直距离 → tp</span>' +
+          '<span><i style="background:var(--ctl-accent2)"></i>橙 β 夹角 → Mp</span>' +
+          '<span><i style="background:var(--ctl-c4)"></i>紫 ωn 到原点 → tr</span>';
         setReadout(ro, [
           ['极点', info.re.toFixed(2) + ' ± j' + info.im.toFixed(2)],
-          ['σ = ζωn（水平）', info.sigma.toFixed(3) + '　决定衰减'],
-          ['ωd（垂直）', info.wd.toFixed(3) + '　决定振荡'],
-          ['ωn（到原点）', info.wn.toFixed(3)],
-          ['β = arccos ζ', (info.beta * 180 / Math.PI).toFixed(1) + '°　与负实轴夹角']
+          ['σ（蓝，水平）', info.sigma.toFixed(3) + ' → 管 ts'],
+          ['ωd（青，垂直）', info.wd.toFixed(3) + ' → 管 tp'],
+          ['ωn（紫，到原点）', info.wn.toFixed(3) + ' → 管 tr'],
+          ['β（橙，夹角）', (info.beta * 180 / Math.PI).toFixed(1) + '° → 管 Mp']
         ]);
       }
       Fig.renderAll();

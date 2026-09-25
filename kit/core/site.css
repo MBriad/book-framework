@@ -3,12 +3,14 @@
 :root{
   --ctl-bg:#fbfbfa; --ctl-panel:#fff; --ctl-ink:#1b1c1e; --ctl-muted:#6b7280;
   --ctl-line:#d9dbe0; --ctl-grid:#edeff3; --ctl-accent:#1f6feb; --ctl-accent2:#b45309;
+  --ctl-c3:#0f766e; --ctl-c4:#7c3aed;
   --ctl-supp:rgba(31,111,235,.06); --ctl-code:#f4f5f7; --ctl-radius:10px;
   --ctl-wide:1440px; --ctl-read:780px;
 }
 html[data-theme="dark"]{
   --ctl-bg:#16181d; --ctl-panel:#1d2026; --ctl-ink:#e6e8ec; --ctl-muted:#9aa2b1;
   --ctl-line:#2c313a; --ctl-grid:#262b33; --ctl-accent:#63a4ff; --ctl-accent2:#ffb454;
+  --ctl-c3:#2dd4bf; --ctl-c4:#a78bfa;
   --ctl-supp:rgba(99,164,255,.08); --ctl-code:#20242b;
 }
 *{box-sizing:border-box}
