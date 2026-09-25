@@ -1354,6 +1354,7 @@
        纵向两根横条的长度之比**正好就是 α**；灰虚线是 Franklin 的 4× 判据。 */
     var figZ = Fig.create(fz.canvas, {
       xlim: [-3, 0.9], ylim: [-1.4, 1.4], equal: true, xlabel: 'Re', ylabel: 'Im',
+      padding: { l: 44, r: 12, t: 14, b: 92 },   // 底部整条留给两根量长度的横条
       draw: function (P) {
         var C = P.C, z = st.zeta, i;
         P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
@@ -1361,6 +1362,8 @@
         // 每像素多少数据单位 —— 面板是等比的，所以用它画的圆/叉不会被 α 拉伸变形
         var ux = (P.xinv(P.R) - P.xinv(P.L)) / Math.max(1, P.R - P.L);
         var s = 5 * ux;
+        // ωn 已归一化成 1（时间轴本来就是 τ = ωn·t），所以复极点被钉在单位圆上：
+        // **只有 ζ 能让它沿圆弧滑动，α 一点都不动它。**
         var re = -z, im = Math.sqrt(Math.max(0, 1 - z * z));
         // 4× 判据线：零/极点离虚轴的距离超过复极点实部的 4 倍，影响就基本看不出来
         P.line([[-4 * z, P.yinv(P.T)], [-4 * z, P.yinv(P.B)]], C.muted, 1.2, [4, 4]);
@@ -1372,23 +1375,32 @@
           P.line([[re - s, py + s], [re + s, py - s]], C.ink, 1.6);
           P.dot(re, py, C.ink, 2.5);
         }
-        // 零 / 附加极点（○）；RHP 零点翻到虚轴右边
+        P.text('复极点', P.x(re) + 10, P.y(im) - 8, C.ink, 'left', 'middle');
+        // 零（○）/ 附加极点（×）—— 位置随 α 走，左图那条高亮曲线就是它生出来的
         var zr = (st.mode === 'rhp' ? 1 : -1) * st.alpha * z;
-        var yb = P.yinv(P.B), y1 = yb * 0.50, y2 = yb * 0.84;
-        var ring = [];
-        for (i = 0; i <= 18; i++) {
-          var th = i / 18 * Math.PI * 2;
-          ring.push([zr + s * 1.15 * Math.cos(th), s * 1.15 * Math.sin(th)]);
+        if (st.mode === 'pole') {
+          // 极点是叉、零点是圈：附加极点模式画圈会让人误以为在挪零点
+          P.line([[zr - s, -s], [zr + s, s]], C.accent, 1.8);
+          P.line([[zr - s, s], [zr + s, -s]], C.accent, 1.8);
+          P.text('附加极点', P.x(zr) + 12, P.y(0) - 13, C.accent, 'left', 'middle');
+        } else {
+          var ring = [];
+          for (i = 0; i <= 18; i++) {
+            var th = i / 18 * Math.PI * 2;
+            ring.push([zr + s * 1.15 * Math.cos(th), s * 1.15 * Math.sin(th)]);
+          }
+          P.line(ring, C.accent, 1.8);
+          P.text('零点', P.x(zr) + 12, P.y(0) - 13, C.accent, 'left', 'middle');
         }
-        P.line(ring, C.accent, 1.8);
-        P.dot(zr, 0, C.accent, 2);
-        // 两根量长度的横条：ζ（深）与 αζ（蓝），比值 = α
+        // 底部两条量长度的横条：ζ（深）与 αζ（蓝），长度之比 = α
+        var y1 = P.yinv(P.B + 24), y2 = P.yinv(P.B + 56);
         P.line([[0, y1], [re, y1]], C.ink, 1.6);
         P.line([[re, y1 - s * 0.8], [re, y1 + s * 0.8]], C.ink, 1.4);
-        P.text('ζ = ' + z.toFixed(2), P.x(re / 2), P.y(y1) + 9, C.ink, 'center', 'middle');
+        P.text('复极点到虚轴 ζ = ' + z.toFixed(2), P.x(re / 2), P.y(y1) + 11, C.ink, 'center', 'middle');
         P.line([[0, y2], [zr, y2]], C.accent, 1.8);
         P.line([[zr, y2 - s * 0.8], [zr, y2 + s * 0.8]], C.accent, 1.4);
-        P.text('αζ = ' + Math.abs(zr).toFixed(2), P.x(zr / 2), P.y(y2) + 9, C.accent, 'center', 'middle');
+        P.text((st.mode === 'pole' ? '附加极点到虚轴 αζ = ' : '零点到虚轴 αζ = ') + Math.abs(zr).toFixed(2),
+          P.x(zr / 2), P.y(y2) + 11, C.accent, 'center', 'middle');
       }
     });
     var slZ = slider(ctl, 'ζ', 0.15, 1, 0.05, st.zeta, function (v) { return v.toFixed(2); },
@@ -1426,13 +1438,15 @@
         ['ζ', st.zeta.toFixed(2)],
         ['Mp', m.overshoot.toFixed(1) + '%'],
         ['tr（10→90%）', (t90 - t10).toFixed(2)],
-        ['终值', cur[cur.length - 1][1].toFixed(3) + '（归一化，与 α 无关）']
+        ['终值', '1.000（直流增益归一化，与 α 无关）']
       ]);
-      note(st.mode === 'lhp'
+      note((st.mode === 'lhp'
         ? '左图看终值线：<b>所有曲线最后都汇到 1</b>——LHP 零点<b>只改瞬态</b>（紫虚线是<b>无零点</b>基准）。右图是同一个 α 的 s 平面：<b>蓝圈就是零点</b>，它到虚轴的距离是复极点实部的 α 倍；蓝圈越过灰虚线（4×）后，左图那条高亮线就贴着基准了。'
         : st.mode === 'rhp'
         ? '左图看开头：曲线<b>先往下冲出坑，再回升到 1</b>——这就是右半平面零点（非最小相位）。右图里<b>蓝圈翻到了虚轴右侧</b>：离虚轴越近（α 越小）坑越深，越往右远处去反冲越弱。'
-        : '左图看上升段：附加极点主要<b>拖长上升时间</b>，不像零点那样加超调。右图里蓝圈与复极点<b>同侧</b>：α 越大它越靠左、左图上升越慢；越过 4× 灰线后与基准（紫虚线）重合。');
+        : '左图看上升段：附加极点主要<b>拖长上升时间</b>，不像零点那样加超调。右图里蓝<b>叉</b>与复极点<b>同侧</b>：α 越大它越靠左、左图上升越慢；越过 4× 灰线后与基准（紫虚线）重合。')
+        + ' 右图把 $\omega_n$ 归一化成 1（时间轴本来就是 $\tau=\omega_n t$），所以复极点被钉在<b>单位圆</b>上——'
+        + '<b>只有 ζ 能让它沿圆弧滑动，换 α 一点都不动它</b>，α 只挪零/极点。');
       // s 平面范围跟着零/极点走，否则 α=10 时蓝圈跑到画外
       var za = st.alpha * st.zeta;
       figZ.spec.xlim = st.mode === 'rhp'
