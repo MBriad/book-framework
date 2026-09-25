@@ -61,6 +61,10 @@
     <li>$\zeta\gt1$：过阻尼，两个不等实根，单调上升无超调</li>
   </ul>
 
+  <h3>二阶系统：单位阶跃响应的解析式</h3>
+  <p>$$y(t)=1-e^{-\sigma t}\left(\cos\omega_{d}t+\dfrac{\sigma}{\omega_{d}}\sin\omega_{d}t\right),\qquad\sigma=\zeta\omega_{n},\quad\omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}}$$</p>
+  <p class="ctl-note">下面所有动态指标都是从它推出来的：令 $\dfrac{dy}{dt}=0$ 得峰值时间；用包络 $e^{-\sigma t}$ 碰到指定百分比得调节时间。</p>
+
   <h3>二阶系统：动态指标公式</h3>
   <p class="ctl-note">以下针对单位阶跃输入、欠阻尼 $0\lt\zeta\lt1$；记 $\beta=\arccos\zeta$。</p>
   <table>
@@ -68,8 +72,8 @@
     <tbody>
       <tr><td>峰值时间 $t_{p}$</td><td>$\dfrac{\pi}{\omega_{d}}$</td><td>第一次到达峰值</td></tr>
       <tr><td>超调量 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}\times100\%$</td><td><b>只由 $\zeta$ 决定</b>，与 $\omega_{n}$ 无关</td></tr>
-      <tr><td>上升时间 $t_{r}$（$0\to100\%$）</td><td>$\dfrac{\pi-\beta}{\omega_{d}}$</td><td>$\beta=\arccos\zeta$</td></tr>
-      <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td colspan="2"><b>没有闭式解</b>，需数值求解 $y(t)=0.1$ 与 $y(t)=0.9$ 的首次穿越；数值见下表</td></tr>
+      <tr><td>上升时间 $t_{r}$（$10\%\to90\%$）</td><td>$t_{r}\cong\dfrac{1.8}{\omega_{n}}$</td><td><b>Franklin 的定义</b>（Fig 3.20）。式 (3.49) 是取 $\zeta=0.5$ 读出的设计粗估式，只对无零点二阶系统准确</td></tr>
+      <tr><td>上升时间 $t_{r}$（$0\to100\%$）</td><td>$\dfrac{\pi-\beta}{\omega_{d}}$，$\beta=\arccos\zeta$</td><td>另一种定义（<b>不是</b> Franklin 的），有精确闭式解</td></tr>
       <tr><td>调节时间 $t_{s}$</td><td>$\dfrac{4}{\zeta\omega_{n}}$（2% 带）；$\dfrac{3}{\zeta\omega_{n}}$（5% 带）</td><td>包络线近似，考试通用</td></tr>
       <tr><td>延迟时间 $t_{d}$</td><td>$\dfrac{1+0.7\zeta}{\omega_{n}}$</td><td>到稳态值 50% 所需时间</td></tr>
       <tr><td>稳态值</td><td>$y(\infty)=G(0)=1$</td><td>标准形式已归一</td></tr>
@@ -77,22 +81,22 @@
   </table>
   <p class="ctl-note">调节时间更精确的写法（按包络解出）是 $t_{s}=\dfrac{-\ln\left(0.02\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$。题目若问"精确值"用它，否则用 $4/\zeta\omega_{n}$。</p>
 
-  <p><b>上升时间的两个定义对照</b>（表中是 $t_{r}\cdot\omega_{n}$，用时除以 $\omega_{n}$ 即可）：</p>
+  <p><b>上升时间两个定义的数值对照</b>（表中为 $t_{r}\cdot\omega_{n}$，用时除以 $\omega_{n}$）。<b>左列是 Franklin 的定义</b>：</p>
   <table>
-    <thead><tr><th>$\zeta$</th><th>$0\to100\%$（闭式 $\dfrac{\pi-\arccos\zeta}{\sqrt{1-\zeta^{2}}}$）</th><th>$10\%\to90\%$（数值解）</th></tr></thead>
+    <thead><tr><th>$\zeta$</th><th>$10\%\to90\%$（数值解）</th><th>$0\to100\%$（闭式 $\dfrac{\pi-\arccos\zeta}{\sqrt{1-\zeta^{2}}}$）</th></tr></thead>
     <tbody>
-      <tr><td>$0.1$</td><td>$1.68$</td><td>$1.10$</td></tr>
-      <tr><td>$0.2$</td><td>$1.81$</td><td>$1.20$</td></tr>
-      <tr><td>$0.3$</td><td>$1.97$</td><td>$1.32$</td></tr>
-      <tr><td>$0.4$</td><td>$2.16$</td><td>$1.46$</td></tr>
-      <tr style="background:var(--ctl-supp)"><td>$0.5$</td><td>$2.42$</td><td>$1.64$</td></tr>
-      <tr><td>$0.6$</td><td>$2.77$</td><td>$1.85$</td></tr>
-      <tr><td>$0.7$</td><td>$3.29$</td><td>$2.13$</td></tr>
-      <tr><td>$0.8$</td><td>$4.16$</td><td>$2.47$</td></tr>
-      <tr><td>$0.9$</td><td>$6.17$</td><td>$2.88$</td></tr>
+      <tr><td>$0.1$</td><td>$1.10$</td><td>$1.68$</td></tr>
+      <tr><td>$0.2$</td><td>$1.20$</td><td>$1.81$</td></tr>
+      <tr><td>$0.3$</td><td>$1.32$</td><td>$1.97$</td></tr>
+      <tr><td>$0.4$</td><td>$1.46$</td><td>$2.16$</td></tr>
+      <tr style="background:var(--ctl-supp)"><td>$0.5$</td><td>$1.64$</td><td>$2.42$</td></tr>
+      <tr><td>$0.6$</td><td>$1.85$</td><td>$2.77$</td></tr>
+      <tr><td>$0.7$</td><td>$2.13$</td><td>$3.29$</td></tr>
+      <tr><td>$0.8$</td><td>$2.47$</td><td>$4.16$</td></tr>
+      <tr><td>$0.9$</td><td>$2.88$</td><td>$6.17$</td></tr>
     </tbody>
   </table>
-  <p class="ctl-note">三件事值得记：① <b>$10\%\to90\%$ 没有闭式解</b>，教材给的闭式只属于 $0\to100\%$ 那个定义；② 工程上常用拟合 $t_{r}\omega_{n}\approx2.16\zeta+0.60$，在 $0.4\le\zeta\le0.7$ 内与数值解差 0.03 以内，$\zeta$ 再小或再大就偏了；③ <b>两者的比值不是常数</b>——$\zeta\le0.6$ 时约为 $0.66\sim0.68$，到 $\zeta=0.9$ 已降到 $0.47$，<b>所以不能拿一个乘个系数当另一个用</b>。一阶系统的 $10\%\to90\%$ 上升时间是 $2.20\tau$（见"一阶系统"那条），可作量级参照。</p>
+  <p class="ctl-note">三点：① <b>Franklin 把上升时间定义为 $10\%\to90\%$</b>（Fig 3.20），设计用粗估式 $t_{r}\cong1.8/\omega_{n}$（式 3.49），教材自己注明它"只对无零点二阶系统准确，其它系统只是粗估"。② 按定义精确数值解，$\zeta=0.5$ 时 $t_{r}\omega_{n}=1.64$，而书里取 $1.8$——那是从平均曲线读出的<b>偏保守的设计值</b>，不是精确解，两者不矛盾。③ 两个定义的比值<b>不是常数</b>：$\zeta\le0.6$ 时 $10\%\to90\%$ 约为 $0\to100\%$ 的 $0.66\sim0.68$，到 $\zeta=0.9$ 已降到 $0.47$，<b>不能互相换算</b>。</p>
 
   <h3>超调量对照表（$\zeta\leftrightarrow M_{p}$）</h3>
   <table>
