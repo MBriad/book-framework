@@ -14,7 +14,8 @@ window.BOOK = {
     { id: 'ch03', num: 'Ch3', title: 'Dynamic Response', zh: '动态响应', status: 'partial',
       sections: [
         { id: 'ch03-system-modeling', title: 'System Modeling Diagrams', zh: '系统建模图', status: 'partial' },
-        { id: 'ch03-time-specs', title: 'Time-Domain Specifications', zh: '时域指标', status: 'partial' }
+        { id: 'ch03-time-specs', title: 'Time-Domain Specifications', zh: '时域指标', status: 'partial' },
+        { id: 'ch03-zeros-poles', title: 'Effects of Zeros and Additional Poles', zh: '零点与附加极点的影响', status: 'partial' }
       ] },
     { id: 'ch04', num: 'Ch4', title: 'A First Analysis of Feedback', zh: '反馈的初步分析', status: 'gap' },
     { id: 'ch05', num: 'Ch5', title: 'The Root-Locus Design Method', zh: '根轨迹设计法', status: 'gap' },

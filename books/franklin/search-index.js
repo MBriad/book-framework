@@ -36,6 +36,12 @@ window.SEARCH_INDEX = [
     "s": "Time-Domain Specifications 这一节按一条 因果链 组织，每一步都是上一步的结果： ① 极点在哪 → ② 时域图像长什么样 → ③ 从图像量出指标 → ④ "
   },
   {
+    "t": "Effects of Zeros and Additional Poles",
+    "p": "sections/ch03-zeros-poles.html",
+    "k": "",
+    "s": "Effects of Zeros and Additional Poles 前两节只讲了 极点 。这一节补上 零点 和 额外极点 ——它们在 §3.3 里被明确推后到这里。 零点 "
+  },
+  {
     "t": "Ch3 · Dynamic Response",
     "p": "sections/ch03.html",
     "k": "",

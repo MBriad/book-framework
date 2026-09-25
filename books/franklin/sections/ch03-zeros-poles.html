@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Effects of Zeros and Additional Poles</title>
+</head>
+<body data-ch="ch03-zeros-poles">
+<main class="ctl-main">
+  <h1>Effects of Zeros and Additional Poles</h1>
+  <p class="ctl-note">前两节只讲了<b>极点</b>。这一节补上<b>零点</b>和<b>额外极点</b>——它们在 §3.3 里被明确推后到这里。</p>
+
+  <h2>零点 / 附加极点对阶跃响应的影响</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>额外的极点和零点的影响，比如对阶跃响应的steady value的影响等等</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+
+  <p><b>先回答你问的 steady value——这是最容易混的一点。</b>单位阶跃的稳态值就是直流增益 $G(0)$（终值定理），而零点与附加极点<b>会改变 $G(0)$</b>——除非你在加的时候同时归一化：</p>
+  <table>
+    <thead><tr><th>怎么"加"</th><th>直流增益</th><th>稳态值</th></tr></thead>
+    <tbody>
+      <tr><td>分子直接乘 $(s+z)$</td><td>变成原来的 $z$ 倍</td><td><b>变了</b></td></tr>
+      <tr><td>分子乘 $\left(\dfrac{s}{z}+1\right)$</td><td>不变（$s=0$ 处为 1）</td><td><b>不变</b></td></tr>
+    </tbody>
+  </table>
+  <p><b>书上所有对比都走第二条路</b>：$H_2=\dfrac{2(s+1.1)}{1.1(s+1)(s+2)}$ 里那个 $\div 1.1$ 就是把 DC 增益拉回 1；式 (3.80) 把零点写成 $\left(\dfrac{s}{\alpha\zeta\omega_{n}}+1\right)$ 也是同一目的。所以 <b>Fig 3.27 / 3.36 里所有曲线最后都收敛到 1</b>：<b>零点与附加极点只改瞬态，不改稳态。</b>做题时先看有没有归一化。</p>
+
+  <p><b>一、零点的作用机制：改系数，不改形状。</b>模态的形状由极点定，零点只改各项的<b>系数</b>：</p>
+  <p>$$H_{1}(s)=\frac{2}{(s+1)(s+2)}=\frac{2}{s+1}-\frac{2}{s+2}$$</p>
+  <p>$$H_{2}(s)=\frac{2(s+1.1)}{1.1(s+1)(s+2)}=\frac{0.18}{s+1}+\frac{1.64}{s+2}$$</p>
+  <p>同一个极点 $-1$ 的系数从 <b>2</b> 掉到 <b>0.18</b>——因为零点 $-1.1$ <b>几乎抵消</b>了它。机制就是式 (3.51)：$C_{1}=(s-p_{1})F(s)\big|_{s=p_{1}}$，零点若在 $p_1$ 附近，$F(p_1)$ 就小，$C_1$ 就小。<b>零点正好落在极点上 → 那一项完全消失。</b></p>
+
+  <p><b>二、零点对标准二阶的影响（式 3.80）</b>：</p>
+  <p>$$H(s)=\frac{(s/\alpha\zeta\omega_{n})+1}{(s/\omega_{n})^{2}+2\zeta(s/\omega_{n})+1},\qquad \text{零点在 } s=-\alpha\sigma$$</p>
+  <table>
+    <thead><tr><th>$\alpha$</th><th>零点在哪</th><th>影响</th></tr></thead>
+    <tbody>
+      <tr><td>$\alpha\gt3$</td><td>远离极点</td><td>几乎没有影响</td></tr>
+      <tr><td>$\alpha\approx1$</td><td>与极点实部同量级</td><td><b>显著</b></td></tr>
+      <tr><td>$\alpha\lt0$</td><td>右半平面</td><td>见第三条</td></tr>
+    </tbody>
+  </table>
+  <p><b>主要效果：$M_{p}$ 增大、$t_{r}$ 减小，对 $t_{s}$ 几乎没影响。</b></p>
+  <p><b>为什么</b>：把 $H$ 拆成两项</p>
+  <p>$$H=\underbrace{\frac{1}{s^{2}+2\zeta s+1}}_{H_{0}}+\frac{1}{\alpha\zeta}\underbrace{\frac{s}{s^{2}+2\zeta s+1}}_{H_{d}}$$</p>
+  <p>因为 $\mathcal{L}\{\dot f\}=sF(s)$，所以</p>
+  <p>$$y(t)=y_{0}(t)+\frac{1}{\alpha\zeta}\dot y_{0}(t)$$</p>
+  <p><b>零点就是往原响应上加了一份它的导数。</b>导数在早期有个大鼓包 → 把响应抬起来 → 超调变大、上升变快。这一句把"零点为什么加超调"讲透了。</p>
+
+  <p><b>三、RHP 零点 = 非最小相位。</b>$\alpha\lt0$ 时零点在右半平面，导数项是<b>减</b>的 → 响应<b>起始就往反方向走</b>，之后再回来。</p>
+  <p><b>例 3.30（波音 747）</b>：$\dfrac{h(s)}{\delta_{e}(s)}=\dfrac{30(s-6)}{s(s^{2}+4s+13)}$</p>
+  <ul>
+    <li>1° 冲激舵面 → 高度<b>先下降</b>再上升（Fig 3.35）</li>
+    <li>终值（终值定理）：$h(\infty)=\left.\dfrac{s\cdot30(s-6)(-1)}{s(s^{2}+4s+13)}\right|_{s=0}=\dfrac{30(-6)(-1)}{13}=+13.8$</li>
+    <li><b>物理原因</b>：升降舵上偏先让尾部下沉（机头还没转起来），随后机翼迎角增大才产生升力</li>
+  </ul>
+
+  <p><b>四、附加极点（式 3.82）</b>：</p>
+  <p>$$H(s)=\frac{1}{\left(s/\alpha\zeta\omega_{n}+1\right)\left[(s/\omega_{n})^{2}+2\zeta(s/\omega_{n})+1\right]}$$</p>
+  <p><b>主要效果是增大上升时间</b>——<b>不是</b>像零点那样增超调。这是零点与附加极点最值得并排记住的区别。</p>
+
+  <p><b>五、书上给的四条结论（最该背的一屏）</b>：</p>
+  <ol>
+    <li>无零点二阶：$t_{r}\cong\dfrac{1.8}{\omega_{n}}$；$M_{p}\approx5\%(\zeta=0.7)$、$16\%(0.5)$、$35\%(0)$</li>
+    <li><b>LHP 零点</b>：零点与复极点实部的距离在 <b>4 倍以内</b>时，<b>增大超调</b>（Fig 3.29）</li>
+    <li><b>RHP 零点</b>：<b>压低超调</b>，且可能让响应<b>起始就朝反方向</b></li>
+    <li><b>LHP 附加极点</b>：额外极点与复极点实部的距离在 <b>4 倍以内</b>时，<b>显著增大上升时间</b>（Fig 3.38）</li>
+  </ol>
+  <p><b>一句话收束</b>：<b>零点抢速度、加超调；附加极点拖慢它、压超调。两者都在"离复极点实部 4 倍以内"才明显。</b></p>
+  </div>
+
+  <div class="ctl-gap">这一步按理该配一张图（一族不同 $alpha$ 的阶跃响应，看 $M_p$/$t_r$ 怎么变、而终值都停在 1），但按我们定的规则我<b>不主动加图</b>。要的话说一声，我描述几何给你过目再动手。</div>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>零点项：$H=H_{0}+\dfrac{1}{\alpha\zeta}H_{d}$，$\;y=y_{0}+\dfrac{1}{\alpha\zeta}\dot y_{0}$，零点在 $s=-\alpha\sigma$。</p>
+  <p>附加极点项：$s/\alpha\zeta\omega_{n}+1$ 作为<b>分母</b>因子；$\alpha\gt3$ 时可近似忽略。</p>
+  <p>稳态值：$y(\infty)=G(0)=\dfrac{b(0)}{a(0)}$（稳定系统 + 单位阶跃）。</p>
+  </details>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>把 $G(s)=\dfrac{2}{(s+1)(s+2)}$ 乘上 $(s+2)$，稳态值变了吗？如果改成乘 $\left(\dfrac{s}{2}+1\right)$ 呢？
+      <details><summary>答案</summary>
+      <p>乘 $(s+2)$：$G(0)$ 从 $1$ 变成 $2\times2/(1\times2)=2$，<b>稳态值变了</b>（而且把极点 $-2$ 抵消了，系统降阶）。乘 $\left(\frac{s}{2}+1\right)$：$s=0$ 处为 1，<b>稳态值不变</b>，只改瞬态。</p></details></li>
+    <li>为什么 LHP 零点会增大超调？用一句话说清机制。
+      <details><summary>答案</summary>
+      <p>因为 $y=y_{0}+\frac{1}{\alpha\zeta}\dot y_{0}$——零点往原响应上<b>加了一份导数</b>，而导数在上升段有一个大的正鼓包，把响应抬高。</p></details></li>
+    <li>附加极点对超调的影响，和零点相比有什么不同？
+      <details><summary>答案</summary>
+      <p>附加极点<b>主要增大上升时间</b>（拖慢响应），通常<b>不增超调</b>；零点则<b>增大超调、减小上升时间</b>。两者方向几乎相反。</p></details></li>
+    <li>747 那个例子里，为什么高度会先下降？
+      <details><summary>答案</summary>
+      <p>传递函数里有<b>右半平面零点</b> $(s-6)$ → 非最小相位 → 初始响应朝反方向。物理上：舵面上偏先产生向下力，机身转起来之后升力才建立。</p></details></li>
+  </ol>
+  </div>
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>
