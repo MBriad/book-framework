@@ -513,6 +513,173 @@
     update();
   });
 
+  /* ---------------- ⑥ 标准型切换：控制标准型 ↔ 观测标准型 ----------------
+     纯 DOM（矩阵用 HTML 表格），不用 canvas。 */
+  Ctl.Pack.register('canonical-forms', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
+
+    var st = { a1: 1.5, a0: 2, b1: 0.5, b0: 1 };
+    var which = 'ctrl';
+    var ctl = controls(el);
+    var box = mk('div', 'ctl-forms');
+    el.appendChild(box);
+    var ro = readout(el);
+
+    function fx(v) { var r = Math.round(v * 100) / 100; return r === 0 ? '0' : String(r); }
+    function cell(v, cls) { return '<td class="' + cls + '">' + v + '</td>'; }
+    function matrix(rows) {
+      return '<span class="ctl-mat"><table><tbody>' +
+        rows.map(function (r) { return '<tr>' + r.join('') + '</tr>'; }).join('') +
+        '</tbody></table></span>';
+    }
+    function poleText() {
+      var a1 = st.a1, a0 = st.a0, disc = a1 * a1 - 4 * a0;
+      if (disc >= 0) {
+        var r = Math.sqrt(disc);
+        return fx((-a1 + r) / 2) + ' 与 ' + fx((-a1 - r) / 2) + '（两个实根）';
+      }
+      return fx(-a1 / 2) + ' ± j' + fx(Math.sqrt(-disc) / 2) + '（一对共轭复根）';
+    }
+    function render() {
+      var A, Bm, Cm;
+      if (which === 'ctrl') {
+        A = matrix([[cell(fx(-st.a1), 'src-a'), cell(fx(-st.a0), 'src-a')],
+                    [cell('1', 'src-s'), cell('0', 'src-s')]]);
+        Bm = matrix([[cell('1', 'src-s')], [cell('0', 'src-s')]]);
+        Cm = matrix([[cell(fx(st.b1), 'src-b'), cell(fx(st.b0), 'src-b')]]);
+      } else {
+        A = matrix([[cell(fx(-st.a1), 'src-a'), cell('1', 'src-s')],
+                    [cell(fx(-st.a0), 'src-a'), cell('0', 'src-s')]]);
+        Bm = matrix([[cell(fx(st.b1), 'src-b')], [cell(fx(st.b0), 'src-b')]]);
+        Cm = matrix([[cell('1', 'src-s')], [cell('0', 'src-s')]]);
+      }
+      box.innerHTML =
+        '<div class="ctl-forms-row"><span class="ctl-forms-tag">传递函数</span>' +
+        '<span class="ctl-eq">G(s) = (' + fx(st.b1) + 's + ' + fx(st.b0) + ') / (s² + ' +
+        fx(st.a1) + 's + ' + fx(st.a0) + ')</span></div>' +
+        '<div class="ctl-forms-row"><span class="ctl-forms-tag">' +
+        (which === 'ctrl' ? '控制标准型' : '观测标准型') + '</span>' + A + Bm + Cm + '</div>' +
+        '<div class="ctl-forms-row"><span class="ctl-forms-tag">来源</span>' +
+        '<span class="ctl-note">蓝色 ← a₁、a₀　　橙色 ← b₁、b₀　　灰色 ← 结构常数</span></div>';
+      var stable = st.a1 > 0 && st.a0 > 0;
+      setReadout(ro, [
+        ['特征方程', 's² + ' + fx(st.a1) + 's + ' + fx(st.a0) + ' = 0'],
+        ['特征根', poleText()],
+        ['稳定性', stable ? '稳定（两极点在左半平面）' : '不稳定'],
+        ['阶数', '2 = 状态变量 2 个 = 积分器 1/s 两个 = 分母最高次 s²']
+      ]);
+    }
+    segmented(ctl, [{ label: '控制标准型' }, { label: '观测标准型' }], function (it, k) {
+      which = k === 0 ? 'ctrl' : 'obs'; render();
+    });
+    slider(ctl, 'a₁', 0, 3, 0.1, st.a1, function (v) { return v.toFixed(1); }, function (v) { st.a1 = v; render(); });
+    slider(ctl, 'a₀', 0.5, 6, 0.1, st.a0, function (v) { return v.toFixed(1); }, function (v) { st.a0 = v; render(); });
+    slider(ctl, 'b₁', -2, 2, 0.1, st.b1, function (v) { return v.toFixed(1); }, function (v) { st.b1 = v; render(); });
+    slider(ctl, 'b₀', -4, 4, 0.1, st.b0, function (v) { return v.toFixed(1); }, function (v) { st.b0 = v; render(); });
+    render();
+  });
+
+  /* ---------------- ⑦ Mason 逐步展开 ----------------
+     纯 SVG，不用 canvas。例子：P₁=abce、P₂=k，两条回路 f、g 互不接触。
+     Mason 结果 G=(P₁Δ₁+P₂Δ₂)/Δ 已与代数解对拍：都等于 65。 */
+  Ctl.Pack.register('mason-flow', function (el) {
+    el.classList.add('ctl-widget');
+    var ttl = el.getAttribute('data-title');
+    if (ttl) { var tp = mk('p', 'ctl-widget-title'); tp.textContent = ttl; el.appendChild(tp); }
+
+    var P1 = 16, P2 = 1, L1 = 0.5, L2 = 0.5, L1L2 = 0.25;
+    var D = 1 - (L1 + L2) + L1L2;
+    var GT = (P1 * 1 + P2 * D) / D;
+
+    var box = mk('div', 'ctl-mason');
+    box.innerHTML =
+      '<svg viewBox="0 0 600 280" role="img" aria-label="信号流图">' +
+      '<defs><marker id="mason-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+      '<path d="M0,0 L10,5 L0,10 z" style="fill:var(--ctl-muted)"/></marker></defs>' +
+      '<path class="br" data-b="k" d="M48,186 C48,258 540,258 540,186" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="294" y="268">k</text>' +
+      '<line class="br" data-b="a" x1="64" y1="170" x2="150" y2="170" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="107" y="160">a</text>' +
+      '<line class="br" data-b="b" x1="184" y1="170" x2="270" y2="170" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="227" y="160">b</text>' +
+      '<line class="br" data-b="c" x1="304" y1="170" x2="390" y2="170" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="347" y="160">c</text>' +
+      '<line class="br" data-b="e" x1="424" y1="170" x2="522" y2="170" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="473" y="160">e</text>' +
+      '<path class="br" data-b="f" d="M158,157 C138,112 198,112 178,157" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="168" y="104">f</text>' +
+      '<path class="br" data-b="g" d="M398,157 C378,112 438,112 418,157" marker-end="url(#mason-ar)"/>' +
+      '<text class="gl" x="408" y="104">g</text>' +
+      '<circle class="nd" data-n="1" cx="48" cy="170" r="16"/><text class="nl" x="48" y="175">1</text>' +
+      '<circle class="nd" data-n="2" cx="168" cy="170" r="16"/><text class="nl" x="168" y="175">2</text>' +
+      '<circle class="nd" data-n="3" cx="288" cy="170" r="16"/><text class="nl" x="288" y="175">3</text>' +
+      '<circle class="nd" data-n="4" cx="408" cy="170" r="16"/><text class="nl" x="408" y="175">4</text>' +
+      '<circle class="nd" data-n="5" cx="540" cy="170" r="16"/><text class="nl" x="540" y="175">5</text>' +
+      '</svg>';
+    el.appendChild(box);
+    var note = mk('div', 'ctl-mason-note');
+    el.appendChild(note);
+    var ctl = controls(el);
+    var ro = readout(el);
+
+    var STEPS = [
+      { t: '整张信号流图。先别急着算，按顺序数：<b>前向通道</b> → <b>回路</b> → <b>互不接触的回路对</b>。', hot: [], hotN: [] },
+      { t: '<b>第 1 条前向通道</b>：1→2→3→4→5，增益 $P_1=abce=16$。', hot: ['a', 'b', 'c', 'e'], hotN: ['1', '2', '3', '4', '5'] },
+      { t: '<b>第 2 条前向通道</b>：1→5 直通，增益 $P_2=k=1$。走下面那条弧线。', hot: ['k'], hotN: ['1', '5'] },
+      { t: '<b>回路 L₁</b>：节点 2 上的自环，$L_1=f=0.5$。回路增益 = 环上所有支路增益之积。', hot: ['f'], hotN: ['2'] },
+      { t: '<b>回路 L₂</b>：节点 4 上的自环，$L_2=g=0.5$。', hot: ['g'], hotN: ['4'] },
+      { t: '<b>互不接触的回路对</b>：L₁ 只碰节点 2、L₂ 只碰节点 4，<b>没有公共节点</b> → 互不接触，产生乘积项 $L_1L_2=0.25$。', hot: ['f', 'g'], hotN: ['2', '4'] },
+      { t: '拼出 $\\Delta$ 与 $\\Delta_k$，代入 $G=\\dfrac{P_1\\Delta_1+P_2\\Delta_2}{\\Delta}$。$P_1$ 与两条回路都接触 → $\\Delta_1=1$；$P_2$ 谁都不碰 → $\\Delta_2=\\Delta$。', hot: [], hotN: [] }
+    ];
+    var cur = 0;
+
+    function typeset(node) {
+      if (!global.renderMathInElement) return;
+      try {
+        global.renderMathInElement(node, {
+          delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+          throwOnError: false,
+          ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option']
+        });
+      } catch (e) { /* 失败不阻断 */ }
+    }
+    function val(x, need) { return cur >= need ? x : '？'; }
+    var prevB = mk('button', 'ctl-btn'); prevB.type = 'button'; prevB.textContent = '← 上一步';
+    var nextB = mk('button', 'ctl-btn'); nextB.type = 'button'; nextB.textContent = '下一步 →';
+    function paint() {
+      var s = STEPS[cur];
+      var brs = box.querySelectorAll('[data-b]'), nds = box.querySelectorAll('[data-n]'), i, id;
+      for (i = 0; i < brs.length; i++) {
+        id = brs[i].getAttribute('data-b');
+        brs[i].classList.toggle('is-hot', s.hot.indexOf(id) >= 0);
+        brs[i].classList.toggle('is-dim', s.hot.length > 0 && s.hot.indexOf(id) < 0);
+      }
+      for (i = 0; i < nds.length; i++) {
+        id = nds[i].getAttribute('data-n');
+        nds[i].classList.toggle('is-hot', s.hotN.indexOf(id) >= 0);
+      }
+      note.innerHTML = '<b>第 ' + (cur + 1) + ' / ' + STEPS.length + ' 步</b>　' + s.t;
+      typeset(note);
+      setReadout(ro, [
+        ['P₁ = a·b·c·e', val(P1, 1)],
+        ['P₂ = k', val(P2, 2)],
+        ['L₁ = f', val(L1, 3)],
+        ['L₂ = g', val(L2, 4)],
+        ['L₁L₂（互不接触）', val(L1L2, 5)],
+        ['Δ = 1 − (L₁+L₂) + L₁L₂', val(D, 5)],
+        ['G = (P₁Δ₁ + P₂Δ₂)/Δ', val(GT, 6)]
+      ]);
+      prevB.disabled = cur === 0;
+      nextB.disabled = cur === STEPS.length - 1;
+    }
+    prevB.addEventListener('click', function () { if (cur > 0) { cur--; paint(); } });
+    nextB.addEventListener('click', function () { if (cur < STEPS.length - 1) { cur++; paint(); } });
+    ctl.appendChild(prevB); ctl.appendChild(nextB);
+    paint();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics
