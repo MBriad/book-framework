@@ -8,20 +8,118 @@
 <body data-ch="knowledge">
 <main class="ctl-main ctl-kp-page">
   <h1>知识点速查</h1>
-  <p class="ctl-note">做题时的查阅页，不按章节分组。每条知识点一个三级标题，右侧目录会自动变成跳转索引，顶栏搜索也能搜到。</p>
+  <p class="ctl-note">做题时的查阅页，不按章节分组。每条知识点一个三级标题，右侧目录即跳转索引，顶栏搜索也能搜到。</p>
 
-  <div class="ctl-gap">缺口：内容待提供。把知识点直接丢给我（文字、LaTeX 或截图都行），我核对后收进来；写错的地方我会直接改成正确版本，不留标注。</div>
+  <h3>拉普拉斯变换对（常用）</h3>
+  <table>
+    <thead><tr><th>$f(t)$</th><th>$F(s)$</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td>$\delta(t)$（单位冲激）</td><td>$1$</td><td>面积为 1 的理想冲激</td></tr>
+      <tr><td>$t^{n}$</td><td>$\dfrac{n!}{s^{\,n+1}}$</td><td>$n=0$ 即单位阶跃：$1\to\dfrac{1}{s}$；$t\to\dfrac{1}{s^{2}}$</td></tr>
+      <tr><td>$e^{-at}$</td><td>$\dfrac{1}{s+a}$</td><td>衰减指数。若原式是 $e^{+at}$，则对应 $\dfrac{1}{s-a}$</td></tr>
+      <tr><td>$\sin(bt)$</td><td>$\dfrac{b}{s^{2}+b^{2}}$</td><td></td></tr>
+      <tr><td>$\cos(bt)$</td><td>$\dfrac{s}{s^{2}+b^{2}}$</td><td></td></tr>
+      <tr><td>$\sinh(bt)$</td><td>$\dfrac{b}{s^{2}-b^{2}}$</td><td>$s\gt|b|$</td></tr>
+      <tr><td>$\cosh(bt)$</td><td>$\dfrac{s}{s^{2}-b^{2}}$</td><td>$s\gt|b|$（与 $\sinh$ 配对，一并记住）</td></tr>
+    </tbody>
+  </table>
 
-  <h2>示例（等你提供内容后替换）</h2>
+  <h3>复频移（s 域平移）</h3>
+  <p>$$e^{-at}f(t)\;\longleftrightarrow\;F(s+a)$$</p>
+  <p>反过来：$s$ 域右移 $a$，等于时域乘 $e^{-at}$。衰减振荡就是这么来的——把 $\sin(bt)$ 的 $s$ 全换成 $s+a$：</p>
+  <p>$$e^{-at}\sin(bt)\;\longleftrightarrow\;\dfrac{b}{(s+a)^{2}+b^{2}},\qquad e^{-at}\cos(bt)\;\longleftrightarrow\;\dfrac{s+a}{(s+a)^{2}+b^{2}}$$</p>
 
-  <h3>二阶系统超调量</h3>
-  <p>只由阻尼比 $\zeta$ 决定，与 $\omega_n$ 无关：</p>
-  <p>$$M_p=e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}$$</p>
-  <p class="ctl-kp-src">Franklin §3.4</p>
+  <h3>电感与电容：时域关系、s 域模型</h3>
+  <table>
+    <thead><tr><th>元件</th><th>时域</th><th>s 域（含初始条件）</th><th>零初值阻抗</th></tr></thead>
+    <tbody>
+      <tr><td>电感 $L$</td><td>$v=L\dfrac{di}{dt}$</td><td>$V(s)=sL\,I(s)-L\,i(0^{-})$</td><td>$Z_{L}=sL$</td></tr>
+      <tr><td>电容 $C$</td><td>$i=C\dfrac{dv}{dt}$</td><td>$I(s)=sC\,V(s)-C\,v(0^{-})$</td><td>$Z_{C}=\dfrac{1}{sC}$</td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note">注意 s 域式子里第二项是<b>初始条件</b>，符号是负的。零初始条件下电感就是 $sL$、电容就是 $1/(sC)$，可以当作电阻一样做串并联。</p>
 
-  <h3>调节时间（2% 误差带）</h3>
-  <p>$$t_s\approx\frac{4}{\zeta\omega_n}$$</p>
-  <p class="ctl-kp-src">Franklin §3.4</p>
+  <h3>一阶系统：标准形式与动态指标</h3>
+  <p>标准形式 $G(s)=\dfrac{K}{\tau s+1}$，$\tau$ 是时间常数。写成 $\dfrac{a}{s+a}$ 时 $\tau=1/a$。</p>
+  <p>单位阶跃响应：$$y(t)=K\left(1-e^{-t/\tau}\right)$$</p>
+  <ul>
+    <li>$t=\tau$ 时到达稳态的 $63.2\%$</li>
+    <li>$t=3\tau\to95.0\%$；$t=4\tau\to98.2\%$；$t=5\tau\to99.3\%$</li>
+    <li>调节时间：$t_{s}\approx4\tau$（$\pm2\%$ 带）；$t_{s}\approx3\tau$（$\pm5\%$ 带）</li>
+    <li>上升时间（$10\%\to90\%$）：$t_{r}=\tau\ln 9\approx2.20\,\tau$</li>
+    <li>初始斜率：$\left.\dfrac{dy}{dt}\right|_{0^{+}}=\dfrac{K}{\tau}$</li>
+    <li><b>没有超调、不振荡</b>——一阶系统永远单调</li>
+  </ul>
+
+  <h3>二阶系统：标准特征方程</h3>
+  <p>$$s^{2}+2\zeta\omega_{n}s+\omega_{n}^{2}=0\qquad\Longrightarrow\qquad s_{1,2}=-\zeta\omega_{n}\pm j\omega_{n}\sqrt{1-\zeta^{2}}$$</p>
+  <p>对应标准传递函数 $G(s)=\dfrac{\omega_{n}^{2}}{s^{2}+2\zeta\omega_{n}s+\omega_{n}^{2}}$，直流增益已归一为 1。阻尼振荡频率 $\omega_{d}=\omega_{n}\sqrt{1-\zeta^{2}}$。</p>
+  <ul>
+    <li>$\zeta=0$：无阻尼，等幅振荡（极点在虚轴上）</li>
+    <li>$0\lt\zeta\lt1$：欠阻尼，衰减振荡，<b>有超调</b></li>
+    <li>$\zeta=1$：临界阻尼，重根，单调上升无超调</li>
+    <li>$\zeta\gt1$：过阻尼，两个不等实根，单调上升无超调</li>
+  </ul>
+
+  <h3>二阶系统：动态指标公式</h3>
+  <p class="ctl-note">以下针对单位阶跃输入、欠阻尼 $0\lt\zeta\lt1$；记 $\beta=\arccos\zeta$。</p>
+  <table>
+    <thead><tr><th>指标</th><th>公式</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td>峰值时间 $t_{p}$</td><td>$\dfrac{\pi}{\omega_{d}}$</td><td>第一次到达峰值</td></tr>
+      <tr><td>超调量 $M_{p}$</td><td>$e^{-\pi\zeta/\sqrt{1-\zeta^{2}}}\times100\%$</td><td><b>只由 $\zeta$ 决定</b>，与 $\omega_{n}$ 无关</td></tr>
+      <tr><td>上升时间 $t_{r}$（$0\to100\%$）</td><td>$\dfrac{\pi-\beta}{\omega_{d}}$</td><td>$\beta=\arccos\zeta$</td></tr>
+      <tr><td>调节时间 $t_{s}$</td><td>$\dfrac{4}{\zeta\omega_{n}}$（2% 带）；$\dfrac{3}{\zeta\omega_{n}}$（5% 带）</td><td>包络线近似，考试通用</td></tr>
+      <tr><td>延迟时间 $t_{d}$</td><td>$\dfrac{1+0.7\zeta}{\omega_{n}}$</td><td>到稳态值 50% 所需时间</td></tr>
+      <tr><td>稳态值</td><td>$y(\infty)=G(0)=1$</td><td>标准形式已归一</td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note">调节时间更精确的写法（按包络解出）是 $t_{s}=\dfrac{-\ln\left(0.02\sqrt{1-\zeta^{2}}\right)}{\zeta\omega_{n}}$。题目若问"精确值"用它，否则用 $4/\zeta\omega_{n}$。</p>
+
+  <h3>超调量对照表（$\zeta\leftrightarrow M_{p}$）</h3>
+  <table>
+    <thead><tr><th>$\zeta$</th><th>$M_{p}$</th></tr></thead>
+    <tbody>
+      <tr><td>$0.1$</td><td>$72.9\%$</td></tr>
+      <tr><td>$0.2$</td><td>$52.7\%$</td></tr>
+      <tr><td>$0.3$</td><td>$37.2\%$</td></tr>
+      <tr><td>$0.4$</td><td>$25.4\%$</td></tr>
+      <tr style="background:var(--ctl-supp);font-weight:600"><td>$0.456$</td><td>$20.0\%$</td></tr>
+      <tr><td>$0.5$</td><td>$16.3\%$</td></tr>
+      <tr><td>$0.6$</td><td>$9.5\%$</td></tr>
+      <tr><td>$0.7$</td><td>$4.6\%$</td></tr>
+      <tr><td>$0.707$</td><td>$4.3\%$</td></tr>
+      <tr><td>$0.8$</td><td>$1.5\%$</td></tr>
+      <tr><td>$0.9$</td><td>$0.15\%$</td></tr>
+      <tr><td>$1$</td><td>$0\%$</td></tr>
+    </tbody>
+  </table>
+  <p class="ctl-note">正查：给 $\zeta$ 求 $M_{p}$。反查（题目常这么出）：给 $M_{p}$ 求 $\zeta$，例如 $M_{p}=20\%\Rightarrow\zeta\approx0.456$；$M_{p}=16.3\%\Rightarrow\zeta=0.5$；$M_{p}=4.3\%\Rightarrow\zeta\approx0.707$。</p>
+
+  <h3>典型环节的传递函数</h3>
+  <table>
+    <thead><tr><th>环节</th><th>传递函数</th><th>阶跃响应要点</th></tr></thead>
+    <tbody>
+      <tr><td>比例</td><td>$K$</td><td>即时跟随，无延迟无超调</td></tr>
+      <tr><td>积分</td><td>$\dfrac{1}{Ts}$（或 $\dfrac{K}{s}$）</td><td>输出是斜坡，终值无穷</td></tr>
+      <tr><td>微分</td><td>$Ts$</td><td>只对变化率有响应</td></tr>
+      <tr><td>惯性（一阶）</td><td>$\dfrac{K}{Ts+1}$</td><td>指数上升，无超调</td></tr>
+      <tr><td>一阶微分（超前）</td><td>$Ts+1$</td><td>给响应加初始冲劲</td></tr>
+      <tr><td>振荡（二阶）</td><td>$\dfrac{\omega_{n}^{2}}{s^{2}+2\zeta\omega_{n}s+\omega_{n}^{2}}$</td><td>$\zeta\lt1$ 时才有超调</td></tr>
+      <tr><td>延迟</td><td>$e^{-\tau s}$</td><td>纯滞后，相位随频率线性下降</td></tr>
+    </tbody>
+  </table>
+
+  <h3>初值定理与终值定理</h3>
+  <p>$$f(0^{+})=\lim_{s\to\infty}sF(s)\qquad\qquad f(\infty)=\lim_{s\to0}sF(s)$$</p>
+  <p class="ctl-note"><b>终值定理的适用条件</b>：只有 $sF(s)$ 的极点全部在左半平面（原点处最多允许一个一阶极点）时成立。右半平面有极点、或虚轴上有共轭极点（等幅振荡）时，用它会得到错误答案——那种情况根本没有终值。</p>
+
+  <h3>单位阶跃响应的初值与初值斜率</h3>
+  <p>单位阶跃输入下 $Y(s)=\dfrac{G(s)}{s}$，代入初值定理得</p>
+  <p>$$y(0^{+})=\lim_{s\to\infty}sY(s)=\lim_{s\to\infty}G(s)$$</p>
+  <p>初值斜率要把拉氏微分性质也算进去（$\mathcal{L}\{\dot y\}=sY(s)-y(0^{+})$）：</p>
+  <p>$$\dot y(0^{+})=\lim_{s\to\infty}s\left[sY(s)-y(0^{+})\right]\;\xrightarrow{\;y(0^{+})=0\;}\;\lim_{s\to\infty}sG(s)$$</p>
+  <p class="ctl-note">两条都只用到 $G(s)$ 的<b>高频段</b>：阶跃响应的初值等于 $\lim_{s\to\infty}G(s)$；若初值为零，初始斜率等于 $\lim_{s\to\infty}sG(s)$。同理终值是 $y(\infty)=\lim_{s\to0}G(s)=G(0)$。</p>
 </main>
 <script src="../../kit/core/boot.js" data-book="./"></script>
 </body>
