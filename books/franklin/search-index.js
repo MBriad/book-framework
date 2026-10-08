@@ -54,6 +54,12 @@ window.SEARCH_INDEX = [
     "s": "Ch3 · Dynamic Response 动态响应 · 对应 Franklin 原书 Ch3。本章知识点较多，正文按子节拆分。 本章子节 这个列表是自动生成的——子节写在 bo"
   },
   {
+    "t": "Sensitivity to Parameter Changes",
+    "p": "sections/ch04-sensitivity.html",
+    "k": "",
+    "s": "Sensitivity to Parameter Changes Franklin §4.1.4。这一节只回答一件事： 某个块的参数变了，输出跟着变多少 ——以及反馈把这件事压下去"
+  },
+  {
     "t": "Ch4 · A First Analysis of Feedback",
     "p": "sections/ch04.html",
     "k": "",

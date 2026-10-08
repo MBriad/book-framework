@@ -50,3 +50,9 @@ canvas.ctl-drag{cursor:crosshair}
 .ctl-rt tr.halt-row td{color:var(--ctl-muted);font-style:italic;text-align:left}
 .ctl-routh-msg{font-size:13.5px;line-height:1.7;margin:8px 0 0;padding:8px 10px;
   background:var(--ctl-supp);border-left:3px solid var(--ctl-accent);border-radius:0 6px 6px 0}
+
+/* ---- 灵敏度：四块的灵敏度对照表 ---- */
+.ctl-sens-t{border-collapse:collapse;font-size:13px;margin-top:10px;font-variant-numeric:tabular-nums}
+.ctl-sens-t th,.ctl-sens-t td{padding:4px 12px;text-align:left;border-bottom:1px solid var(--ctl-grid)}
+.ctl-sens-t th{color:var(--ctl-muted);font-weight:400}
+.ctl-sens-t tr.sel td{background:var(--ctl-supp);font-weight:700}

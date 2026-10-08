@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensitivity to Parameter Changes</title>
+</head>
+<body data-ch="ch04-sensitivity">
+<main class="ctl-main">
+  <h1>Sensitivity to Parameter Changes</h1>
+  <p class="ctl-note">Franklin §4.1.4。这一节只回答一件事：<b>某个块的参数变了，输出跟着变多少</b>——以及反馈把这件事压下去多少。</p>
+
+  <h2>定义：两个相对变化之比</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>对于 serial block 应该对单个 block 使用闭环公式来求解 Sensitivity，也就是某个 para 对控制器的影响</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>你说对的那一半正好是最重要的那一半。</b>书里 §4.1.4 只推导了<b>一块</b>：由 $T_{cl}=\dfrac{GD_{cl}}{1+GD_{cl}}$ 得到 $S=\dfrac{1}{1+GD_{cl}}$；<b>串级（好几块串在一起）书里没写</b>。而"对单个 block 用闭环公式"恰好能把它补上。</p>
+
+  <p><b>定义</b>（式 4.18–4.21）：灵敏度是<b>两个相对变化之比</b>，不是绝对变化之比：</p>
+  <p>$$S_{G}^{T}\;\triangleq\;\frac{\delta T/T}{\delta G/G}\;=\;\frac{G}{T}\frac{dT}{dG}$$</p>
+
+  <p><b>开环</b>：$T_{ol}=GD_{ol}$ ⇒ $\dfrac{\delta T_{ol}}{T_{ol}}=\dfrac{\delta G}{G}$ ⇒ $S=1$。<b>参数错 10%，输出就错 10%</b>——一点忙都帮不上。</p>
+
+  <p><b>闭环</b>（单位反馈）：把 $T_{cl}=\dfrac{GD_{cl}}{1+GD_{cl}}$ 代进去得到</p>
+  <p>$$S=\frac{1}{1+GD_{cl}}=\frac{1}{1+L},\qquad L=GD_{cl}\ \text{（回路增益）}$$</p>
+
+  <p><b>现在回答"串级怎么办"。</b>把前向通路拆成串级 $\mathcal{G}=G_{1}G_{2}G_{3}$，反馈为 $\mathcal{H}$：</p>
+  <p>$$T=\frac{\mathcal{G}}{1+\mathcal{G}\mathcal{H}},\qquad L=\mathcal{G}\mathcal{H}$$</p>
+  <p>对<b>任何一块</b> $G_i$ 求灵敏度（设 $R$ 为其余各块之积，则 $\mathcal G=G_iR$）：</p>
+  <p>$$S_{G_i}^{T}=\frac{G_i}{T}\frac{\partial T}{\partial G_i}=\frac{G_i(1+L)}{\mathcal{G}}\cdot\frac{\mathcal{G}/G_i}{(1+L)^{2}}=\boxed{\frac{1}{1+L}}$$</p>
+  <p><b>与 $i$ 无关。</b>所以：<b>前向串级里每一块的灵敏度都等于同一个 $\dfrac{1}{1+L}$</b>——参数在控制器里、在功率级里、还是在被控对象里，只要还在<b>前向通路</b>上，答案就是这一个数。这就是"对单个 block 使用闭环公式"的完整含义。</p>
+
+  <p><b>但反馈块不一样。</b>$mathcal{H}$ 在分母上：</p>
+  <p>$$S_{\mathcal{H}}^{T}=\frac{\mathcal{H}}{T}\frac{\partial T}{\partial \mathcal{H}}=-\frac{\mathcal{G}\mathcal{H}}{1+L}=-\frac{L}{1+L}$$</p>
+  <p><b>负号</b>不只是符号问题：它说明 $\mathcal H$ 变大会让 $T$ <b>变小</b>。所以"传感器不准"和"被控对象不准"在反馈系统里的后果<b>根本不是一回事</b>——$L$ 大时 $|S_{\mathcal H}|\approx1$，几乎没被压下去。</p>
+
+  <p><b>两个基本功</b>：</p>
+  <p>$$S\triangleq\frac{1}{1+L},\qquad T\triangleq\frac{L}{1+L}=1-S,\qquad S+T=1$$</p>
+  <p class="ctl-note">两个容易踩的地方：① $T=\dfrac{L}{1+L}$ <b>只在 $\mathcal H=1$（单位反馈）时成立</b>；$\mathcal H\neq1$ 时 $T=\dfrac{\mathcal G}{1+L}$，但 $S$ 与 $S_{\mathcal H}$ 的式子不变。② Bode 当年定义的灵敏度是<b>倒数</b>：$S_{\text{Bode}}=1+L$——读别的书时先确认用的是哪套约定。</p>
+  <p class="ctl-note">数字口径：原书举例用的是 $1+GD_{cl}=100$（即 $L=99$），于是 $S=0.01$、参数错 10% → 输出错 <b>0.1%</b>、开环比闭环敏感 <b>100</b> 倍。下面组件默认取 $L=100$，对应 $S=1/101=0.0099$、输出错 <b>0.099%</b>、敏感 <b>101</b> 倍——是同一件事，只是取整位置不同。</p>
+  </div>
+
+  <div data-primitive="sensitivity" data-title="图：左＝S 与 T 随回路增益 L（两者永远加起来等于 1）；右＝把灵敏度画成斜率——灰虚线是开环（斜率 1），蓝线是闭环（斜率＝选中那块的灵敏度）。下面那张表列出四块各自的灵敏度：三块 G 完全相同，只有 H 是负的"></div>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>定义：$S_G^T=\dfrac{\delta T/T}{\delta G/G}=\dfrac{G}{T}\dfrac{dT}{dG}$。</p>
+  <p>开环 $S=1$；闭环 $S=\dfrac{1}{1+L}$，$L=GD_{cl}$。</p>
+  <p>串级：前向任意一块 $S_{G_i}=\dfrac{1}{1+L}$（<b>全都一样</b>）；反馈块 $S_{\mathcal H}=-\dfrac{L}{1+L}$。</p>
+  <p>单位反馈：$S=\dfrac{1}{1+L}$，$T=\dfrac{L}{1+L}=1-S$，$S+T=1$。</p>
+  </details>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>回路增益 $L=100$。被控对象增益 $G$ 漂了 $10\%$，闭环输出的稳态值漂多少？开环呢？
+      <details><summary>答案</summary><p>闭环 $S=\frac{1}{101}=0.0099$ → 输出漂 $0.099\%$；开环 $S=1$ → 输出漂 $10\%$。<b>差 101 倍。</b></p></details></li>
+    <li>前向通路上串了三块 $G_1G_2G_3$（控制器、功率级、被控对象）。哪一块的参数漂移对输出影响最大？
+      <details><summary>答案</summary><p><b>一样大。</b>三块的灵敏度都是同一个 $\frac{1}{1+L}$，与它是控制器还是被控对象无关——只要在<b>前向通路</b>上。这正是"对单个 block 用闭环公式"的意思。</p></details></li>
+    <li>反馈通路（传感器）$\mathcal H$ 的灵敏度是多少？为什么和上面不一样？
+      <details><summary>答案</summary><p>$S_{\mathcal H}=-\frac{L}{1+L}$，<b>负的</b>。因为 $\mathcal H$ 在分母上：$T=\frac{\mathcal G}{1+\mathcal G\mathcal H}$，$\mathcal H$ 增大让 $T$ 减小。而且 $|S_{\mathcal H}|\approx1$（$L$ 大时），远大于前向块的 $\frac{1}{1+L}$——<b>反馈元件不准是严重得多的问题</b>。</p></details></li>
+    <li>$S+T=1$ 怎么来的？前提是什么？
+      <details><summary>答案</summary><p>定义直接相加：$\frac{1}{1+L}+\frac{L}{1+L}=1$。前提是<b>单位反馈</b>（$\mathcal H=1$）；$\mathcal H\neq1$ 时 $T=\frac{\mathcal G}{1+L}$，$S+T\neq1$。</p></details></li>
+  </ol>
+  </div>
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>

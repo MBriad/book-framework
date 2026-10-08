@@ -18,7 +18,10 @@ window.BOOK = {
         { id: 'ch03-zeros-poles', title: 'Effects of Zeros and Additional Poles', zh: '零点与附加极点的影响', status: 'partial' },
         { id: 'ch03-stability', title: 'Stability', zh: '稳定性与劳斯判据', status: 'partial' }
       ] },
-    { id: 'ch04', num: 'Ch4', title: 'A First Analysis of Feedback', zh: '反馈的初步分析', status: 'gap' },
+    { id: 'ch04', num: 'Ch4', title: 'A First Analysis of Feedback', zh: '反馈的初步分析', status: 'partial',
+      sections: [
+        { id: 'ch04-sensitivity', title: 'Sensitivity to Parameter Changes', zh: '灵敏度：参数变化传成多少输出变化', status: 'partial' }
+      ] },
     { id: 'ch05', num: 'Ch5', title: 'The Root-Locus Design Method', zh: '根轨迹设计法', status: 'gap' },
     { id: 'ch06', num: 'Ch6', title: 'The Frequency-Response Design Method', zh: '频率响应设计法', status: 'gap' },
     { id: 'ch07', num: 'Ch7', title: 'State-Space Design', zh: '状态空间设计', status: 'gap' },

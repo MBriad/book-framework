@@ -1886,6 +1886,104 @@
     refresh();
   });
 
+  /* ---------------- ⑰ 灵敏度：串级里每一块的参数变化传成多少输出变化（Franklin §4.1.4） ---
+     结构：前向串级 Gp = G1·G2·G3，反馈 H，回路增益 L = Gp·H，T = Gp/(1+L)。
+       S = 1/(1+L)        —— **前向通路里任何一块**都是这一个值（所以"对单个 block 用闭环公式"）
+       S_H = -L/(1+L)     —— 反馈块不一样，而且是负的
+     H = 1 时退化成书上 §4.1.4 的 S = 1/(1+GDcl)、T = L/(1+L)、S+T = 1。
+     左图：S 与 T 随 L（对数）。右图：把灵敏度画成斜率——开环斜率 1，闭环斜率就是选中那块。 */
+  Ctl.Pack.register('sensitivity', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el);
+    var fs = figBox(wrap, 'ctl-h-md'), fe = figBox(wrap, 'ctl-h-md');
+    var lg = mk('div', 'ctl-legend');
+    el.appendChild(lg);
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+    var tbl = mk('div', 'ctl-sens-tbl');
+    el.appendChild(tbl);
+
+    var st = { which: 0, L: 100 };
+    var NAMES = ['G₁', 'G₂', 'G₃', 'H'];
+    function sensOf(i) { return i < 3 ? 1 / (1 + st.L) : -st.L / (1 + st.L); }
+
+    var figS = Fig.create(fs.canvas, {
+      xlim: [0.1, 1000], xlog: true, ylim: [0, 1],
+      xlabel: '回路增益 L', ylabel: 'S 与 T',
+      draw: function (P) {
+        var C = P.C, k, qs = [], qt = [];
+        for (k = 0; k <= 240; k++) {
+          var x = Math.pow(10, -1 + 4 * k / 240);
+          qs.push([x, 1 / (1 + x)]);
+          qt.push([x, x / (1 + x)]);
+        }
+        P.line([[0.1, 0.5], [1000, 0.5]], C.grid, 1, [3, 3]);
+        P.line(qt, C.accent2, 2.4);
+        P.line(qs, C.accent, 2.4);
+        P.line([[st.L, P.yinv(P.T)], [st.L, P.yinv(P.B)]], C.muted, 1.2, [3, 3]);
+        P.dot(st.L, 1 / (1 + st.L), C.accent, 4);
+        P.dot(st.L, st.L / (1 + st.L), C.accent2, 4);
+        P.text('L=1 处 S=T=0.5', P.x(1), P.y(0.56), C.muted, 'center', 'middle');
+        P.text('S', P.x(300), P.y(0.08), C.accent, 'center', 'middle');
+        P.text('T', P.x(300), P.y(0.92), C.accent2, 'center', 'middle');
+      }
+    });
+    var figE = Fig.create(fe.canvas, {
+      xlim: [-50, 50], ylim: [-60, 60], xlabel: '选中那块参数变化 δ (%)', ylabel: '输出变化 (%)',
+      draw: function (P) {
+        var C = P.C, s = sensOf(st.which);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1);
+        P.line([[-50, -50], [50, 50]], C.muted, 1.8, [5, 4]);
+        P.line([[-50, -50 * s], [50, 50 * s]], C.accent, 2.6);
+        P.dot(10, 10, C.muted, 3.5);
+        P.dot(10, 10 * s, C.accent, 4.5);
+      }
+    });
+
+    function refresh() {
+      var L = st.L, S = 1 / (1 + L), T = L / (1 + L);
+      var sens = [S, S, S, -T];
+      var h = '<table class="ctl-sens-t"><thead><tr><th>块</th><th>它的灵敏度</th><th>这块参数变 +10% → 输出变</th></tr></thead><tbody>';
+      for (var i = 0; i < 4; i++) {
+        h += '<tr' + (i === st.which ? ' class="sel"' : '') + '><td>' + NAMES[i] + '</td><td>' +
+          (i < 3 ? '1/(1+L)' : '−L/(1+L)') + ' = ' + sens[i].toFixed(4) + '</td><td>' +
+          (10 * sens[i]).toFixed(3) + '%</td></tr>';
+      }
+      h += '</tbody></table>';
+      tbl.innerHTML = h;
+
+      lg.innerHTML =
+        '<span><i style="background:var(--ctl-accent)"></i>左图 S = 1/(1+L)（灵敏度）</span>' +
+        '<span><i style="background:var(--ctl-accent2)"></i>左图 T = L/(1+L)（补灵敏度），S+T=1</span>' +
+        '<span><i style="background:var(--ctl-muted)"></i>右图 开环（斜率 1）</span>' +
+        '<span><i style="background:var(--ctl-accent)"></i>右图 闭环（斜率 = 选中那块的灵敏度）</span>';
+
+      setReadout(ro, [
+        ['回路增益 L', L.toFixed(2)],
+        ['S = 1/(1+L)', S.toFixed(4)],
+        ['T = L/(1+L)', T.toFixed(4)],
+        ['S + T', (S + T).toFixed(4)],
+        ['选中 ' + NAMES[st.which] + ' 的灵敏度', sens[st.which].toFixed(4)],
+        ['它变 +10%', '输出变 ' + (10 * sens[st.which]).toFixed(3) + '%'],
+        ['开环对照（S=1）', '输出也变 10%']
+      ]);
+      note('S 是「<b>参数相对变化</b>传成<b>输出相对变化</b>的比例」。左图：L 一放大，S 就贴着 0 掉下去、T 贴着 1 上去，'
+        + '两者永远加起来等于 1。右图把这个比例画成斜率：灰色是开环（斜率 1），蓝色是闭环。'
+        + ' <b>关键结论</b>：前向串级里 G₁ / G₂ / G₃ <b>任何一块</b>的灵敏度都是同一个 $1/(1+L)$——'
+        + '哪一块都不用管，这就是「对单个 block 用闭环公式」；<b>只有反馈块 H 不一样</b>，是 $-L/(1+L)$，而且是负号。');
+      Fig.renderAll();
+    }
+
+    segmented(ctl, [{ label: '扰动 G₁' }, { label: '扰动 G₂' }, { label: '扰动 G₃' }, { label: '扰动 H' }],
+      function (it, k) { st.which = k; refresh(); });
+    slider(ctl, '回路增益 L（对数）', -1, 3, 0.01, Math.log10(st.L),
+      function (v) { return Math.pow(10, v).toPrecision(3); },
+      function (v) { st.L = Math.pow(10, v); refresh(); });
+    toolbar(el, figS, 'sensitivity');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics
