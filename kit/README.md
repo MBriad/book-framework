@@ -130,6 +130,8 @@ front: [
 
 ```
 node kit/tools/math-check.js
+node kit/tools/routh-check.js
 ```
 
-对拍解析解：二阶超调量、无阻尼峰值、临界 K 的闭环极点、Bode 的 ωc / 相位裕度 / 增益裕度。改动 `packs/control` 的数值代码后跑一遍。
+- `math-check.js`：对拍解析解——二阶超调量、无阻尼峰值、临界 K 的闭环极点、Bode 的 ωc / 相位裕度 / 增益裕度。改动 `packs/control` 的数值代码后跑一遍。
+- `routh-check.js`：复现 §3.6 那一页引用的每一个数——劳斯表逐格对上原书例 3.32、两个特例的做法、以及"跳过 0 数符号会低估"的 10142 个样例统计。页面上写了数，就得有地方能把它跑出来。
