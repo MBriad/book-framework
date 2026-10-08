@@ -2041,6 +2041,78 @@
     refresh();
   });
 
+  /* ---------------- ⑲ 固定参数、扫频率：plant 与传感器 β 的敏感度各是一条曲线 ----------------
+     L(s) = K/((s+1)(0.1s+1))，代 s = jω：
+       |S_plant(jω)| = 1/|1+L|       低频 → 1/(1+K)（≈0，plant 漂移几乎免疫）
+       |S_β(jω)|     = |L|/|1+L|     低频 → K/(1+K) → 1（精度完全由传感器决定）
+     ω 只扫正的就够：实系数系统有 S(-jω) = S*(jω)。 */
+  Ctl.Pack.register('sens-freq', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el);
+    var f = figBox(wrap, 'ctl-h-lg');
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+    var st = { K: 100, w: 1 };
+
+    // 分母 (1+jω)(1+0.1jω) = (1-0.1ω²) + j1.1ω
+    function Lof(w, K) { var a = 1 - 0.1 * w * w, b = 1.1 * w, d = a * a + b * b; return [K * a / d, -K * b / d]; }
+    function mag(x) { return Math.hypot(x[0], x[1]); }
+    function Sp(w, K) { var l = Lof(w, K); return 1 / mag([1 + l[0], l[1]]); }
+    function Sb(w, K) { var l = Lof(w, K); return mag(l) / mag([1 + l[0], l[1]]); }
+
+    var fig = Fig.create(f.canvas, {
+      xlim: [0.01, 1000], xlog: true, ylim: [0.001, 20], ylog: true,
+      xlabel: 'ω (rad/s)', ylabel: '|S(jω)|（对数）',
+      draw: function (P) {
+        var C = P.C, k, qp = [], qb = [];
+        for (k = 0; k <= 400; k++) {
+          var x = Math.pow(10, -2 + 5 * k / 400);
+          qp.push([x, Math.max(1e-4, Sp(x, st.K))]);
+          qb.push([x, Math.max(1e-4, Sb(x, st.K))]);
+        }
+        var lo = 1 / (1 + st.K), hi = st.K / (1 + st.K);
+        P.line([[0.01, lo], [1000, lo]], C.grid, 1, [3, 3]);
+        P.line([[0.01, hi], [1000, hi]], C.grid, 1, [3, 3]);
+        P.line(qb, C.accent2, 2, [6, 4]);
+        P.line(qp, C.accent, 2.4);
+        P.line([[st.w, P.yinv(P.T)], [st.w, P.yinv(P.B)]], C.muted, 1.2, [3, 3]);
+        P.dot(st.w, Math.max(1e-4, Sp(st.w, st.K)), C.accent, 4);
+        P.dot(st.w, Math.max(1e-4, Sb(st.w, st.K)), C.accent2, 4);
+        P.text('plant 漂移传到输出', P.x(0.012), P.y(0.0016), C.accent, 'left', 'middle');
+        P.text('传感器 β 漂移传到输出', P.x(0.012), P.y(13), C.accent2, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      var lo = 1 / (1 + st.K), hi = st.K / (1 + st.K);
+      setReadout(ro, [
+        ['ω', st.w.toPrecision(3)],
+        ['|S_plant(jω)|', Sp(st.w, st.K).toFixed(4)],
+        ['|S_β(jω)|', Sb(st.w, st.K).toFixed(4)],
+        ['低频 ω→0：plant', lo.toFixed(5) + '（压到近 0）'],
+        ['低频 ω→0：β', hi.toFixed(5) + '（贴住 1）'],
+        ['β 比 plant 敏感', st.K.toFixed(0) + ' 倍']
+      ]);
+      note('固定参数、把 $s=jω$ 代进去，敏感度就从一个数变成一条曲线：<b>蓝线</b>是 plant 漂移传到输出的比例，'
+        + '<b>橙线</b>是传感器 β 的。低频段蓝线被压到 $1/(1+K)$（plant 漂移几乎免疫），橙线却贴住 $K/(1+K)→1$——'
+        + '这时系统的精度<b>完全由传感器决定</b>；到 $|L|$ 掉下去的高频段，两条线互换。'
+        + '（ω 只扫正的：实系数系统有 $S(-jω)=S^*(jω)$。）');
+      Fig.renderAll();
+    }
+    function drag(e) {
+      var P = fig.P;
+      if (!P) return;
+      st.w = Math.min(1000, Math.max(0.01, dataX(P, e.offsetX)));
+      refresh();
+    }
+    attachPointer(f.canvas, drag, drag);
+    slider(ctl, '低频回路增益 K（对数）', 0, 4, 0.01, Math.log10(st.K),
+      function (v) { return Math.pow(10, v).toPrecision(3); },
+      function (v) { st.K = Math.pow(10, v); refresh(); });
+    toolbar(el, fig, 'sens-freq');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

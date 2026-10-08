@@ -49,6 +49,13 @@
 
   <div data-primitive="sens-band" data-title="图：拖回路增益 L——灰色（开环）那条带子永远是 ±10%，蓝色（闭环）那条按 1/(1+L) 缩下去，最后细成一根发丝"></div>
 
+  <h2>固定参数扫频率：低频时 plant 漂移免疫，精度全看传感器 β</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>计算 para 对 Transfer Function 的敏感性后，现在固定 para，s = jω，ω 从负无穷到正无穷的变换对 SF_para 的影响；发现反馈控制系统，在低频（稳态），sys 非常依赖 β（sensor 反馈）传感器的精度，而 plant 的漂移完全免疫</div>
+
+  <div class="ctl-fix"><strong>纠正：</strong>对。固定参数、把 $s=j\omega$ 代进去，敏感度就从两个数变成两条曲线：$S_{\text{plant}}(j\omega)=\dfrac{1}{1+L(j\omega)}$，$S_{\beta}(j\omega)=-\dfrac{L(j\omega)}{1+L(j\omega)}$；低频段 $|L|$ 一大，plant 那条被压到 $\dfrac{1}{1+K}$ 而 β 那条贴住 $\dfrac{K}{1+K}\to1$——这就是上一条"责任转移"在频率上的样子。两处修正：$\omega$ 不必从 $-\infty$ 扫到 $+\infty$，实系数系统有 $S(-j\omega)=\overline{S(j\omega)}$，看 $\omega\ge0$ 就够；而且"免疫"取决于 $|L(j\omega)|$ 大不大，不是"低频"这个名字本身。</div>
+
+  <div data-primitive="sens-freq" data-title="图：两条敏感度曲线随 ω 走——蓝线是 plant 漂移传到输出的比例，橙线是传感器 β 的。低频段蓝线贴地、橙线贴 1，高频段互换。拖图上的游标或拖 K 滑块"></div>
+
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
   <p>定义：$S_G^T=\dfrac{\delta T/T}{\delta G/G}=\dfrac{G}{T}\dfrac{dT}{dG}$。</p>
