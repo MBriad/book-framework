@@ -126,6 +126,12 @@ details.ctl-fold>summary{cursor:pointer;font-size:14px;color:var(--ctl-muted)}
 .ctl-badge{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--ctl-line);color:var(--ctl-muted);white-space:nowrap}
 .ctl-badge[data-status="done"]{border-color:var(--ctl-accent);color:var(--ctl-accent)}
 .ctl-badge[data-status="partial"]{border-color:var(--ctl-accent2);color:var(--ctl-accent2)}
+/* 总览页里章下面挂的子节：整行换行 + 缩进 + 去掉分隔线 */
+.ctl-progress>li{flex-wrap:wrap}
+.ctl-progress-sub{list-style:none;flex:0 0 100%;margin:2px 0 0;padding:0 0 0 1.8em}
+.ctl-progress-sub li{display:flex;gap:10px;align-items:baseline;padding:3px 0;border-bottom:0}
+.ctl-progress-sub .ctl-ch{min-width:2.4em;font-size:12px}
+.ctl-progress-sub .ctl-nm{font-size:13.5px}
 
 /* ---- 样板页提示 ---- */
 .ctl-demo-banner{background:rgba(180,83,9,.08);border:1px solid var(--ctl-accent2);color:var(--ctl-accent2);

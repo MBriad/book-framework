@@ -379,14 +379,29 @@
       body.appendChild(f);
     }
 
+    // 一行进度：章和子节共用一个渲染器，免得两处各写一遍（以前就是各写一遍）。
+    function progressRow(num, title, zh, status, href, inlineZh, extra) {
+      var lab = status === 'done' ? '已填' : status === 'partial' ? '部分' : '待填';
+      return '<li><span class="ctl-ch">' + esc(num) + '</span>' +
+        '<span class="ctl-nm"><a href="' + esc(href) + '">' + esc(title) + '</a>' +
+        (zh ? (inlineZh ? ' <span class="ctl-note">· ' + esc(zh) + '</span>'
+                        : '<br><span class="ctl-note">' + esc(zh) + '</span>') : '') +
+        '</span><span class="ctl-badge" data-status="' + esc(status || 'gap') + '">' + lab + '</span>' +
+        (extra || '') + '</li>';
+    }
+
+    // 总览页：章 + 它下面的子节。**以前这里只走章，子节完全不显示**——所以往
+    // book.config.js 里加多少子节，这个页面看起来都像"没更新过"。补上。
     var prog = document.querySelector('[data-progress]');
     if (prog) {
       prog.innerHTML = ((global.BOOK && global.BOOK.chapters) || []).map(function (c) {
-        var label = c.status === 'done' ? '已填' : c.status === 'partial' ? '部分' : '待填';
-        return '<li><span class="ctl-ch">' + esc(c.num) + '</span>' +
-          '<span class="ctl-nm"><a href="' + esc(bookRoot + 'sections/' + c.id + '.html') + '">' + esc(c.title) + '</a>' +
-          (c.zh ? '<br><span class="ctl-note">' + esc(c.zh) + '</span>' : '') + '</span>' +
-          '<span class="ctl-badge" data-status="' + esc(c.status) + '">' + label + '</span></li>';
+        var subs = c.sections || [];
+        return progressRow(c.num, c.title, c.zh, c.status,
+          bookRoot + 'sections/' + c.id + '.html', false,
+          subs.length ? '<ul class="ctl-progress-sub">' + subs.map(function (s, k) {
+            return progressRow(s.num || ('§' + (k + 1)), s.title, s.zh, s.status,
+              bookRoot + 'sections/' + s.id + '.html', true);
+          }).join('') + '</ul>' : '');
       }).join('');
     }
 
@@ -394,12 +409,8 @@
     if (secBox) {
       var ch = parentChapterOf(document.body.getAttribute('data-ch'));
       var subs = (ch && ch.sections) || [];
-      secBox.innerHTML = subs.length ? subs.map(function (s) {
-        var lab = s.status === 'done' ? '已填' : s.status === 'partial' ? '部分' : '待填';
-        return '<li><span class="ctl-ch">' + esc(s.num || '§') + '</span>' +
-          '<span class="ctl-nm"><a href="' + esc(bookRoot + 'sections/' + s.id + '.html') + '">' + esc(s.title) + '</a>' +
-          (s.zh ? '<br><span class="ctl-note">' + esc(s.zh) + '</span>' : '') + '</span>' +
-          '<span class="ctl-badge" data-status="' + esc(s.status || 'gap') + '">' + lab + '</span></li>';
+      secBox.innerHTML = subs.length ? subs.map(function (s, k) {
+        return progressRow(s.num || ('§' + (k + 1)), s.title, s.zh, s.status, bookRoot + 'sections/' + s.id + '.html');
       }).join('') : '<li class="ctl-note">本章还没有子节。</li>';
     }
 
