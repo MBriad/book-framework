@@ -2200,6 +2200,80 @@
     refresh();
   });
 
+  /* ---------------- ㉑ lead / lag / PD / PI 是同一个式子，只差极点放哪儿 ----------------
+     零点固定在 s = -1，极点放在 s = -p：D(s) = (s+1)/(s+p)
+       p > 1   → lead（极点离原点比零点远 → 相位为正）
+       p = 1   → 零极点重合，D ≡ 1（分界）
+       p < 1   → lag（极点更靠原点 → 相位为负）
+       p = 0   → PI（极点落在原点上，多一个积分器）
+       p → ∞   → PD（没有极点）
+     画的是相位曲线族。拖 p，ω=1 处的值从 +45° 翻到 −45°，跨过 0 就是 lead/lag 分界。 */
+  Ctl.Pack.register('leadlag', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el);
+    var f = figBox(wrap, 'ctl-h-lg');
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+    var st = { p: 10 };
+
+    function ph(w, p) {
+      var a = Math.atan(w);
+      var b = p === 0 ? Math.PI / 2 : Math.atan(w / p);
+      return (a - b) * 180 / Math.PI;
+    }
+    function nameOf(p) {
+      if (p === 0) return 'PI（极点在原点 = 积分器）';
+      if (p > 100) return '≈ PD（极点远到可忽略）';
+      if (Math.abs(p - 1) < 1e-9) return '分界：零极点重合，D ≡ 1';
+      return p > 1 ? 'lead（超前）' : 'lag（滞后）';
+    }
+    function curve(p, n) {
+      var q = [];
+      for (var k = 0; k <= n; k++) {
+        var x = Math.pow(10, -2 + 4 * k / n);
+        q.push([x, ph(x, p)]);
+      }
+      return q;
+    }
+
+    var fig = Fig.create(f.canvas, {
+      xlim: [0.01, 100], xlog: true, ylim: [-95, 95],
+      xlabel: 'ω (rad/s)', ylabel: '∠D (度)',
+      draw: function (P) {
+        var C = P.C;
+        P.line([[0.01, 0], [100, 0]], C.line, 1.2);
+        [0, 0.1, 1, 10, Infinity].forEach(function (p) { P.line(curve(p, 200), C.line, 1.3); });
+        if (st.p !== 0 && st.p !== 1 && Math.abs(st.p - 10) > 1e-9 && Math.abs(st.p - 0.1) > 1e-9) {
+          P.line(curve(st.p, 200), C.line, 1.3);
+        }
+        P.line(curve(st.p, 300), C.accent, 2.6);
+        P.dot(1, ph(1, st.p), C.accent, 4.5);
+        P.text('↑ 超前 lead', P.x(0.011), P.y(72), C.muted, 'left', 'middle');
+        P.text('↓ 滞后 lag', P.x(0.011), P.y(-72), C.muted, 'left', 'middle');
+        P.text('ω=1', P.x(1) + 7, P.y(ph(1, st.p)) - 15, C.accent, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      setReadout(ro, [
+        ['极点位置 p', st.p === 0 ? '0（就在原点）' : st.p.toPrecision(4)],
+        ['它叫什么', nameOf(st.p)],
+        ['∠D(j1)（ω=1 处）', ph(1, st.p).toFixed(2) + '°'],
+        ['D(s)', 'D(s) = (s+1)/(s+' + (st.p === 0 ? '0' : st.p.toPrecision(3)) + ')'],
+        ['相位正负', ph(1, st.p) > 0.01 ? '正 → 超前' : (ph(1, st.p) < -0.01 ? '负 → 滞后' : '零 → 分界')]
+      ]);
+      note('所有曲线都是<b>同一个 $D(s)=(s+1)/(s+p)$</b>，只是极点 $p$ 放的位置不同。'
+        + '拖 $p$ 从远处回到原点：曲线在 $ω=1$ 处的值从 $+45°$ 一路翻到 $-45°$，'
+        + '跨过 0 的那一刻就是 lead 与 lag 的分界；$p$ 落到原点（多一个积分器）就成为 PI。');
+      Fig.renderAll();
+    }
+    slider(ctl, '极点 p（对数；最左端 = 0）', -3, 3, 0.01, Math.log10(st.p),
+      function (v) { return v <= -2.99 ? '0（原点）' : Math.pow(10, v).toPrecision(3); },
+      function (v) { st.p = v <= -2.99 ? 0 : Math.pow(10, v); refresh(); });
+    toolbar(el, fig, 'leadlag');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

@@ -107,10 +107,10 @@ own initiative.
 2. the existing primitives genuinely cannot do it;
 3. the user has **confirmed the geometry first**.
 
-Current primitives (18): `step-2nd` `step-presets` `polezero-drag` `bode-cursor`
+Current primitives (20): `step-2nd` `step-presets` `polezero-drag` `bode-cursor`
 `root-locus` `mason-flow` `integrator-chain` `canonical-pair` `step-metrics`
 `splane-geometry` `pole-catalog` `zero-pole-family` `nonmin-phase` `spec-region`
-`routh` `sensitivity` `sens-band` `sens-freq`.
+`routh` `sensitivity` `sens-band` `sens-freq` `ctrl-forms` `leadlag`.
 
 Keep this list in step with `Ctl.Pack.register` calls — `check-assets.js` prints the real
 list every run.
