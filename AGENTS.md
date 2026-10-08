@@ -1,42 +1,48 @@
-# AGENTS.md —— 这个仓库里怎么产出内容
+# AGENTS.md — how content is produced in this repo
 
-这份文件只讲**输出格式**。内容的取舍规则在 `CONTENT.md`，那份为准。
+This file covers **output format only**. For what to include, see `CONTENT.md` — that file wins.
 
-## 一个 sum 只做三件事
+## One sum = exactly three things
 
-用户发来一段他自己写的总结（"我的话"）时，产出**只有**下面三样，顺序固定：
+When the user hands over a passage of his own notes ("my words"), the output is **only** these
+three, in this order:
 
-1. **原话** —— 逐字贴他的话，不改、不翻译、不润色。用 `<div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>…</div>`
-2. **简短纠正** —— 只纠正、补全他这一句里错的和缺的，**两三句就够**（`<div class="ctl-fix">`）。
-   不要表格、不要 ①②③、不要顺势往下写一大篇。
-3. **交互图** —— 一个可交互图（`<div data-primitive="…">`），图下的读图提示由组件自己输出。
-   **已经有同一件事的图就不要重复画**，换一个角度（曲线 → 标尺、数值 → 图形）或干脆复用那张。
+1. **His words** — quoted verbatim. Do not rewrite, translate, or polish.
+   Use `<div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>…</div>`
+2. **A short correction** — fix and complete only what is wrong or missing in that one sentence.
+   **Two or three sentences is enough** (`<div class="ctl-fix">`). No tables, no ①②③,
+   no running on into a long essay.
+3. **One interactive figure** — `<div data-primitive="…">`. The "what to look at" hint is emitted
+   by the component itself. If a figure already shows the same thing, do **not** draw another one —
+   change the angle (curve → ruler, number → picture) or reuse that figure.
 
-**标题自拟。**
+**Pick the title yourself.**
 
-**此外什么都不加。** 不要额外的自测题、不要额外的「符号形式」折叠块、不要额外的图表、
-不要额外的章节——除非用户点名要。
+**Nothing else.** No extra self-test, no extra "formal notation" fold-out, no extra tables or
+charts, no extra sections — unless the user asks for them by name.
 
-## 已经发布的内容不要回头改
+## Do not rewrite what is already published
 
-用户明确说过：**「以前已经写得就不改了，以后按这个原则」**。
-这条格式原则**只对以后生效**。已经写进页面的长版本就留在那里，
-不要为了对齐格式回头去重写或删减老内容。
+The user said: **"以前已经写得就不改了，以后按这个原则"** — what is already written stays;
+follow this from now on. This format rule applies **going forward only**. Long-form sections
+already in the pages stay as they are; do not go back and trim them to match.
 
-## 改完必须自检
+## Always self-check after editing
 
-至少要跑：
+At minimum:
 
 ```
-node kit/tools/check-assets.js      # 组件注册 / 样式 / .spec 对象 / JS 字符串里的 LaTeX 转义
-node kit/tools/math-check.js        # 数值内核
-node kit/tools/routh-check.js       # §3.6 页面上引用的每个数
+node kit/tools/check-assets.js      # component registration, CSS selectors, .spec targets, LaTeX escapes in JS strings
+node kit/tools/math-check.js        # numeric kernel
+node kit/tools/routh-check.js       # every number quoted on the §3.6 page
 ```
 
-并且**逐条核对每一步改动真的成功了**（`CONTENT.md` 规则 4.6）——
-出过 `edit` 返回 FAIL 而我没看返回值、在提交信息里谎报改动的事故。
+And **verify each individual edit actually succeeded** (`CONTENT.md` rule 4.6) — there was an
+incident where an `edit` returned FAIL, the return value was ignored, and the commit message
+claimed a change that had never been applied.
 
-## 其余规则
+## Everything else
 
-术语（敏感度 / 灵敏度）、几何优先、数值必须可溯源、四条硬约束、框架冻结、
-"组织的负担归我"、以及"规则文件不再增长"——全部在 `CONTENT.md`。
+Terminology (敏感度 / sensitivity), geometry-first, traceable numbers, the four hard constraints,
+the framework freeze, "organising is my job, not the user's", and "the rules file stops growing" —
+all live in `CONTENT.md`.
