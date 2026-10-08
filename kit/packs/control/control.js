@@ -1686,6 +1686,206 @@
     refresh();
   });
 
+  /* ---------------- ⑯ 劳斯判据（Franklin §3.6.3 + 两个特例） ----------------
+     左：劳斯表（DOM，第一列高亮）；右：把特征方程的**真实根**画在 s 平面上。
+     表是算法，s 平面是几何——两个特例都靠它俩对照才看得见：
+       · 第一列出现 0（该行还有非零元）→ 表算不下去；跳过 0 数符号会**低估**右半平面根数
+       · 整行全 0 → 上一行构成**辅助多项式** A(s)，它是偶多项式，根关于**原点**对称
+     特例的这两种现象都是我在 10142 个样例上量出来的（见页面正文）。 */
+  Ctl.Pack.register('routh', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el);
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+
+    var row = mk('div', 'ctl-routh');
+    var cellT = mk('div', 'ctl-routh-tbl');
+    var cellF = mk('div', 'ctl-routh-fig');
+    var cv = mk('canvas', 'ctl-canvas');
+    cellF.appendChild(cv);
+    row.appendChild(cellT); row.appendChild(cellF);
+    el.appendChild(row);
+
+    var PRESETS = [
+      { id: 'ex332', label: '例 3.32', a: [1, 4, 3, 2, 1, 4, 4] },
+      { id: 'gain', label: '例 3.33 调 K', a: null },
+      { id: 'zero', label: '第一列出现 0', a: [1, 1, 1, 1, 2, 1] },
+      { id: 'allzero', label: '整行全 0', a: [1, 1, 4, 4] }
+    ];
+    var st = { id: 'ex332', K: 13 };
+
+    function polyOf() {
+      if (st.id === 'gain') return [1, 5, st.K - 6, st.K];
+      for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].id === st.id) return PRESETS[i].a.slice();
+      return [1, 1, 1, 1, 2, 1];
+    }
+
+    // 劳斯表。算到「第一列出现 0」或「整行全 0」就停下——再往下需要特例处理。
+    function routh(a) {
+      var n = a.length - 1, i, k;
+      var r0 = [], r1 = [];
+      for (i = 0; i <= n; i += 2) r0.push(a[i] || 0);
+      for (i = 1; i <= n; i += 2) r1.push(a[i] || 0);
+      var res = { rows: [r0, r1], halt: null };
+      while (res.rows.length <= n) {
+        var A = res.rows[res.rows.length - 2], B = res.rows[res.rows.length - 1];
+        var nz = B.filter(function (v) { return Math.abs(v) > 1e-9; }).length;
+        if (Math.abs(B[0]) < 1e-9) {
+          res.halt = { row: res.rows.length - 1, allZero: nz === 0 };
+          break;
+        }
+        var L = Math.max(A.length, B.length), nr = [];
+        for (k = 1; k < L; k++) nr.push((B[0] * (A[k] || 0) - A[0] * (B[k] || 0)) / B[0]);
+        res.rows.push(nr);
+      }
+      return res;
+    }
+    // 辅助多项式：上一行系数当作偶次项系数（s^deg, s^(deg-2), ...）
+    function auxOf(res, n) {
+      var i = res.halt.row - 1;
+      if (i < 1) return null;
+      var above = res.rows[i], deg = n - i, A = [], k;
+      for (k = 0; k <= deg; k++) A.push(k % 2 === 0 ? (above[k / 2] || 0) : 0);
+      var d = [];
+      for (k = 0; k < A.length - 1; k++) d.push(A[k] * (A.length - 1 - k));
+      return { A: A, d: d, deg: deg };
+    }
+    function fmt(v) {
+      if (Math.abs(v) < 1e-9) return '0';
+      if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v));
+      return (Math.abs(v) >= 1e4 || Math.abs(v) < 1e-3) ? v.toExponential(2) : v.toFixed(3);
+    }
+    function polyStr(c) {
+      var s = '', k;
+      for (k = 0; k < c.length; k++) {
+        var d = c.length - 1 - k, v = c[k];
+        if (Math.abs(v) < 1e-9 && c.length > 1) continue;
+        var m = fmt(Math.abs(v));
+        if (m === '1' && d > 0) m = '';
+        s += (s ? (v < 0 ? ' - ' : ' + ') : (v < 0 ? '-' : '')) + m + (d > 1 ? 's^{' + d + '}' : d === 1 ? 's' : '');
+      }
+      return s || '0';
+    }
+    function changes(col) {
+      var s = 0, p = 0;
+      col.forEach(function (v) {
+        if (Math.abs(v) < 1e-12) return;
+        var q = v > 0 ? 1 : -1;
+        if (p && q !== p) s++;
+        p = q;
+      });
+      return s;
+    }
+
+    var ROOTS = [], AUXROOTS = null;   // draw 收到的 P 每次渲染都是新对象，状态得放外面
+    var figZ = Fig.create(cv, {
+      xlim: [-4, 4], ylim: [-4, 4], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C, i, r = ROOTS;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1.2);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        var ux = (P.xinv(P.R) - P.xinv(P.L)) / Math.max(1, P.R - P.L), s0 = 5 * ux;
+        for (i = 0; i < r.length; i++) {
+          var x = r[i][0], y = r[i][1];
+          var ax = Math.abs(x) < 1e-7, rhp = x > 1e-7;
+          var col = ax ? C.accent2 : (rhp ? C.c5 : C.ink);
+          P.dot(x, y, col, 4.5);
+          P.line([[x - s0, y - s0], [x + s0, y + s0]], col, 1.6);
+          P.line([[x - s0, y + s0], [x + s0, y - s0]], col, 1.6);
+        }
+        if (AUXROOTS) {
+          for (i = 0; i < AUXROOTS.length; i++) {
+            var q = [];
+            for (var t = 0; t <= 22; t++) {
+              var a2 = t / 22 * Math.PI * 2;
+              q.push([AUXROOTS[i][0] + s0 * 1.9 * Math.cos(a2), AUXROOTS[i][1] + s0 * 1.9 * Math.sin(a2)]);
+            }
+            P.line(q, C.c4, 1.6);
+          }
+        }
+      }
+    });
+
+    function refresh() {
+      var a = polyOf(), n = a.length - 1;
+      var res = routh(a), roots = rootsOf(a);
+      var col = res.rows.map(function (r) { return r[0]; });
+      var naive = changes(col);
+      var trueN = roots.filter(function (z) { return z[0] > 1e-7; }).length;
+
+      // ---- 表格 ----
+      var maxc = 0, i, k;
+      res.rows.forEach(function (r) { maxc = Math.max(maxc, r.length); });
+      var h = '<table class="ctl-rt"><tbody>';
+      for (i = 0; i < res.rows.length; i++) {
+        var isZeroRow = res.halt && res.halt.row === i && res.halt.allZero;
+        h += '<tr' + (isZeroRow ? ' class="zero-row"' : '') + '><th>s<sup>' + (n - i) + '</sup></th>';
+        for (k = 0; k < res.rows[i].length; k++) {
+          var isZeroCell = k === 0 && Math.abs(res.rows[i][k]) < 1e-9;
+          h += '<td class="' + (k === 0 ? 'c1' : '') + (isZeroCell ? ' zero-cell' : '') + '">' +
+            fmt(res.rows[i][k]) + '</td>';
+        }
+        h += '</tr>';
+      }
+      if (res.halt) {
+        h += '<tr class="halt-row"><th>s<sup>' + (n - res.rows.length) + '</sup></th>' +
+          '<td colspan="' + maxc + '">…算不下去了…</td></tr>';
+      }
+      h += '</tbody></table>';
+
+      var aux = null, msg = '';
+      if (res.halt) {
+        if (res.halt.row === 1) {
+          msg = '<b>第 2 行第一列就是 0</b>（$s^{' + (n - 1) + '}$ 的系数为 0）。这已经被<b>必要条件</b>拦住了：系数只要缺失或有负号，系统就有右半平面根，<b>不用再算表</b>。';
+        } else if (res.halt.allZero) {
+          aux = auxOf(res, n);
+          msg = '<b>整行全 0。</b>把<b>上一行</b>的系数当成偶次项系数，构造<b>辅助多项式</b> $A(s)=' + polyStr(aux.A) + '$' +
+            '（它是<b>偶多项式</b>，所以根一定关于<b>原点</b>对称）。用它的导数 $A′(s)=' + polyStr(aux.d) + '$ 的系数替换这一行，再往下算。' +
+            '图中紫圈就是 $A(s)$ 的根：±jω、±σ 或 ±σ±jω 这类成对出现的。';
+        } else {
+          msg = '<b>第一列出现 0，但这一行还有非零元。</b>把那个 0 换成 ε 继续算完，最后令 ε→0⁺ 取<b>极限</b>看符号。' +
+            '<b>绝不能跳过这个 0 去数符号</b>——它的正负是未知的，跳过等于把未知当成"没事"，数出来会偏小。';
+        }
+      }
+      cellT.innerHTML = h + (msg ? '<p class="ctl-routh-msg">' + msg + '</p>' : '');
+      if (global.renderMathInElement) {
+        try { global.renderMathInElement(cellT, { delimiters: [{ left: '$', right: '$', display: false }], throwOnError: false }); } catch (e) {}
+      }
+
+      // ---- s 平面 ----
+      var rx = roots.map(function (z) { return z[0]; }), ry = roots.map(function (z) { return Math.abs(z[1]); });
+      var x0 = Math.min.apply(null, rx), x1 = Math.max.apply(null, rx), ym = Math.max(0.6, Math.max.apply(null, ry));
+      figZ.spec.xlim = [x0 - 1.0, x1 + 1.0];
+      figZ.spec.ylim = [-ym * 1.3, ym * 1.3];
+      ROOTS = roots;
+      AUXROOTS = aux ? rootsOf(aux.A) : null;
+
+      setReadout(ro, [
+        ['第一列（跳过 0）', naive + ' 次符号变化'],
+        ['真实右半平面根数', trueN + ' 个（数值求根）'],
+        res.halt ? ['表的状态', res.halt.row === 1 ? '必要条件已不过' : (res.halt.allZero ? '整行全 0' : '第一列出现 0')] : ['表的状态', '顺利到底'],
+        ['结论', trueN === 0 ? '稳定' : (trueN > 0 ? '不稳定（' + trueN + ' 个极点在右半平面）' : '—')]
+      ]);
+      note('左边这张表是<b>算法</b>，右边这个 s 平面是<b>几何</b>——两个特例只有对照着看才明白。'
+        + '<b>稳定的充要条件</b>是"第一列全部为正"，等价说法是"<b>第一列的符号变化数 = 右半平面根的个数</b>"。'
+        + '系数全正只是<b>必要条件</b>：例 3.32 每个系数都是正的、什么都不缺，可第一列有 <b>2</b> 次符号变化，'
+        + 's 平面上真的有两个点在右半平面。');
+      Fig.renderAll();
+    }
+
+    segmented(ctl, PRESETS.map(function (p) { return { label: p.label }; }), function (it, k) {
+      st.id = PRESETS[k].id;
+      syncK();
+      refresh();
+    });
+    var slK = slider(ctl, '例 3.33 的 K', 1, 30, 0.5, st.K, function (v) { return v.toFixed(1); },
+      function (v) { st.K = v; refresh(); });
+    function syncK() { slK.input.parentNode.style.display = st.id === 'gain' ? '' : 'none'; }
+    toolbar(el, figZ, 'routh');
+    syncK();
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

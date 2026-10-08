@@ -35,3 +35,18 @@ canvas.ctl-drag{cursor:crosshair}
 /* ---- 指标 → 允许域：等比的 s 平面，方形一点角度才不走形 ---- */
 .ctl-region .ctl-canvas-wrap{justify-content:center}
 .ctl-region .ctl-canvas-wrap>[data-fig]{flex:0 1 54%;min-width:280px}
+
+/* ---- 劳斯表 + s 平面：左右并排 ---- */
+.ctl-routh{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:10px}
+.ctl-routh-tbl{flex:1 1 330px;min-width:280px}
+.ctl-routh-fig{flex:0 1 340px;min-width:250px}
+.ctl-routh-fig>.ctl-canvas{height:300px}
+.ctl-rt{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.ctl-rt th,.ctl-rt td{padding:4px 10px;text-align:right;border-bottom:1px solid var(--ctl-grid);white-space:nowrap}
+.ctl-rt th{color:var(--ctl-muted);font-weight:400;text-align:left}
+.ctl-rt td.c1{background:var(--ctl-supp);color:var(--ctl-ink);font-weight:700}
+.ctl-rt td.zero-cell{background:var(--ctl-fix);color:var(--ctl-accent2);font-weight:700}
+.ctl-rt tr.zero-row td{background:var(--ctl-fix)}
+.ctl-rt tr.halt-row td{color:var(--ctl-muted);font-style:italic;text-align:left}
+.ctl-routh-msg{font-size:13.5px;line-height:1.7;margin:8px 0 0;padding:8px 10px;
+  background:var(--ctl-supp);border-left:3px solid var(--ctl-accent);border-radius:0 6px 6px 0}

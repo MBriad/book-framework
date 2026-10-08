@@ -24,6 +24,12 @@ window.SEARCH_INDEX = [
     "s": "Ch2 · Dynamic Models 动态模型 · 对应 Franklin 原书 Ch2 缺口：本页尚未填入你的总结。你把该章的总结发给我后，这里会被替换为正文（你的内容 + "
   },
   {
+    "t": "Stability",
+    "p": "sections/ch03-stability.html",
+    "k": "",
+    "s": "Stability Franklin §3.6。判据本身在 §3.6.3； 两个特例正文里只有一句话 ，原文把它推给了在线附录 W.3.6.3——标准处理我补在下面，并且逐条数值验"
+  },
+  {
     "t": "System Modeling Diagrams",
     "p": "sections/ch03-system-modeling.html",
     "k": "",

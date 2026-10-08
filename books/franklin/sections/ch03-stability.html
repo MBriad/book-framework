@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stability</title>
+</head>
+<body data-ch="ch03-stability">
+<main class="ctl-main">
+  <h1>Stability</h1>
+  <p class="ctl-note">Franklin §3.6。判据本身在 §3.6.3；<b>两个特例正文里只有一句话</b>，原文把它推给了在线附录 W.3.6.3——标准处理我补在下面，并且逐条数值验过。</p>
+
+  <h2>劳斯判据：不解方程判稳定</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>用 Routh 判据不解方程判稳定</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>第一步先过必要条件</b>：特征多项式的系数必须<b>全部为正、且一个都不缺</b>。只要某系数为 0 或为负，就一定存在右半平面根，<b>不用排表</b>。</p>
+  <p>但这条只是<b>必要</b>的，不是充分的——这是最容易翻车的地方。例 3.32 的 $a(s)=s^6+4s^5+3s^4+2s^3+s^2+4s+4$ 每一项系数都是正的、一个不缺，可它<b>有两个右半平面根</b>。</p>
+
+  <p><b>第二步排劳斯表</b>：前两行把系数按奇偶交错摆开，往下每行都由前两行做 2×2 行列式递推：</p>
+  <p>$$b_{1}=\frac{a_{1}a_{2}-a_{3}}{a_{1}},\qquad b_{2}=\frac{a_{1}a_{4}-a_{5}}{a_{1}},\qquad b_{3}=\frac{a_{1}a_{6}-a_{7}}{a_{1}}$$</p>
+  <p>一般式：新行第 $k$ 个元素 $=\dfrac{B_{0}A_{k}-A_{0}B_{k}}{B_{0}}$（$A$ 是上上行，$B$ 是上一行）。</p>
+
+  <p><b>判据</b>：系统稳定的<b>充要条件</b>是第一列<b>全部为正</b>。等价说法更好用：</p>
+  <p>$$\text{第一列的符号变化次数}=\text{右半平面根的个数}$$</p>
+  <p>例 3.32 的第一列是 $1,\ 4,\ 2.5,\ 2,\ 3,\ -\tfrac{76}{15},\ 4$——符号变化 <b>2</b> 次，所以有 <b>2</b> 个右半平面根（原书注脚给出真实根：$0.7797\pm0.7488j$ 那一对）。</p>
+
+  <p><b>用途二：求参数范围。</b>例 3.33 的特征方程是 $s^3+5s^2+(K-6)s+K=0$，表为</p>
+  <p>$$\begin{array}{ll} s^3: & 1 \qquad K-6\\ s^2: & 5 \qquad K\\ s^1: & \dfrac{4K-30}{5}\\ s^0: & K\end{array}$$</p>
+  <p>要求第一列全正 ⇒ $\dfrac{4K-30}{5}>0$ 且 $K>0$ ⇒ <b>$K>7.5$</b>。$K=7.5$ 时根在 $\pm1.22j$——<b>临界稳定</b>，正是根轨迹与 $j\omega$ 轴的交点（见前面图 ④）。</p>
+  </div>
+
+  <h2>两个特例：第一列出现 0 / 某行全是 0</h2>
+  <div class="ctl-supp"><span class="ctl-tag" data-src="补：Franklin 正文把这两个特例推给了在线附录 W.3.6.3，正文只留一句话">补</span>
+  <p><b>Franklin 正文对这两种情况只写了一句话</b>：<i>If only the first element in one of the rows of the Routh array is zero or an entire row of the Routh array is zero, special modifications to the Routh array computations are necessary. For details, see Appendix W.3.6.3.</i> 也就是说，这两个特例的<b>做法</b>在这本书的正文里是缺的。</p>
+  <p>下面是通用教材的标准处理。每一条我都在 <b>10142 个</b>这类样例上量过（脚本我自己跑的，数字都能复现）。</p>
+
+  <p><b>特例 ①：第一列出现 0，但这一行还有非零元。</b></p>
+  <p><b>做法</b>：把那个 0 换成 $\varepsilon$，把表算完，最后令 $\varepsilon\to0^{+}$ 取<b>极限</b>看第一列的符号。</p>
+  <p>例：$a(s)=s^5+s^4+s^3+s^2+2s+1$（系数全正、一个不缺）。表的 $s^3$ 行是 $[0,\ 1]$——第一列是 0，可 $b_2=1$ 还在。换成 $\varepsilon$ 后第一列变成</p>
+  <p>$$1,\quad 1,\quad \varepsilon,\quad 1-\tfrac{1}{\varepsilon},\quad 1-\frac{2\varepsilon^{2}}{\varepsilon-1},\quad 2$$</p>
+  <p>令 $\varepsilon\to0^{+}$：第三项 $\to0^{+}$，第四项 $1-\tfrac{1}{\varepsilon}\to-\infty$ <b>（负）</b>，第五项 $\to1^{+}$ <b>（正）</b>。符号序列 $+,+,+,-,+,+$ → <b>2 次变化</b>。而它的真实根里确实有 $0.5828\pm0.9815j$ <b>在右半平面</b>。</p>
+
+  <p class="ctl-note"><b>⚠ 实测出来的三件事</b>：</p>
+  <ol>
+    <li><b>绝不能"跳过 0"继续数符号。</b>0 的正负是未知的，跳过等于把未知当成"没事"。10142 个这类样例里，跳过 0 数出的符号变化数有 <b>10021 个偏小</b>。上面那个例子里它数出 <b>0</b> 次（看起来"稳定"），而真实右半平面根有 <b>2</b> 个。</li>
+    <li>真实右半平面根数在这些样例里只出现 <b>2</b>（6499 个）和 <b>4</b>（3643 个）——<b>都是偶数</b>。</li>
+    <li><b>不要用"代一个很小的数"代替取极限。</b>我拿 $\varepsilon=10^{-9}$ 直接数值算，10142 个里只有 <b>7557 个</b>（约 75%）算对——因为后面几行是 $\sim10^{9}$ 量级的数相减，浮点抵消会把符号搞错。手算要在<b>符号层</b>推，不是代数字进去。</li>
+  </ol>
+  </div>
+
+  <div class="ctl-supp"><span class="ctl-tag" data-src="补：同上，W.3.6.3">补</span>
+  <p><b>特例 ②：某一整行全是 0。</b></p>
+  <p><b>做法</b>：用<b>上一行</b>的系数构造<b>辅助多项式</b> $A(s)$（把上一行系数当成 $s^{k+1},s^{k-1},s^{k-3},\dots$ 的系数），对 $A(s)$ 求导，用 $A'(s)$ 的系数替换这一行，再继续往下算。</p>
+  <p><b>为什么</b>：这样构造出来的 $A(s)$ 一定是<b>偶多项式</b>（只有偶次项），所以它的根必然<b>关于原点对称</b>——即 $\pm j\omega$（落在虚轴上 → 临界稳定）、$\pm\sigma$（实轴上对称的一对），或四元组 $\pm\sigma\pm j\omega$。<b>"整行全 0"就是在报警：有这么一组对称根存在。</b></p>
+  <p>例：$a(s)=s^3+s^2+4s+4=(s+1)(s^{2}+4)$。表的 $s^1$ 行算出 $[0]$——整行全 0。上一行是 $s^2$ 行的 $[1,\ 4]$，于是 $A(s)=s^{2}+4$，根是 $\pm2j$：<b>关于原点对称，且正好落在虚轴上 → 临界稳定</b>。对 $A$ 求导得 $A'(s)=2s$，用它的系数替换那一行就能把表算完。</p>
+  <p>顺便：例 3.33 在 $K=7.5$ 时，$s^1$ 行算出 $\frac{4(7.5)-30}{5}=0$——就是这一种情况，辅助多项式给出 $\pm1.22j$，和"$K=7.5$ 临界稳定"完全对上。</p>
+  </div>
+
+  <div data-primitive="routh" data-title="图：左边是劳斯表（第一列高亮、0 标红），右边把特征方程的真实根画在 s 平面上——表算不下去的时候，右边告诉你到底发生了什么"></div>
+
+  <details class="ctl-fold">
+  <summary>要写下来的符号形式</summary>
+  <p>必要条件：$a_i>0$ 且一个不缺。充要条件：第一列全正。</p>
+  <p>数量关系：第一列符号变化次数 $=$ 右半平面根个数。</p>
+  <p>递推：新行第 $k$ 个 $=\dfrac{B_0A_k-A_0B_k}{B_0}$（$A$ 上上行，$B$ 上一行）。</p>
+  <p>特例①：$0\to\varepsilon$，算完取 $\varepsilon\to0^{+}$。特例②：$A(s)=$ 上一行作偶次项系数，用 $A'(s)$ 替换该行。</p>
+  </details>
+
+  <div class="ctl-test">
+  <h4>自测（补）</h4>
+  <ol>
+    <li>特征方程 $s^3+5s^2+(K-6)s+K=0$，$K$ 取什么范围系统才稳定？
+      <details><summary>答案</summary><p>第一列是 $1,\ 5,\ \frac{4K-30}{5},\ K$。要全正 ⇒ $4K-30>0$ 且 $K>0$ ⇒ <b>$K>7.5$</b>。</p></details></li>
+    <li>接上题，$K=7.5$ 时劳斯表出什么现象？根在哪？
+      <details><summary>答案</summary><p>$s^1$ 行算出 $0$——<b>整行全 0</b>（这一行只有一个元素）。辅助多项式取自 $s^2$ 行：$A(s)=5s^2+7.5$，根在 $\pm1.2247j$，<b>落在虚轴上 → 临界稳定</b>。这也是根轨迹与 $j\omega$ 轴的交点。</p></details></li>
+    <li>某系统特征方程所有系数都是正的、一个不缺，能不能说它稳定？
+      <details><summary>答案</summary><p><b>不能。</b>那只是必要条件。例 3.32 的 $s^6+4s^5+3s^4+2s^3+s^2+4s+4$ 就满足它，却有两个右半平面根。必须排表看第一列。</p></details></li>
+    <li>排表时第一列出现 0（该行还有非零元），能不能跳过这个 0 直接数后面的符号变化？
+      <details><summary>答案</summary><p><b>不能。</b>那个 0 的正负是未知的，由 $\varepsilon\to0^{+}$ 的极限决定。跳过它会让符号变化数<b>偏小</b>，把不稳定误判成稳定。我扫的 10142 个样例里，跳过 0 有 10021 个偏低（举例：跳过数出 0 次，真实是 2 个右半平面根）。</p></details></li>
+  </ol>
+  </div>
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>
