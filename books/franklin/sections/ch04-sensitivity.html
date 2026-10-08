@@ -16,7 +16,7 @@
   <div class="ctl-fix"><strong>纠正 / 补全：</strong>
   <p><b>你说对的那一半正好是最重要的那一半。</b>书里 §4.1.4 只推导了<b>一块</b>：由 $T_{cl}=\dfrac{GD_{cl}}{1+GD_{cl}}$ 得到 $S=\dfrac{1}{1+GD_{cl}}$；<b>串级（好几块串在一起）书里没写</b>。而"对单个 block 用闭环公式"恰好能把它补上。</p>
 
-  <p><b>定义</b>（式 4.18–4.21）：灵敏度是<b>两个相对变化之比</b>，不是绝对变化之比：</p>
+  <p><b>定义</b>（式 4.18–4.21）：敏感度是<b>两个相对变化之比</b>，不是绝对变化之比：</p>
   <p>$$S_{G}^{T}\;\triangleq\;\frac{\delta T/T}{\delta G/G}\;=\;\frac{G}{T}\frac{dT}{dG}$$</p>
 
   <p><b>开环</b>：$T_{ol}=GD_{ol}$ ⇒ $\dfrac{\delta T_{ol}}{T_{ol}}=\dfrac{\delta G}{G}$ ⇒ $S=1$。<b>参数错 10%，输出就错 10%</b>——一点忙都帮不上。</p>
@@ -26,9 +26,9 @@
 
   <p><b>现在回答"串级怎么办"。</b>把前向通路拆成串级 $\mathcal{G}=G_{1}G_{2}G_{3}$，反馈为 $\mathcal{H}$：</p>
   <p>$$T=\frac{\mathcal{G}}{1+\mathcal{G}\mathcal{H}},\qquad L=\mathcal{G}\mathcal{H}$$</p>
-  <p>对<b>任何一块</b> $G_i$ 求灵敏度（设 $R$ 为其余各块之积，则 $\mathcal G=G_iR$）：</p>
+  <p>对<b>任何一块</b> $G_i$ 求敏感度（设 $R$ 为其余各块之积，则 $\mathcal G=G_iR$）：</p>
   <p>$$S_{G_i}^{T}=\frac{G_i}{T}\frac{\partial T}{\partial G_i}=\frac{G_i(1+L)}{\mathcal{G}}\cdot\frac{\mathcal{G}/G_i}{(1+L)^{2}}=\boxed{\frac{1}{1+L}}$$</p>
-  <p><b>与 $i$ 无关。</b>所以：<b>前向串级里每一块的灵敏度都等于同一个 $\dfrac{1}{1+L}$</b>——参数在控制器里、在功率级里、还是在被控对象里，只要还在<b>前向通路</b>上，答案就是这一个数。这就是"对单个 block 使用闭环公式"的完整含义。</p>
+  <p><b>与 $i$ 无关。</b>所以：<b>前向串级里每一块的敏感度都等于同一个 $\dfrac{1}{1+L}$</b>——参数在控制器里、在功率级里、还是在被控对象里，只要还在<b>前向通路</b>上，答案就是这一个数。这就是"对单个 block 使用闭环公式"的完整含义。</p>
 
   <p><b>但反馈块不一样。</b>$mathcal{H}$ 在分母上：</p>
   <p>$$S_{\mathcal{H}}^{T}=\frac{\mathcal{H}}{T}\frac{\partial T}{\partial \mathcal{H}}=-\frac{\mathcal{G}\mathcal{H}}{1+L}=-\frac{L}{1+L}$$</p>
@@ -36,11 +36,49 @@
 
   <p><b>两个基本功</b>：</p>
   <p>$$S\triangleq\frac{1}{1+L},\qquad T\triangleq\frac{L}{1+L}=1-S,\qquad S+T=1$$</p>
-  <p class="ctl-note">两个容易踩的地方：① $T=\dfrac{L}{1+L}$ <b>只在 $\mathcal H=1$（单位反馈）时成立</b>；$\mathcal H\neq1$ 时 $T=\dfrac{\mathcal G}{1+L}$，但 $S$ 与 $S_{\mathcal H}$ 的式子不变。② Bode 当年定义的灵敏度是<b>倒数</b>：$S_{\text{Bode}}=1+L$——读别的书时先确认用的是哪套约定。</p>
+  <p class="ctl-note">两个容易踩的地方：① $T=\dfrac{L}{1+L}$ <b>只在 $\mathcal H=1$（单位反馈）时成立</b>；$\mathcal H\neq1$ 时 $T=\dfrac{\mathcal G}{1+L}$，但 $S$ 与 $S_{\mathcal H}$ 的式子不变。② Bode 当年定义的敏感度是<b>倒数</b>：$S_{\text{Bode}}=1+L$——读别的书时先确认用的是哪套约定。</p>
   <p class="ctl-note">数字口径：原书举例用的是 $1+GD_{cl}=100$（即 $L=99$），于是 $S=0.01$、参数错 10% → 输出错 <b>0.1%</b>、开环比闭环敏感 <b>100</b> 倍。下面组件默认取 $L=100$，对应 $S=1/101=0.0099$、输出错 <b>0.099%</b>、敏感 <b>101</b> 倍——是同一件事，只是取整位置不同。</p>
   </div>
 
-  <div data-primitive="sensitivity" data-title="图：左＝S 与 T 随回路增益 L（两者永远加起来等于 1）；右＝把灵敏度画成斜率——灰虚线是开环（斜率 1），蓝线是闭环（斜率＝选中那块的灵敏度）。下面那张表列出四块各自的灵敏度：三块 G 完全相同，只有 H 是负的"></div>
+  <div data-primitive="sensitivity" data-title="图：左＝S 与 T 随回路增益 L（两者永远加起来等于 1）；右＝把敏感度画成斜率——灰虚线是开环（斜率 1），蓝线是闭环（斜率＝选中那块的敏感度）。下面那张表列出四块各自的敏感度：三块 G 完全相同，只有 H 是负的"></div>
+
+  <h2>总结：加大全局回路增益，前向通路的参数就越来越不算数</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>global feedback loop 提供更大的环路 gain，有效降低了 overall transfer function 对前向路径 para 的影响</div>
+
+  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
+  <p><b>对，而且这就是反馈最重要的作用</b>——Black 1927 年发明负反馈，要的就是这一件事：让放大器的增益由<b>电阻比</b>决定，而不是由电子管参数决定。机制就是上一条那个 $S=\dfrac{1}{1+L}$：$L$ 一大，$S$ 就贴着 0 掉下去。</p>
+  <table>
+    <thead><tr><th>回路增益 $L$</th><th>$S=1/(1+L)$</th><th>参数变 10% → 输出变</th></tr></thead>
+    <tbody>
+      <tr><td>$1$</td><td>$0.5$</td><td>$5\%$</td></tr>
+      <tr><td>$10$</td><td>$0.0909$</td><td>$0.91\%$</td></tr>
+      <tr><td>$100$</td><td>$0.0099$</td><td>$0.099\%$</td></tr>
+      <tr><td>$1000$</td><td>$0.001$</td><td>$0.010\%$</td></tr>
+    </tbody>
+  </table>
+  <p><b>极限</b>：$L\to\infty$ 时 $T=\dfrac{\mathcal G}{1+\mathcal G\mathcal H}\to\dfrac{1}{\mathcal H}$——整体传函<b>完全由反馈元件决定</b>，前向通路是什么已经不重要了。</p>
+
+  <p><b>但"总结"必须带上下面三条限定，否则会误导：</b></p>
+
+  <p><b>① 责任不是消失，是转移。</b>把两个敏感度加起来：</p>
+  <p>$$S+\left|S_{\mathcal H}\right|=\frac{1}{1+L}+\frac{L}{1+L}=1$$</p>
+  <p>$L$ 越大，$|S_{\mathcal H}|\to1$。你并没有让系统"对参数不敏感"，你是把它变成<b>只对反馈元件敏感</b>。所以反馈网络必须准、必须稳——Black 的放大器能成，靠的是电阻比准，不是靠没有误差。</p>
+
+  <p><b>② $L$ 是<b>频率</b>的函数，所以这个"降低"只在 $|L|$ 大的频段成立。</b>取 $L(s)=\dfrac{100}{(s+1)(0.1s+1)}$（直流回路增益 100）实测：</p>
+  <table>
+    <thead><tr><th>$\omega$</th><th>$|L(j\omega)|$</th><th>$|S(j\omega)|$</th><th>参数变 10% → 输出变</th></tr></thead>
+    <tbody>
+      <tr><td>$0$</td><td>$100$</td><td>$0.0099$</td><td>$0.099\%$</td></tr>
+      <tr><td>$1$</td><td>$70.4$</td><td>$0.0141$</td><td>$0.141\%$</td></tr>
+      <tr><td>$10$</td><td>$7.04$</td><td>$0.155$</td><td>$1.55\%$</td></tr>
+      <tr><td>$31.6$</td><td>$0.954$</td><td>$\mathbf{3.01}$</td><td>$\mathbf{30\%}$（<b>反而放大了</b>）</td></tr>
+      <tr><td>$1000$</td><td>$0.001$</td><td>$1.001$</td><td>$10\%$（退回开环）</td></tr>
+    </tbody>
+  </table>
+  <p>注意 $\omega\approx31.6$ 那一行——$|L|$ 刚降到 1 附近：$|S|=\mathbf{3.01}$，<b>参数变化被放大了 3 倍</b>。原因是一旦回路增益带着相位滞后落到 1 附近，$|1+L(j\omega)|$ 会变得很小。所以<b>敏感度问题没法只在直流上解决，它必然是一个频率域问题</b>——这正是 Ch6 的起点（相位裕度就是保证这个峰不失控的东西）。</p>
+
+  <p><b>③ 加大 $L$ 不是免费的。</b>$L$ 大 ⇒ 前向增益大 ⇒ 闭环极点被推着走、稳定裕度下降。敏感度、稳定裕度、带宽这三件事必须一起权衡——Ch5（根轨迹）与 Ch6（频域）干的就是这个。</p>
+  </div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
@@ -48,6 +86,8 @@
   <p>开环 $S=1$；闭环 $S=\dfrac{1}{1+L}$，$L=GD_{cl}$。</p>
   <p>串级：前向任意一块 $S_{G_i}=\dfrac{1}{1+L}$（<b>全都一样</b>）；反馈块 $S_{\mathcal H}=-\dfrac{L}{1+L}$。</p>
   <p>单位反馈：$S=\dfrac{1}{1+L}$，$T=\dfrac{L}{1+L}=1-S$，$S+T=1$。</p>
+  <p>加大 $L$ 的极限：$T\to\dfrac{1}{\mathcal H}$（整体传函由反馈元件决定）；责任分配 $S+|S_{\mathcal H}|=1$。</p>
+  <p>频率域：$S(j\omega)=\dfrac{1}{1+L(j\omega)}$，只在 $|L|$ 大的频段才小；$|L|$ 落到 1 附近时 $|S|$ 会出现峰值。</p>
   </details>
 
   <div class="ctl-test">
@@ -56,11 +96,13 @@
     <li>回路增益 $L=100$。被控对象增益 $G$ 漂了 $10\%$，闭环输出的稳态值漂多少？开环呢？
       <details><summary>答案</summary><p>闭环 $S=\frac{1}{101}=0.0099$ → 输出漂 $0.099\%$；开环 $S=1$ → 输出漂 $10\%$。<b>差 101 倍。</b></p></details></li>
     <li>前向通路上串了三块 $G_1G_2G_3$（控制器、功率级、被控对象）。哪一块的参数漂移对输出影响最大？
-      <details><summary>答案</summary><p><b>一样大。</b>三块的灵敏度都是同一个 $\frac{1}{1+L}$，与它是控制器还是被控对象无关——只要在<b>前向通路</b>上。这正是"对单个 block 用闭环公式"的意思。</p></details></li>
-    <li>反馈通路（传感器）$\mathcal H$ 的灵敏度是多少？为什么和上面不一样？
+      <details><summary>答案</summary><p><b>一样大。</b>三块的敏感度都是同一个 $\frac{1}{1+L}$，与它是控制器还是被控对象无关——只要在<b>前向通路</b>上。这正是"对单个 block 用闭环公式"的意思。</p></details></li>
+    <li>反馈通路（传感器）$\mathcal H$ 的敏感度是多少？为什么和上面不一样？
       <details><summary>答案</summary><p>$S_{\mathcal H}=-\frac{L}{1+L}$，<b>负的</b>。因为 $\mathcal H$ 在分母上：$T=\frac{\mathcal G}{1+\mathcal G\mathcal H}$，$\mathcal H$ 增大让 $T$ 减小。而且 $|S_{\mathcal H}|\approx1$（$L$ 大时），远大于前向块的 $\frac{1}{1+L}$——<b>反馈元件不准是严重得多的问题</b>。</p></details></li>
     <li>$S+T=1$ 怎么来的？前提是什么？
       <details><summary>答案</summary><p>定义直接相加：$\frac{1}{1+L}+\frac{L}{1+L}=1$。前提是<b>单位反馈</b>（$\mathcal H=1$）；$\mathcal H\neq1$ 时 $T=\frac{\mathcal G}{1+L}$，$S+T\neq1$。</p></details></li>
+    <li>取 $L(s)=\frac{100}{(s+1)(0.1s+1)}$。为什么直流上敏感度只有 $0.0099$，可 $\omega\approx30$ 附近反而放大到 $3.01$？
+      <details><summary>答案</summary><p>因为敏感度是<b>频率</b>的函数：$S(j\omega)=\frac{1}{1+L(j\omega)}$。直流 $|L|=100$，$S$ 很小；到 $\omega\approx31$ 时 $|L|$ 已降到 $0.954$，而且带着相位滞后，$1+L(j\omega)$ 的模只剩 $0.33$，于是 $|S|=3.01$。<b>结论：加大直流回路增益并不能保证全频段都降敏感度——这正是频率域设计（Ch6）要管的事。</b></p></details></li>
   </ol>
   </div>
 </main>

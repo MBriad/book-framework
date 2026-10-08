@@ -1886,12 +1886,12 @@
     refresh();
   });
 
-  /* ---------------- ⑰ 灵敏度：串级里每一块的参数变化传成多少输出变化（Franklin §4.1.4） ---
+  /* ---------------- ⑰ 敏感度：串级里每一块的参数变化传成多少输出变化（Franklin §4.1.4） ---
      结构：前向串级 Gp = G1·G2·G3，反馈 H，回路增益 L = Gp·H，T = Gp/(1+L)。
        S = 1/(1+L)        —— **前向通路里任何一块**都是这一个值（所以"对单个 block 用闭环公式"）
        S_H = -L/(1+L)     —— 反馈块不一样，而且是负的
      H = 1 时退化成书上 §4.1.4 的 S = 1/(1+GDcl)、T = L/(1+L)、S+T = 1。
-     左图：S 与 T 随 L（对数）。右图：把灵敏度画成斜率——开环斜率 1，闭环斜率就是选中那块。 */
+     左图：S 与 T 随 L（对数）。右图：把敏感度画成斜率——开环斜率 1，闭环斜率就是选中那块。 */
   Ctl.Pack.register('sensitivity', function (el) {
     el.classList.add('ctl-widget');
     var wrap = scaffold(el);
@@ -1944,7 +1944,7 @@
     function refresh() {
       var L = st.L, S = 1 / (1 + L), T = L / (1 + L);
       var sens = [S, S, S, -T];
-      var h = '<table class="ctl-sens-t"><thead><tr><th>块</th><th>它的灵敏度</th><th>这块参数变 +10% → 输出变</th></tr></thead><tbody>';
+      var h = '<table class="ctl-sens-t"><thead><tr><th>块</th><th>它的敏感度</th><th>这块参数变 +10% → 输出变</th></tr></thead><tbody>';
       for (var i = 0; i < 4; i++) {
         h += '<tr' + (i === st.which ? ' class="sel"' : '') + '><td>' + NAMES[i] + '</td><td>' +
           (i < 3 ? '1/(1+L)' : '−L/(1+L)') + ' = ' + sens[i].toFixed(4) + '</td><td>' +
@@ -1954,23 +1954,23 @@
       tbl.innerHTML = h;
 
       lg.innerHTML =
-        '<span><i style="background:var(--ctl-accent)"></i>左图 S = 1/(1+L)（灵敏度）</span>' +
-        '<span><i style="background:var(--ctl-accent2)"></i>左图 T = L/(1+L)（补灵敏度），S+T=1</span>' +
+        '<span><i style="background:var(--ctl-accent)"></i>左图 S = 1/(1+L)（敏感度）</span>' +
+        '<span><i style="background:var(--ctl-accent2)"></i>左图 T = L/(1+L)（补敏感度），S+T=1</span>' +
         '<span><i style="background:var(--ctl-muted)"></i>右图 开环（斜率 1）</span>' +
-        '<span><i style="background:var(--ctl-accent)"></i>右图 闭环（斜率 = 选中那块的灵敏度）</span>';
+        '<span><i style="background:var(--ctl-accent)"></i>右图 闭环（斜率 = 选中那块的敏感度）</span>';
 
       setReadout(ro, [
         ['回路增益 L', L.toFixed(2)],
         ['S = 1/(1+L)', S.toFixed(4)],
         ['T = L/(1+L)', T.toFixed(4)],
         ['S + T', (S + T).toFixed(4)],
-        ['选中 ' + NAMES[st.which] + ' 的灵敏度', sens[st.which].toFixed(4)],
+        ['选中 ' + NAMES[st.which] + ' 的敏感度', sens[st.which].toFixed(4)],
         ['它变 +10%', '输出变 ' + (10 * sens[st.which]).toFixed(3) + '%'],
         ['开环对照（S=1）', '输出也变 10%']
       ]);
       note('S 是「<b>参数相对变化</b>传成<b>输出相对变化</b>的比例」。左图：L 一放大，S 就贴着 0 掉下去、T 贴着 1 上去，'
         + '两者永远加起来等于 1。右图把这个比例画成斜率：灰色是开环（斜率 1），蓝色是闭环。'
-        + ' <b>关键结论</b>：前向串级里 G₁ / G₂ / G₃ <b>任何一块</b>的灵敏度都是同一个 $1/(1+L)$——'
+        + ' <b>关键结论</b>：前向串级里 G₁ / G₂ / G₃ <b>任何一块</b>的敏感度都是同一个 $1/(1+L)$——'
         + '哪一块都不用管，这就是「对单个 block 用闭环公式」；<b>只有反馈块 H 不一样</b>，是 $-L/(1+L)$，而且是负号。');
       Fig.renderAll();
     }
