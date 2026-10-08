@@ -43,42 +43,11 @@
   <div data-primitive="sensitivity" data-title="图：左＝S 与 T 随回路增益 L（两者永远加起来等于 1）；右＝把敏感度画成斜率——灰虚线是开环（斜率 1），蓝线是闭环（斜率＝选中那块的敏感度）。下面那张表列出四块各自的敏感度：三块 G 完全相同，只有 H 是负的"></div>
 
   <h2>总结：加大全局回路增益，前向通路的参数就越来越不算数</h2>
-  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>global feedback loop 提供更大的环路 gain，有效降低了 overall transfer function 对前向路径 para 的影响</div>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>global feedback loop 提供更大的环路 gain，有效降低了 overall transfer function 对前向路径 para 的变化的 sensitivity</div>
 
-  <div class="ctl-fix"><strong>纠正 / 补全：</strong>
-  <p><b>对，而且这就是反馈最重要的作用</b>——Black 1927 年发明负反馈，要的就是这一件事：让放大器的增益由<b>电阻比</b>决定，而不是由电子管参数决定。机制就是上一条那个 $S=\dfrac{1}{1+L}$：$L$ 一大，$S$ 就贴着 0 掉下去。</p>
-  <table>
-    <thead><tr><th>回路增益 $L$</th><th>$S=1/(1+L)$</th><th>参数变 10% → 输出变</th></tr></thead>
-    <tbody>
-      <tr><td>$1$</td><td>$0.5$</td><td>$5\%$</td></tr>
-      <tr><td>$10$</td><td>$0.0909$</td><td>$0.91\%$</td></tr>
-      <tr><td>$100$</td><td>$0.0099$</td><td>$0.099\%$</td></tr>
-      <tr><td>$1000$</td><td>$0.001$</td><td>$0.010\%$</td></tr>
-    </tbody>
-  </table>
-  <p><b>极限</b>：$L\to\infty$ 时 $T=\dfrac{\mathcal G}{1+\mathcal G\mathcal H}\to\dfrac{1}{\mathcal H}$——整体传函<b>完全由反馈元件决定</b>，前向通路是什么已经不重要了。</p>
+  <div class="ctl-fix"><strong>纠正：</strong>对，而且这正是反馈最核心的作用（Black 1927 年就是为了它发明负反馈的）。机制就是上一条：前向串级里任何一块的敏感度都是 $S=\dfrac{1}{1+L}$，所以 $L$ 越大，前向参数的变化传到输出的比例越小；极限 $L\to\infty$ 时 $T\to\dfrac{1}{\mathcal H}$，整体传函完全由反馈元件决定。只补一句限定：这个"降低"是<b>频率</b>的函数，只在 $|L(j\omega)|$ 大的频段成立（$|L|$ 落到 1 附近时 $|S|$ 反而会出现峰值）。</div>
 
-  <p><b>但"总结"必须带上下面三条限定，否则会误导：</b></p>
-
-  <p><b>① 责任不是消失，是转移。</b>把两个敏感度加起来：</p>
-  <p>$$S+\left|S_{\mathcal H}\right|=\frac{1}{1+L}+\frac{L}{1+L}=1$$</p>
-  <p>$L$ 越大，$|S_{\mathcal H}|\to1$。你并没有让系统"对参数不敏感"，你是把它变成<b>只对反馈元件敏感</b>。所以反馈网络必须准、必须稳——Black 的放大器能成，靠的是电阻比准，不是靠没有误差。</p>
-
-  <p><b>② $L$ 是<b>频率</b>的函数，所以这个"降低"只在 $|L|$ 大的频段成立。</b>取 $L(s)=\dfrac{100}{(s+1)(0.1s+1)}$（直流回路增益 100）实测：</p>
-  <table>
-    <thead><tr><th>$\omega$</th><th>$|L(j\omega)|$</th><th>$|S(j\omega)|$</th><th>参数变 10% → 输出变</th></tr></thead>
-    <tbody>
-      <tr><td>$0$</td><td>$100$</td><td>$0.0099$</td><td>$0.099\%$</td></tr>
-      <tr><td>$1$</td><td>$70.4$</td><td>$0.0141$</td><td>$0.141\%$</td></tr>
-      <tr><td>$10$</td><td>$7.04$</td><td>$0.155$</td><td>$1.55\%$</td></tr>
-      <tr><td>$31.6$</td><td>$0.954$</td><td>$\mathbf{3.01}$</td><td>$\mathbf{30\%}$（<b>反而放大了</b>）</td></tr>
-      <tr><td>$1000$</td><td>$0.001$</td><td>$1.001$</td><td>$10\%$（退回开环）</td></tr>
-    </tbody>
-  </table>
-  <p>注意 $\omega\approx31.6$ 那一行——$|L|$ 刚降到 1 附近：$|S|=\mathbf{3.01}$，<b>参数变化被放大了 3 倍</b>。原因是一旦回路增益带着相位滞后落到 1 附近，$|1+L(j\omega)|$ 会变得很小。所以<b>敏感度问题没法只在直流上解决，它必然是一个频率域问题</b>——这正是 Ch6 的起点（相位裕度就是保证这个峰不失控的东西）。</p>
-
-  <p><b>③ 加大 $L$ 不是免费的。</b>$L$ 大 ⇒ 前向增益大 ⇒ 闭环极点被推着走、稳定裕度下降。敏感度、稳定裕度、带宽这三件事必须一起权衡——Ch5（根轨迹）与 Ch6（频域）干的就是这个。</p>
-  </div>
+  <div data-primitive="sens-band" data-title="图：拖回路增益 L——灰色（开环）那条带子永远是 ±10%，蓝色（闭环）那条按 1/(1+L) 缩下去，最后细成一根发丝"></div>
 
   <details class="ctl-fold">
   <summary>要写下来的符号形式</summary>
@@ -86,8 +55,6 @@
   <p>开环 $S=1$；闭环 $S=\dfrac{1}{1+L}$，$L=GD_{cl}$。</p>
   <p>串级：前向任意一块 $S_{G_i}=\dfrac{1}{1+L}$（<b>全都一样</b>）；反馈块 $S_{\mathcal H}=-\dfrac{L}{1+L}$。</p>
   <p>单位反馈：$S=\dfrac{1}{1+L}$，$T=\dfrac{L}{1+L}=1-S$，$S+T=1$。</p>
-  <p>加大 $L$ 的极限：$T\to\dfrac{1}{\mathcal H}$（整体传函由反馈元件决定）；责任分配 $S+|S_{\mathcal H}|=1$。</p>
-  <p>频率域：$S(j\omega)=\dfrac{1}{1+L(j\omega)}$，只在 $|L|$ 大的频段才小；$|L|$ 落到 1 附近时 $|S|$ 会出现峰值。</p>
   </details>
 
   <div class="ctl-test">
@@ -101,8 +68,6 @@
       <details><summary>答案</summary><p>$S_{\mathcal H}=-\frac{L}{1+L}$，<b>负的</b>。因为 $\mathcal H$ 在分母上：$T=\frac{\mathcal G}{1+\mathcal G\mathcal H}$，$\mathcal H$ 增大让 $T$ 减小。而且 $|S_{\mathcal H}|\approx1$（$L$ 大时），远大于前向块的 $\frac{1}{1+L}$——<b>反馈元件不准是严重得多的问题</b>。</p></details></li>
     <li>$S+T=1$ 怎么来的？前提是什么？
       <details><summary>答案</summary><p>定义直接相加：$\frac{1}{1+L}+\frac{L}{1+L}=1$。前提是<b>单位反馈</b>（$\mathcal H=1$）；$\mathcal H\neq1$ 时 $T=\frac{\mathcal G}{1+L}$，$S+T\neq1$。</p></details></li>
-    <li>取 $L(s)=\frac{100}{(s+1)(0.1s+1)}$。为什么直流上敏感度只有 $0.0099$，可 $\omega\approx30$ 附近反而放大到 $3.01$？
-      <details><summary>答案</summary><p>因为敏感度是<b>频率</b>的函数：$S(j\omega)=\frac{1}{1+L(j\omega)}$。直流 $|L|=100$，$S$ 很小；到 $\omega\approx31$ 时 $|L|$ 已降到 $0.954$，而且带着相位滞后，$1+L(j\omega)$ 的模只剩 $0.33$，于是 $|S|=3.01$。<b>结论：加大直流回路增益并不能保证全频段都降敏感度——这正是频率域设计（Ch6）要管的事。</b></p></details></li>
   </ol>
   </div>
 </main>

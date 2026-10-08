@@ -1984,6 +1984,63 @@
     refresh();
   });
 
+  /* ---------------- ⑱ 加大全局回路增益 → 前向参数的影响按 1/(1+L) 缩下去 ----------------
+     一根标尺：开环那条带子永远是 ±10%；闭环那条是 ±10/(1+L)%。拖 L 看它缩成一根发丝。
+     带子最窄画到最小可见宽度，精确值放在标签和读数里（不然 L 一大就什么都看不见）。 */
+  Ctl.Pack.register('sens-band', function (el) {
+    el.classList.add('ctl-widget');
+    var wrap = scaffold(el);
+    var f = figBox(wrap, 'ctl-h-md');
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+    var st = { L: 100 };
+
+    function fmtL(v) { return v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1) + 'k' : (v < 10 ? v.toFixed(1) : v.toFixed(0)); }
+
+    var fig = Fig.create(f.canvas, {
+      xlim: [60, 140], ylim: [0, 2], bare: true,
+      draw: function (P) {
+        var C = P.C, S = 1 / (1 + st.L), hwC = 10 * S;
+        P.line([[60, 0.18], [140, 0.18]], C.line, 1);
+        [80, 90, 100, 110, 120].forEach(function (v) {
+          P.line([[v, 0.18], [v, 0.26]], C.line, 1);
+          P.text(v + '%', P.x(v), P.y(0.06), C.muted, 'center', 'middle');
+        });
+        P.line([[100, P.yinv(P.T)], [100, P.yinv(P.B)]], C.grid, 1, [4, 4]);
+        function row(y, hw, col, lab) {
+          var hwDraw = Math.max(hw, 0.18);   // 最窄画成最小可见宽度
+          P.line([[100 - hwDraw, y], [100 + hwDraw, y]], col, 13);
+          P.line([[100 - hwDraw, y - 0.17], [100 - hwDraw, y + 0.17]], col, 2);
+          P.line([[100 + hwDraw, y - 0.17], [100 + hwDraw, y + 0.17]], col, 2);
+          P.text(lab, P.x(60) + 6, P.y(y + 0.30), col, 'left', 'middle');
+        }
+        row(1.45, 10, C.muted, '开环：参数变 ±10% → 输出变 ±10.000%');
+        row(0.62, hwC, C.accent, '闭环 L = ' + fmtL(st.L) + '：参数变 ±10% → 输出变 ±' + (10 * S).toFixed(3) + '%');
+        if (hwC < 0.18) P.text('（带子已细到画不出来，按最小可见宽度画）', P.x(100) + 8, P.y(0.62), C.muted, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      var S = 1 / (1 + st.L);
+      setReadout(ro, [
+        ['回路增益 L', fmtL(st.L)],
+        ['敏感度 S = 1/(1+L)', S.toFixed(5)],
+        ['前向参数变 ±10%', '输出变 ±' + (10 * S).toFixed(3) + '%'],
+        ['开环对照', '输出变 ±10%'],
+        ['缩小了多少倍', (1 / S).toFixed(1) + ' 倍'],
+        ['极限', 'L→∞ 时 T → 1/H，由反馈元件说了算']
+      ]);
+      note('两条带子都是"前向通路的参数变 ±10%"引起的输出变化：<b>灰色（开环）永远 ±10%，蓝色（闭环）是 ±10/(1+L)%</b>。'
+        + '拖 L 往上走，蓝带子就按 $1/(1+L)$ 缩下去——这就是"更大的全局回路增益降低了 overall transfer function 对前向参数变化的敏感度"。');
+      Fig.renderAll();
+    }
+    slider(ctl, '回路增益 L（对数）', -1, 4, 0.01, Math.log10(st.L),
+      function (v) { return fmtL(Math.pow(10, v)); },
+      function (v) { st.L = Math.pow(10, v); refresh(); });
+    toolbar(el, fig, 'sens-band');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics
