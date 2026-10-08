@@ -2113,6 +2113,93 @@
     refresh();
   });
 
+  /* ---------------- ⑳ P / PD / PID：三种控制器各往回路 L=CGH 里放什么零极点 ----------------
+     被控对象固定 G = 1/((s+1)(s+2))，H = 1，所以"控制器加了什么"一眼能看出来：
+       P   C = Kp                → 不添零极点
+       PD  C = Kp + Kd·s         → 添一个左半平面零点  s = -Kp/Kd
+       PID C = Kp + Ki/s + Kd·s = (Kd·s² + Kp·s + Ki)/s
+                                 → 原点一个极点 + 两个零点（Kd·s²+Kp·s+Ki 的根）
+     Ki 固定为 1（不然旋钮太多），Kp / Kd 可拖。 */
+  Ctl.Pack.register('ctrl-forms', function (el) {
+    el.classList.add('ctl-widget', 'ctl-ctrl');
+    var wrap = scaffold(el);
+    var f = figBox(wrap, 'ctl-h-xl');
+    var note = figNote(el);
+    var ctl = controls(el), ro = readout(el);
+    var st = { form: 'pd', Kp: 1, Kd: 0.5, Ki: 1 };
+
+    function cz() {
+      if (st.form === 'p') return [];
+      if (st.form === 'pd') return [[-st.Kp / st.Kd, 0]];
+      return rootsOf([st.Kd, st.Kp, st.Ki]);
+    }
+    function cp() { return st.form === 'pid' ? [[0, 0]] : []; }
+    function fmtZ(z) {
+      var re = z[0].toFixed(3), im = Math.abs(z[1]).toFixed(3);
+      return Math.abs(z[1]) < 1e-6 ? re : re + ' ± j' + im;
+    }
+    function cstr() {
+      if (st.form === 'p') return 'C(s) = Kp';
+      if (st.form === 'pd') return 'C(s) = Kp + Kd·s';
+      return 'C(s) = Kp + Ki/s + Kd·s';
+    }
+
+    var fig = Fig.create(f.canvas, {
+      xlim: [-7, 1], ylim: [-3.4, 3.4], equal: true, xlabel: 'Re', ylabel: 'Im',
+      draw: function (P) {
+        var C = P.C, i;
+        var ux = (P.xinv(P.R) - P.xinv(P.L)) / Math.max(1, P.R - P.L), s0 = 5.5 * ux;
+        P.line([[0, P.yinv(P.B)], [0, P.yinv(P.T)]], C.line, 1.2);
+        P.line([[P.xinv(P.L), 0], [P.xinv(P.R), 0]], C.line, 1);
+        function cross(x, y, col) {
+          P.line([[x - s0, y - s0], [x + s0, y + s0]], col, 1.8);
+          P.line([[x - s0, y + s0], [x + s0, y - s0]], col, 1.8);
+        }
+        function ring(x, y, col) {
+          var q = [];
+          for (var t = 0; t <= 22; t++) { var a = t / 22 * Math.PI * 2; q.push([x + s0 * Math.cos(a), y + s0 * Math.sin(a)]); }
+          P.line(q, col, 1.8);
+        }
+        cross(-1, 0, C.muted); cross(-2, 0, C.muted);       // 被控对象极点
+        var ps = cp(), zs = cz();
+        for (i = 0; i < ps.length; i++) cross(ps[i][0], ps[i][1], C.accent);
+        for (i = 0; i < zs.length; i++) ring(zs[i][0], zs[i][1], C.accent);
+        P.text('灰 ×：被控对象极点', P.x(P.xinv(P.L)) + 6, P.y(P.yinv(P.T)) + 12, C.muted, 'left', 'middle');
+        P.text('蓝 × / ○：控制器往 L(s) 里加的极点和零点', P.x(P.xinv(P.L)) + 6, P.y(P.yinv(P.T)) + 26, C.accent, 'left', 'middle');
+      }
+    });
+
+    function refresh() {
+      var zs = cz(), ps = cp();
+      var extra = st.form === 'p' ? '什么也不加——只能让闭环极点沿现有根轨迹滑动'
+        : st.form === 'pd' ? '一个左半平面零点（相位超前，把根轨迹往左拉）'
+        : '原点一个极点（积分，提高型别、消稳态误差）+ 两个零点（微分，加相位超前）';
+      setReadout(ro, [
+        ['控制器', st.form.toUpperCase()],
+        ['它往回路里加了', extra],
+        ['L(s) 的极点', (st.form === 'pid' ? '0, ' : '') + '−1, −2'],
+        ['L(s) 的零点', zs.length ? zs.map(fmtZ).join('  ,  ') : '（没有）'],
+        ['Kp / Ki / Kd', st.Kp.toFixed(2) + ' / ' + st.Ki.toFixed(2) + ' / ' + st.Kd.toFixed(2)],
+        ['C(s)', cstr()]
+      ]);
+      note('三种控制器真正的差别，只在<b>它们往回路 $L=CGH$ 里放什么零极点</b>——'
+        + 'P 是纯增益，不添零极点；PD 添<b>一个左半平面零点</b> $s=-K_p/K_d$；'
+        + 'PID 通分是 $\\frac{K_ds^2+K_ps+K_i}{s}$，即<b>原点一个极点 + 两个零点</b>。'
+        + '灰 × 是被控对象自己的极点，蓝 ×／○ 是控制器加进去的——换个控制器，看谁在动。');
+      Fig.renderAll();
+    }
+    segmented(ctl, [{ label: 'P' }, { label: 'PD' }, { label: 'PID' }], function (it, k) {
+      st.form = ['p', 'pd', 'pid'][k];
+      refresh();
+    });
+    slider(ctl, 'Kp', 0.5, 3, 0.05, st.Kp, function (v) { return v.toFixed(2); },
+      function (v) { st.Kp = v; refresh(); });
+    slider(ctl, 'Kd（Ki 固定 = 1）', 0.5, 3, 0.05, st.Kd, function (v) { return v.toFixed(2); },
+      function (v) { st.Kd = v; refresh(); });
+    toolbar(el, fig, 'ctrl-forms');
+    refresh();
+  });
+
   Ctl.ControlMath = {
     rootsOf: rootsOf, polyFromRoots: polyFromRoots, tfEval: tfEval,
     stepFromTF: stepFromTF, stepMetrics: stepMetrics

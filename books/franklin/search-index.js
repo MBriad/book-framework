@@ -54,6 +54,12 @@ window.SEARCH_INDEX = [
     "s": "Ch3 · Dynamic Response 动态响应 · 对应 Franklin 原书 Ch3。本章知识点较多，正文按子节拆分。 本章子节 这个列表是自动生成的——子节写在 bo"
   },
   {
+    "t": "Controller Forms: P, PD, PID",
+    "p": "sections/ch04-controllers.html",
+    "k": "",
+    "s": "Controller Forms: P, PD, PID P / PD / PID 的差别，只在它们往回路 $L=CGH$ 里放什么零极点 你的原话 开环传递函数 L(s) = C"
+  },
+  {
     "t": "Sensitivity to Parameter Changes",
     "p": "sections/ch04-sensitivity.html",
     "k": "",

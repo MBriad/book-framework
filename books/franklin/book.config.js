@@ -20,7 +20,8 @@ window.BOOK = {
       ] },
     { id: 'ch04', num: 'Ch4', title: 'A First Analysis of Feedback', zh: '反馈的初步分析', status: 'partial',
       sections: [
-        { id: 'ch04-sensitivity', title: 'Sensitivity to Parameter Changes', zh: '敏感度：参数变化传成多少输出变化', status: 'partial' }
+        { id: 'ch04-sensitivity', title: 'Sensitivity to Parameter Changes', zh: '敏感度：参数变化传成多少输出变化', status: 'partial' },
+        { id: 'ch04-controllers', title: 'Controller Forms: P, PD, PID', zh: '控制器 C(s) 的三种形式', status: 'partial' }
       ] },
     { id: 'ch05', num: 'Ch5', title: 'The Root-Locus Design Method', zh: '根轨迹设计法', status: 'gap' },
     { id: 'ch06', num: 'Ch6', title: 'The Frequency-Response Design Method', zh: '频率响应设计法', status: 'gap' },

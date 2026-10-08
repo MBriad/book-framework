@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controller Forms: P, PD, PID</title>
+</head>
+<body data-ch="ch04-controllers">
+<main class="ctl-main">
+  <h1>Controller Forms: P, PD, PID</h1>
+
+  <h2>P / PD / PID 的差别，只在它们往回路 $L=CGH$ 里放什么零极点</h2>
+  <div class="ctl-quote"><span class="ctl-qlabel">你的原话</span>开环传递函数 L(s) = C(s)G(s)H(s)；P 控制器：C(s) = Kp；PD 控制器：C(s) = kP + kDs；PID 控制器： C（s）= Kp + KI/S + KdS</div>
+
+  <div class="ctl-fix"><strong>纠正：</strong>$L=CGH$ 没问题，闭环特征方程就是 $1+L(s)=0$；这三型真正的差别只在<b>往回路里放什么零极点</b>。P 是纯增益，不添零极点，只能让闭环极点沿现有根轨迹滑；PD 添<b>一个左半平面零点</b> $s=-K_P/K_D$（相位超前，把根轨迹往左拉），但理想微分器分子次数 $\ge$ 分母、<b>物理上做不出来</b>，实际要配一个极点；PID 通分是 $\dfrac{K_Ds^2+K_Ps+K_I}{s}$，即<b>原点一个极点 + 两个零点</b>——积分项提高型别、消稳态误差（代价是低频再掉 $90^\circ$ 相位），微分项加相位超前。</div>
+
+  <div data-primitive="ctrl-forms" data-title="图：换控制器，看谁在动——灰 × 是被控对象自己的极点，蓝 ×／○ 是控制器往 L(s) 里加进来的。点 P / PD / PID 切换，拖 Kp、Kd 看零点往哪跑"></div>
+</main>
+<script src="../../../kit/core/boot.js" data-book="../"></script>
+</body>
+</html>
